@@ -44,7 +44,7 @@ namespace RandomGains.Frame.Core
                         hook.InvokeAdd();
                     }
                     catch(Exception ex){
-                        EmgTxCustom.Log($"Exception when enable hook ");
+                        EmgTxCustom.Log($"GainHookWarpper : Exception when enable hook ");
                         Debug.LogException(ex);
                     }
                 }
@@ -58,7 +58,7 @@ namespace RandomGains.Frame.Core
                         hook.InvokeAdd();
                     }
                     catch(Exception ex){
-                        EmgTxCustom.Log($"Exception when disable hook ");
+                        EmgTxCustom.Log($"GainHookWarpper : Exception when disable hook ");
                         Debug.LogException(ex);
                     }
                 }

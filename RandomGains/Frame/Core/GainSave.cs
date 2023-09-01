@@ -17,7 +17,6 @@ namespace RandomGains.Frame.Core
         public override string header => "GAINSAVE";
 
         static Dictionary<GainID, Func<GainData>> dataCtors = new Dictionary<GainID, Func<GainData>>();
-
         public Dictionary<GainID, GainData> dataMapping = new Dictionary<GainID, GainData>();
 
         public GainSave(SlugcatStats.Name slugcat) : base(slugcat)
@@ -57,17 +56,27 @@ namespace RandomGains.Frame.Core
                 }
                 catch (Exception ex)
                 {
-                    EmgTxCustom.Log($"GainSave: Exception when loading dataPiecen{dataPiece}");
+                    EmgTxCustom.Log($"GainSave: Exception when loading dataPiece {dataPiece}");
                     Debug.LogException(ex);
                 }
             }
         }
 
+        /// <summary>
+        /// 获取id对应的GainData实例。如果不存在该实例，则创建一个
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public T GetData<T>(GainID id) where T : GainData
         {
             return (T)GetData(id);
         }
-
+        /// <summary>
+        /// 获取id对应的GainData实例。如果不存在该实例，则创建一个
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public GainData GetData(GainID id)
         {
             if (!dataMapping.TryGetValue(id, out var value))
@@ -103,17 +112,7 @@ namespace RandomGains.Frame.Core
             if (dataCtors.ContainsKey(gainID))
                 return;
 
-            DynamicMethod ctorMethod = new DynamicMethod("typeCtor", typeof(GainData), null, true);
-            ConstructorInfo origCtor = type.GetConstructor(new Type[0]);
-            if (origCtor == null)
-                throw new ArgumentNullException($"{type} dont have matching ctor method");
-
-            ILGenerator il = ctorMethod.GetILGenerator();
-            il.Emit(OpCodes.Newobj, origCtor);
-            il.Emit(OpCodes.Ret);
-
-            var del2 = (Func<GainData>)ctorMethod.CreateDelegate(typeof(Func<GainData>));
-            dataCtors.Add(gainID, del2);
+            dataCtors.Add(gainID, GainCustom.GetTypeCtor<Func<GainData>>(type));
         }
     }
 }

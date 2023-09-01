@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using RandomGains.Frame.Core;
+using RandomGains.Frame.Display;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,10 @@ namespace RandomGains
     [BepInPlugin("randomgains", "RandomGains", "1.0.0")]
     public class Plugins : BaseUnityPlugin
     {
+        public static string MoonBack;
+        public static string FPBack;
+        public static string SlugBack;
+
         void OnEnable()
         {
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
@@ -27,10 +32,13 @@ namespace RandomGains
             try
             {
                 GameHooks.HookOn();
+                FLabelHooks.HookOn();
 
-                CustomDeathPersistentSaveTx.DeathPersistentSaveDataRx.AppplyTreatment(new GainSave(null));
+                LoadResources(self);
+                //CustomDeathPersistentSaveTx.DeathPersistentSaveDataRx.AppplyTreatment(new GainSave(null));
 
-                GainHookWarpper.WarpHook(new On.Player.hook_Update(Player_Update), null);//暂时写个null
+                //GainHookWarpper.WarpHook(new On.Player.hook_Update(Player_Update), null);//暂时写个null
+                
             }
 
             catch (Exception e) 
@@ -38,21 +46,14 @@ namespace RandomGains
                 Debug.LogException(e);
             }
         }
-
-        private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
+        
+        public static void LoadResources(RainWorld rainWorld)
         {
-            orig.Invoke(self, eu);
-            EmgTxCustom.Log("Hook success");
+            MoonBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/moonback").elements[0].name;
+            FPBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/fpback").elements[0].name;
+            SlugBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/slugback").elements[0].name;
+
+            CainStaticDataLoader.Load(rainWorld);
         }
-    }
-
-    public class BounceSpearData : GainData
-    {
-
-    }
-
-    public class BounceSpearGain : Gain<BounceSpearGain, BounceSpearData>
-    {
-
     }
 }

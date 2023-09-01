@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RandomGains.Frame.Display;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -17,8 +18,14 @@ namespace RandomGains.Frame.Core
             On.RainWorldGame.CommunicateWithUpcomingProcess += RainWorldGame_CommunicateWithUpcomingProcess;
         }
 
+
         private static void ProcessManager_PostSwitchMainProcess(On.ProcessManager.orig_PostSwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)
         {
+            if (self.oldProcess is RainWorldGame && (ID == ProcessManager.ProcessID.SleepScreen || ID == ProcessManager.ProcessID.Dream))
+            {
+                self.currentMainLoop = new GainMenu(ID, self.oldProcess as RainWorldGame, self);
+                ID = GainMenu.GainMenuID;
+            }
             orig.Invoke(self, ID);
             if(self.currentMainLoop is RainWorldGame game && GainPool.Singleton == null)
             {
