@@ -16,10 +16,12 @@ namespace RandomGains.Frame.Core
     {
         public GainType Singleton { get; private set; }
         public DataType SingletonData => GainSave.Singleton.GetData<DataType>(ID);
+        public readonly GainStaticData StaticData;
 
         public Gain()
         {
             Singleton = (GainType)this;
+            StaticData = CainStaticDataLoader.GetStaticData(ID);
         }
     }
 
@@ -34,13 +36,8 @@ namespace RandomGains.Frame.Core
         {
         }
 
-        public virtual void Trigger()
-        {
-        }
-
         public virtual void Destroy()
         {
-
         }
     }
 
