@@ -10,18 +10,18 @@ namespace RandomGains.Frame.Core
     /// <summary>
     /// 可继承的增益类型，单例模式
     /// </summary>
-    /// <typeparam name="GainType"></typeparam>
-    /// <typeparam name="DataType"></typeparam>
-    public abstract class Gain<GainType,DataType> : GainBase where GainType : Gain<GainType,DataType> where DataType : GainData
+    /// <typeparam name="GainT">增益的类型</typeparam>
+    /// <typeparam name="DataT">增益数据的类型</typeparam>
+    public abstract class Gain<GainT,DataT> : GainBase where GainT : Gain<GainT,DataT> where DataT : GainData
     {
-        public GainType Singleton { get; private set; }
-        public DataType SingletonData => GainSave.Singleton.GetData<DataType>(ID);
+        public GainT Singleton { get; private set; }
+        public DataT SingletonData => GainSave.Singleton.GetData<DataT>(ID);
         public readonly GainStaticData StaticData;
 
         public Gain()
         {
-            Singleton = (GainType)this;
-            StaticData = CainStaticDataLoader.GetStaticData(ID);
+            Singleton = (GainT)this;
+            StaticData = GainStaticDataLoader.GetStaticData(ID);
         }
     }
 
@@ -32,10 +32,29 @@ namespace RandomGains.Frame.Core
     {
         public virtual GainID ID => GainID.None;
 
-        public virtual void Update()
+
+        /// <summary>
+        /// 点击触发方法，仅对可触发的增益有效。当返回true时，代表该增益已经完全触发，增益将会被移除
+        /// </summary>
+        /// <param name="game"></param>
+        /// <returns></returns>
+        public virtual bool Trigger(RainWorldGame game)
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// 增益的更新方法，与RainWorldGame.Update同步
+        /// </summary>
+        /// <param name="game"></param>
+        public virtual void Update(RainWorldGame game)
         {
         }
 
+        /// <summary>
+        /// 增益的销毁方法，当该增益被移除的时候会调用
+        /// 注意：当一句游戏结束时所有的增益都会移除一次，无论增益是否用尽生命周期
+        /// </summary>
         public virtual void Destroy()
         {
         }
@@ -46,20 +65,44 @@ namespace RandomGains.Frame.Core
     /// </summary>
     public class GainData
     {
-        public virtual string Name => "";
-        public virtual string Description => "";
+        public virtual GainID GainID => GainID.None;
 
-        public virtual GainData GetDataFromType(GainID id)
-        {
-            return null;
-        }
-
+        public int stackLayer;
         /// <summary>
         /// 初始化数据，而非从存档中加载
         /// </summary>
         public virtual void Init()
         {
         }
+
+        public virtual bool CanStackMore()
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// 增加堆叠层数
+        /// </summary>
+        public virtual void Stack()
+        {
+        }
+
+        /// <summary>
+        /// 减少堆叠层数
+        /// </summary>
+        public virtual void UnStack()
+        {
+        }
+
+        /// <summary>
+        /// 步进一个雨循环
+        /// </summary>
+        /// <returns>返回true时,该增益达到循环数限制</returns>
+        public virtual bool SteppingCycle()
+        {
+            return false;
+        }
+
 
         /// <summary>
         /// 实例创建后，从存档中加载数据
@@ -70,7 +113,15 @@ namespace RandomGains.Frame.Core
         }
     }
 
+
     public enum GainType
+    {
+        Positive,
+        Negative,
+        Duality
+    }
+
+    public enum GainProperty
     {
         Normal,
         Special

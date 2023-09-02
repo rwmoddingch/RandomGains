@@ -1,6 +1,8 @@
 ﻿using BepInEx;
+using CustomSaveTx;
 using RandomGains.Frame.Core;
 using RandomGains.Frame.Display;
+using RandomGains.Gains.BounceSpearGain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,19 +28,26 @@ namespace RandomGains
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
         }
 
+        void Upate()
+        {
+            
+        }
+
         private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
         {
             orig.Invoke(self);
             try
             {
                 GameHooks.HookOn();
-                FLabelHooks.HookOn();
+                //FLabelHooks.HookOn();
 
-                LoadResources(self);
-                //CustomDeathPersistentSaveTx.DeathPersistentSaveDataRx.AppplyTreatment(new GainSave(null));
+                //LoadResources(self);
 
+                DeathPersistentSaveDataRx.AppplyTreatment(new GainSave(null));
+                BounceSpearGainHooks.HooksOn();
+                On.Player.Update += Player_Update;
                 //GainHookWarpper.WarpHook(new On.Player.hook_Update(Player_Update), null);//暂时写个null
-                
+
             }
 
             catch (Exception e) 
@@ -46,14 +55,29 @@ namespace RandomGains
                 Debug.LogException(e);
             }
         }
-        
+
+        private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
+        {
+            orig.Invoke(self, eu);
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                EmgTxCustom.Log("Plugins : Space pressed");
+                GainPool.Singleton.EnableGain(BounceSpearGainHooks.bounceSpearID);
+            }
+            if (Input.GetKeyDown(KeyCode.LeftControl))
+            {
+                GainHookWarpper.DisableGain(BounceSpearGainHooks.bounceSpearID);
+            }
+
+        }
+
         public static void LoadResources(RainWorld rainWorld)
         {
             MoonBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/moonback").elements[0].name;
             FPBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/fpback").elements[0].name;
             SlugBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/slugback").elements[0].name;
 
-            CainStaticDataLoader.Load(rainWorld);
+            GainStaticDataLoader.Load(rainWorld);
         }
     }
 }

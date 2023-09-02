@@ -16,13 +16,20 @@ namespace RandomGains.Frame.Core
             On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
             On.RainWorldGame.Update += RainWorldGame_Update;
             On.RainWorldGame.CommunicateWithUpcomingProcess += RainWorldGame_CommunicateWithUpcomingProcess;
+            On.RainWorldGame.Win += RainWorldGame_Win;
         }
 
+        private static void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished)
+        {
+            GainSave.Singleton.SteppingCycle();
+            orig.Invoke(self, malnourished);
+        }
 
         private static void ProcessManager_PostSwitchMainProcess(On.ProcessManager.orig_PostSwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)
         {
             if (self.oldProcess is RainWorldGame && (ID == ProcessManager.ProcessID.SleepScreen || ID == ProcessManager.ProcessID.Dream))
             {
+                GainPool.Singleton.Destroy();
                 self.currentMainLoop = new GainMenu(ID, self.oldProcess as RainWorldGame, self);
                 ID = GainMenu.GainMenuID;
             }
@@ -39,7 +46,7 @@ namespace RandomGains.Frame.Core
             orig.Invoke(self);
             if(GainPool.Singleton != null)
             {
-                GainPool.Singleton.Update();
+                GainPool.Singleton.Update(self);
             }
         }
 

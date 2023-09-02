@@ -5,14 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using RWCustom;
 using UnityEngine;
 
 namespace RandomGains.Frame.Core
 {
-    internal class CainStaticDataLoader
+    internal class GainStaticDataLoader
     {
         static List<GainStaticData> staticData = new List<GainStaticData>();
         static Dictionary<GainID, GainStaticData> idDataMapping = new Dictionary<GainID, GainStaticData>();
+        
         public static void Load(RainWorld rainWorld){
             string rootPath = AssetManager.ResolveFilePath("gainassets/cardinfos");
         }
@@ -50,25 +52,32 @@ namespace RandomGains.Frame.Core
     {
         public GainID GainID { get; private set; }
 
-        public string faceElementName;
-        public FAtlasElement faceElement;
-        public string gainName;
-        public string gainDescription;
+        public GainType GainType{ get; private set; }
+        public GainProperty GainProperty{ get; private set; }
+        public readonly bool triggerable;
+
+        public readonly string faceElementName;
+        public readonly FAtlasElement faceElement;
+        public readonly string gainName;
+        public readonly string gainDescription;
 
         public GainStaticData(DirectoryInfo directoryInfo, FileInfo jsonFile, RainWorld rainWorld){
             string text = File.ReadAllText(jsonFile.FullName);
-            var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(text);
+            var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(text);
 
             string dir = directoryInfo.FullName.Split(new []{"cardinfos"}, StringSplitOptions.None)[1];
             string imagePath = $"gainassets/cardinfos{dir}/{data["faceName"]}";
             faceElement = Futile.atlasManager.LoadImage(imagePath).elements[0];
             faceElementName = faceElement.name;
 
-            GainID = new GainID(data["gainID"]);
-            gainName = data["gainName"];
-            gainDescription = data["gainDescription"];
+            GainID = new GainID(data["gainID"].ToString());
+            GainType = Custom.ParseEnum<GainType>(data["gainType"].ToString());
+            GainProperty = Custom.ParseEnum<GainProperty>(data["gainProperty"].ToString());
+            triggerable = bool.Parse(data["triggerable"].ToString());
+            gainName = data["gainName"].ToString();
+            gainDescription = data["gainDescription"].ToString();
 
-            EmgTxCustom.Log($"CainStaticDataLoader : load static data:\nname : {gainName}\ndescription : {gainDescription}\nfaceName : {faceElementName}");
+            EmgTxCustom.Log($"CainStaticDataLoader : load static data:\nname : {gainName}\ntype : {GainType}\nproperty : {GainProperty}\ndescription : {gainDescription}\nfaceName : {faceElementName}");
         }
     }
 
