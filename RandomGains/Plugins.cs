@@ -44,20 +44,21 @@ namespace RandomGains
             //}
         }
 
+        private static bool load = false;
         private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
         {
             orig.Invoke(self);
             try
             {
-                GameHooks.HookOn();
-                //FLabelHooks.HookOn();
-
-                //LoadResources(self);
-
-                DeathPersistentSaveDataRx.AppplyTreatment(new GainSave(null));
-                BounceSpearGainHooks.HooksOn();
-                On.Player.Update += Player_Update;
-                //GainHookWarpper.WarpHook(new On.Player.hook_Update(Player_Update), null);//暂时写个null
+                if (!load)
+                {
+                    GameHooks.HookOn();
+                    DeathPersistentSaveDataRx.AppplyTreatment(new GainSave(null));
+                    BounceSpearGainHooks.HooksOn();
+                    On.Player.Update += Player_Update;
+                    update = t;
+                    load = true;
+                }
 
             }
 
@@ -67,6 +68,12 @@ namespace RandomGains
             }
         }
 
+        private Func<bool> update;
+
+        private bool t()
+        {
+            return false;
+        }
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
             orig.Invoke(self, eu);
@@ -92,12 +99,12 @@ namespace RandomGains
         }
     }
 
-    public class BounceSpearData : GainData
+    public class BounceSpearDataImpl : GainDataImpl
     {
 
     }
 
-    public class BounceSpearGain : Gain<BounceSpearGain, BounceSpearData>
+    public class BounceSpearGainImpl : GainImpl<BounceSpearGainImpl, BounceSpearDataImpl>
     {
 
     }
