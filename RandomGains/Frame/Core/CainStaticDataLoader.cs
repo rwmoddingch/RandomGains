@@ -60,6 +60,7 @@ namespace RandomGains.Frame.Core
         public readonly FAtlasElement faceElement;
         public readonly string gainName;
         public readonly string gainDescription;
+        public readonly Color color;
 
         public GainStaticData(DirectoryInfo directoryInfo, FileInfo jsonFile, RainWorld rainWorld){
             string text = File.ReadAllText(jsonFile.FullName);
@@ -67,7 +68,7 @@ namespace RandomGains.Frame.Core
 
             string dir = directoryInfo.FullName.Split(new []{"cardinfos"}, StringSplitOptions.None)[1];
             string imagePath = $"gainassets/cardinfos{dir}/{data["faceName"]}";
-            //faceElement = Futile.atlasManager.LoadImage(imagePath).elements[0];
+            faceElement = Futile.atlasManager.LoadImage(imagePath).elements[0];
             faceElementName = faceElement.name;
 
             GainID = new GainID(data["gainID"].ToString());
@@ -76,6 +77,11 @@ namespace RandomGains.Frame.Core
             triggerable = bool.Parse(data["triggerable"].ToString());
             gainName = data["gainName"].ToString();
             gainDescription = data["gainDescription"].ToString();
+
+            color = Color.white;
+            if(data.TryGetValue("color",out var colorVal)){
+                ColorUtility.TryParseHtmlString(colorVal.ToString(), out color);
+            }
 
             EmgTxCustom.Log($"CainStaticDataLoader : load static data:\nname : {gainName}\ntype : {GainType}\nproperty : {GainProperty}\ndescription : {gainDescription}\nfaceName : {faceElementName}");
         }

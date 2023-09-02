@@ -59,7 +59,7 @@
       <HintPath>..\includings\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Rain World\RainWorld_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>..\includings\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
