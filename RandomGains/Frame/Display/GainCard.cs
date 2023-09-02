@@ -11,90 +11,180 @@ using static RewiredConsts.Layout;
 using Random = UnityEngine.Random;
 namespace RandomGains.Frame
 {
-    public class GainCardTexture
-    {
-        class GainCardImpl : MonoBehaviour
-        {
-            public GainCardImpl()
-            {
-            }
-
-            public void Update()
-            {
-                rotation += Time.deltaTime * 10;
-                card.cardObject.transform.rotation = Quaternion.Euler(0, rotation, 0);
-            }
-
-            public float rotation;
-            public GainCardTexture card;
-        }
-
-        public void Destroy()
-        {
-            GameObject.Destroy(cardObject);
-            GameObject.Destroy(cameraObject);
-            RenderTexture.ReleaseTemporary(Texture);
-            Texture = null;
-        }
-
-    
-
-
-        public GainCardTexture()
-        {
-            count++;
-
-            cardObject = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            cardObject.GetComponent<MeshRenderer>().sharedMaterial =
-                new Material(Custom.rainWorld.Shaders["Basic"].shader);
-           cameraObject = new GameObject("GainCard_Camera");
-
-            camera = cameraObject.AddComponent<Camera>();
-            
-            cameraObject.AddComponent<Transform>();
-            camera.targetTexture = Texture;
-
-            gainCard = cardObject.AddComponent<GainCardImpl>();
-            gainCard.card = this;
-            cardObject.AddComponent<Transform>();
-
-            cameraObject.transform.position = new Vector3( count * 700, -10000f, -100f);
-            cardObject.transform.position = new Vector3(count * 700, -10000f, -100f + 2f);
-            cardObject.transform.localScale = new Vector3(0.6f, 1f);
-            
-        }
-
-        public RenderTexture Texture { get; private set; } = RenderTexture.GetTemporary(500, 300);
-
-        private Camera camera;
-        private GainCardImpl gainCard;
-
-        private GameObject cardObject;
-        private GameObject cameraObject;
-
-        private static int count = 0;
-    }
-    
+   
+    /// <summary>
+    /// 渲染部分
+    /// </summary>
     internal partial class GainCard
     {
-        public FContainer container;
-        FSprite[] sprites;
-        FCustomLabel label;
+        public class GainCardTexture
+        {
 
-        Color color;
+            public void Destroy()
+            {
+                GameObject.Destroy(cardObjectA);
+                GameObject.Destroy(cardObjectB);
+                GameObject.Destroy(cameraObject);
+                RenderTexture.ReleaseTemporary(Texture);
+                Texture = null;
+            }
+
+
+            public GainCardTexture()
+            {
+                count++;
+
+            
+                cameraObject = new GameObject("GainCard_Camera");
+
+                camera = cameraObject.AddComponent<Camera>();
+
+                cameraObject.AddComponent<Transform>();
+                camera.targetTexture = Texture;
+
+                cardObjectA = CreateRenderQuad(true);
+                cardObjectB = CreateRenderQuad(false);
+
+                titleObject = CreateTextMesh(true, Resources.GetBuiltinResource<Font>("Arial.ttf"));
+                descObject = CreateTextMesh(false, Resources.GetBuiltinResource<Font>("Arial.ttf"),0.7f,Color.white);
+                cameraObject.transform.position = CurrentSetPos;
+
+                Title = "测试卡牌";
+                Description = "卡片内容因何而发生？ 一般来讲，我们都必须务必慎重的考虑考虑。 我认为， 现在，解决卡片内容的问题，是非常非常重要的";
+            }
+
+            private GameObject CreateRenderQuad(bool isSideA)
+            {
+                var re = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                re.GetComponent<MeshRenderer>().sharedMaterial = new Material(Custom.rainWorld.Shaders["Basic"].shader);
+                if (!isSideA)
+                {
+                    re.GetComponent<MeshRenderer>().material.SetTexture("_MainTex",
+                        Futile.atlasManager.GetAtlasWithName(Plugins.MoonBack).texture);
+
+                }
+                re.transform.position = CurrentSetPos + new Vector3(0,0, 1.3f);
+                re.transform.localScale = new Vector3(0.6f* (isSideA ? 1 : -1f) , 1f,1f);
+                return re;
+            }
+
+            private GameObject CreateTextMesh(bool isSideA, Font font, float size = 1f, Color? color = null, string text = "")
+            {
+                var re = new GameObject("GainCard_Text");
+                re.AddComponent<Transform>();
+                re.transform.parent = cardObjectA.transform;
+                re.transform.localPosition = new Vector3(0, (isSideA ? -1 : 1) * 0.5f, -0.01f * (isSideA ? 1 : -1));
+                re.AddComponent<TextMesh>().font = font;
+                re.GetComponent<TextMesh>().text = text;
+                re.GetComponent<TextMesh>().anchor = isSideA ? TextAnchor.LowerCenter : TextAnchor.UpperCenter;
+                re.GetComponent<TextMesh>().alignment = (isSideA ? TextAlignment.Center : TextAlignment.Left);
+                re.GetComponent<TextMesh>().fontSize = 100;
+                if (!color.HasValue) color = Color.black;
+                re.GetComponent<TextMesh>().color = color.Value;
+                re.GetComponent<TextMesh>().characterSize = 0.01f * size;
+                re.AddComponent<MeshRenderer>();
+                re.GetComponent<MeshRenderer>().material.renderQueue = 3998 + (isSideA ? 0 : 1);
+                re.transform.localScale = new Vector3((isSideA ? 1 : -1f) / 0.6f, 1f, 1f);
+
+                return re;
+            }
+
+            private string LayoutText(string text,Font font, float characterSize, int fontSize, FontStyle style)
+            {
+                font.RequestCharactersInTexture(text, fontSize, style);
+                StringBuilder builder = new StringBuilder();
+                float width = 0;
+                foreach (var c in text)
+                {
+                    if (font.GetCharacterInfo(c, out var info, fontSize))
+                    {
+                        var currentSize = info.advance * characterSize * 0.1f / 0.6f;
+                        if (width + currentSize > 1)
+                        {
+                            width = 0;
+                            builder.Append('\n');
+                        }
+
+                        builder.Append(c);
+                        width += currentSize;
+                    }
+                }
+
+                return builder.ToString();
+            }
+
+            private Vector3 CurrentSetPos => new Vector3(count * 10 + 100f, -100f, -100f);
+
+            /// <summary>
+            /// 渲染贴图
+            /// </summary>
+            public RenderTexture Texture { get; private set; } = RenderTexture.GetTemporary(900, 540);
+
+            public Vector3 Rotation
+            {
+                get => cardObjectA.transform.rotation.eulerAngles;
+                set
+                {
+                    cardObjectB.transform.rotation = Quaternion.Euler(value.x, value.y, value.z);
+                    cardObjectA.transform.rotation = Quaternion.Euler(value.x, value.y, value.z);
+                }
+            }
+
+            public bool IsSideA
+            {
+                get => cardObjectA.GetComponent<MeshRenderer>().enabled;
+
+                set
+                {
+                    cardObjectA.GetComponent<MeshRenderer>().enabled = value;
+                    titleObject.GetComponent<MeshRenderer>().enabled = value;
+                    cardObjectB.GetComponent<MeshRenderer>().enabled = !value;
+                    descObject.GetComponent<MeshRenderer>().enabled = !value;
+                }
+            }
+
+            public string Title
+            {
+                get => titleObject.GetComponent<TextMesh>().text;
+                set => titleObject.GetComponent<TextMesh>().text = value;
+            }
+
+            public string Description
+            {
+                get => descObject.GetComponent<TextMesh>().text;
+                set
+                {
+                    var mesh = descObject.GetComponent<TextMesh>();
+                    mesh.text = LayoutText(value, mesh.font,mesh.characterSize,mesh.fontSize,mesh.fontStyle);
+                } 
+            }
+
+            public void UpdateVisible()
+            {
+                IsSideA = cardObjectA.transform.forward.z > 0;
+            }
+            private Camera camera;
+
+            private GameObject cardObjectA, cardObjectB;
+            private GameObject titleObject, descObject;
+            private GameObject cameraObject;
+
+            private static int count = 0;
+        }
+
+
 
         public GainCard()
         {
             container = new FContainer();
+            cardTexture = new GainCardTexture();
         }
+
 
         public FContainer InitiateSprites(bool autoAddContainer = true)
         {
-            sprites = new FSprite[2];
-
-            sprites[0] = new CustomFSprite("pixel");
-            sprites[1] = new CustomFSprite(Plugins.MoonBack);
-            label = new FCustomLabel(Custom.GetDisplayFont(), "测试卡牌");
+            sprites = new FSprite[1];
+            sprites[0] = new FTexture(cardTexture.Texture);
             if (autoAddContainer)
                 AddToContainer(null);
             return container;
@@ -107,8 +197,6 @@ namespace RandomGains.Frame
 
             foreach(var sprite in sprites) 
                 container.AddChild(sprite);
-            container.AddChild(label);
-            label.MoveToFront();
         }
 
         public void Update()
@@ -117,161 +205,107 @@ namespace RandomGains.Frame
             InputUpdate();
         }
 
-        public void DrawSprites(float timestacker)
+        public void DrawSprites(float timeStacker)
         {
-            (sprites[0] as CustomFSprite).isVisible = SideA;
-            for (int i = 0; i < 4; i++)
-            {
-                (sprites[0] as CustomFSprite).MoveVertice(i, GetReferenceVertice(i, timestacker));
-                (sprites[0] as CustomFSprite).verticeColors[i] = color;
-            }
-
-            (sprites[1] as CustomFSprite).isVisible = SideB;
-            for (int i = 0; i < 4; i++)
-            {
-                (sprites[1] as CustomFSprite).MoveVertice(i, GetReferenceVertice(i, timestacker));
-                (sprites[1] as CustomFSprite).verticeColors[i] = Color.white * Light;
-            }
-
-            label.isVisible = SideA;
-            label.SetVertice(0, GetReferenceVertice(3, timestacker));
-            label.SetVertice(1, GetReferenceVertice(0, timestacker) * 0.2f + GetReferenceVertice(3, timestacker) * 0.8f);
-            label.SetVertice(2, GetReferenceVertice(1, timestacker) * 0.2f + GetReferenceVertice(2, timestacker) * 0.8f);
-            label.SetVertice(3, GetReferenceVertice(2, timestacker));
-            label.color = Color.black;
-            container.RemoveFromContainer();
-            foreach(var sprite in sprites)
-            {
-                sprite.RemoveFromContainer();
-            }
+            sprites[0].SetPosition(Vector2.Lerp(lastPos,pos,timeStacker));
         }
+
+        public void Destroy()
+        {
+            cardTexture.Destroy();
+            container.RemoveAllChildren();
+        }
+
+        public FContainer container;
+        FSprite[] sprites;
+        public GainCardTexture cardTexture;
     }
 
     internal partial class GainCard
     {
-        public float size;
-
-        public bool SideA { get; private set; }//卡牌A面是否渲染
-        public bool SideB { get; private set; }//卡牌B面是否渲染
-
-        public Vector2 lastPos;
-        public Vector2 pos;
-
-        public float Light { get; private set; }
-        Vector3 _norm;
-
-        Vector3 _mouseOnRotationLast;
-        Vector3 _mouseOnRotation;
-        Vector3 _mouseOnRotationSmooth;
-
-        Vector3 _rotation;
-        Vector3 Rotation
-        {
-            get => _rotation + _mouseOnRotationSmooth;
-            set
-            {
-                if (_rotation == value)
-                    return;
-                _rotation = value;
-                _isRotationDirty = true;
-            }
-        }
-
-        //12
-        //43
-        Vector3[] origVertices = new Vector3[4] { new Vector3(-3, 5, 0f), new Vector3(3, 5, 0f), new Vector3(3, -5, 0f), new Vector3(-3, -5, 0f) };
-        Vector3[] vertices = new Vector3[4];
-        Vector3[] lastVertices = new Vector3[4];
-        
-        bool _isRotationDirty = true;
-
+   
         public void RotateUpdate()
         {
-            for(int i = 0; i < 4; i++)
-                lastVertices[i] = vertices[i];
-
             _mouseOnRotationLast = _mouseOnRotationSmooth;
             _mouseOnRotationSmooth = Vector3.Lerp(_mouseOnRotationLast, _mouseOnRotation, 0.2f);
 
+            rotationLerp = Vector3.Lerp(rotationLerp, rotation, 0.2f);
+
             lastPos = pos;
 
-            if (_isRotationDirty)
-                Update3DVertices();
+            cardTexture.UpdateVisible();
+            cardTexture.Rotation = Rotation;
         }
 
-        public void Update3DVertices()
-        {
-            for(int i = 0;i < 4; i++)
-            {
-                Vector3 v = origVertices[i];
 
-                v = RotateRound(v, Vector3.forward, Rotation.z, Vector3.zero);
-                v = RotateRound(v, Vector3.right, Rotation.x, Vector3.zero);
-                v = RotateRound(v, Vector3.up, Rotation.y, Vector3.zero);
-
-                //apply sim perspective
-                Vector3 delta = v * 0.005f * v.magnitude * v.z;
-                v += delta;
-
-                vertices[i] = v;
-            }
-
-            _norm = Vector3.Cross((vertices[1] - vertices[0]), (vertices[3] - vertices[0])).normalized;
-            SideA = _norm.z < 0;
-            SideB = _norm.z >= 0;
-
-            Light = Vector3.Dot(_norm, new Vector3(0f, 0f, 1f));
-
-            _isRotationDirty = false;
-        }
-
-        public Vector3 RotateRound(Vector3 position, Vector3 axis, float angle, Vector3 center)
-        {
-            return Quaternion.AngleAxis(angle, axis) * (position - center) + center;
-        }
-
-        public Vector2 GetReferenceVertice(int index, float timestacker)
-        {
-            Vector3 smoothed = Vector3.Lerp(lastVertices[index], vertices[index], timestacker);
-            return new Vector2(smoothed.x, smoothed.y) * size + Vector2.Lerp(lastPos, pos, timestacker);
-        }
 
         public Vector2 GetFrameVertice(int index)
         {
             return new Vector2(origVertices[index].x, origVertices[index].y) * size + pos;
         }
+
+        public float size;
+
+        public Vector2 lastPos;
+        public Vector2 pos;
+
+        public float Light { get; private set; }
+
+        private Vector3 _mouseOnRotationLast;
+        private Vector3 _mouseOnRotation;
+        private Vector3 _mouseOnRotationSmooth;
+
+        private Vector3 rotation;
+        private Vector3 rotationLerp;
+        private Vector3 Rotation
+        {
+            get => rotationLerp + _mouseOnRotationSmooth;
+            set
+            {
+                if (rotation == value)
+                    return;
+                rotation = value;
+            }
+        }
+
+        //12
+        //43
+        private Vector3[] origVertices = new Vector3[4] { new Vector3(-3, 5, 0f), new Vector3(3, 5, 0f), new Vector3(3, -5, 0f), new Vector3(-3, -5, 0f) };
+
     }
 
+    /// <summary>
+    /// 输入部分
+    /// </summary>
     internal partial class GainCard
     {
-        public event Action OnMouseCardClick;
-        public event Action OnMoueCardEnter;
-        public event Action OnMoueCardExit;
-        public event Action OnMoueCardUpdate;
-
-        public Vector2 MouseLocalPos { get; private set; }
-
-        bool _lastMouseInside;
-        public bool MouseInside { get; private set; }
-
-        int remainMoveCounter;
-
+        
         public void InputUpdate()
         {
-            _lastMouseInside = MouseInside;
+            lastMouseInside = MouseInside;
+            lastClick = click;
+
+            click = Input.GetMouseButton(0);
             MouseInside = CheckMouseInside();
 
-            if (MouseInside && !_lastMouseInside && OnMoueCardEnter != null)
+            if (MouseInside && !lastMouseInside && OnMoueCardEnter != null)
                 OnMoueCardEnter.Invoke();
-            if (!MouseInside && _lastMouseInside && OnMoueCardExit != null)
+            if (!MouseInside && lastMouseInside && OnMoueCardExit != null)
                 OnMoueCardExit.Invoke();
-
-            color = MouseInside ? Color.red : Color.white;
+            if (!lastClick && click)
+            {
+                MouseOnClick();
+                OnMouseCardClick?.Invoke();
+            }
 
             MouseOnAnim();
         }
 
-        void MouseOnAnim()
+        private void MouseOnClick()
+        {
+            Rotation = cardTexture.IsSideA ? new Vector3(0, 180, 0) : new Vector3(0, 0, 0);
+        }
+        private void MouseOnAnim()
         {
             if (remainMoveCounter > 0)
                 remainMoveCounter--;
@@ -279,8 +313,7 @@ namespace RandomGains.Frame
                 remainMoveCounter = 20;
 
             Vector2 midMousePos = MouseInside ? MouseLocalPos - new Vector2(0.5f, 0.5f) : Vector2.zero;
-            _mouseOnRotation = new Vector3(-360 * midMousePos.x, 360 * midMousePos.y, 0f);
-            _isRotationDirty = _isRotationDirty || (remainMoveCounter > 0);
+            _mouseOnRotation = new Vector3(-20 * midMousePos.x, 20 * midMousePos.y, 0f);
         }
 
         bool CheckMouseInside()
@@ -319,5 +352,20 @@ namespace RandomGains.Frame
         {
             return Vector3.Dot(Vector3.Cross((a - b), (mouse - b)), norm) > 0f;
         }
+
+        public event Action OnMouseCardClick;
+        public event Action OnMoueCardEnter;
+        public event Action OnMoueCardExit;
+        public event Action OnMoueCardUpdate;
+
+        public Vector2 MouseLocalPos { get; private set; }
+
+        private bool lastMouseInside;
+        public bool MouseInside { get; private set; }
+
+        private int remainMoveCounter;
+
+        private bool lastClick;
+        private bool click;
     }
 }

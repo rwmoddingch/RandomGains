@@ -61,7 +61,7 @@ namespace RandomGains.Frame.Core
 
             string dir = directoryInfo.FullName.Split(new []{"cardinfos"}, StringSplitOptions.None)[1];
             string imagePath = $"gainassets/cardinfos{dir}/{data["faceName"]}";
-            faceElement = Futile.atlasManager.LoadImage(imagePath).elements[0];
+            //faceElement = Futile.atlasManager.LoadImage(imagePath).elements[0];
             faceElementName = faceElement.name;
 
             GainID = new GainID(data["gainID"]);

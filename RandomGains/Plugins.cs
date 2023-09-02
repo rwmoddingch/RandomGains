@@ -30,16 +30,16 @@ namespace RandomGains
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.A))
-            {
-                if (Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game &&
-                    game.AlivePlayers[0].realizedCreature is Player player &&
-                    player.room != null)
-                {
-                    player.room.AddObject(new Test(player));
-                    Debug.Log("[SSSS] Add Test");
-                }
-            }
+            //if (Input.GetKeyDown(KeyCode.A))
+            //{
+            //    if (Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game &&
+            //        game.AlivePlayers[0].realizedCreature is Player player &&
+            //        player.room != null)
+            //    {
+            //        player.room.AddObject(new Test(player));
+            //        Debug.Log("[SSSS] Add Test");
+            //    }
+            //}
         }
 
         private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
@@ -66,8 +66,8 @@ namespace RandomGains
         public static void LoadResources(RainWorld rainWorld)
         {
             MoonBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/moonback").elements[0].name;
-            FPBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/fpback").elements[0].name;
-            SlugBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/slugback").elements[0].name;
+            //FPBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/fpback").elements[0].name;
+            //SlugBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/slugback").elements[0].name;
 
             CainStaticDataLoader.Load(rainWorld);
         }
@@ -83,37 +83,4 @@ namespace RandomGains
 
     }
 
-    public class Test : CosmeticSprite
-    {
-        public Test(Player player)
-        {
-            card = new GainCardTexture();
-            pos = player.DangerPos;
-        }
-
-        private Vector2 pos;
-        private GainCardTexture card;
-        public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
-        {
-            base.InitiateSprites(sLeaser, rCam);
-            sLeaser.sprites = new FSprite[2];
-            sLeaser.sprites[0] = new FTexture(card.Texture){scale = 1};
-            sLeaser.sprites[1] = new FSprite("Futile_White");
-            AddToContainer(sLeaser,rCam,null);
-        }
-
-        public override void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
-        {
-            base.DrawSprites(sLeaser, rCam, timeStacker, camPos);
-            sLeaser.sprites[0].SetPosition(pos - camPos);
-            sLeaser.sprites[1].SetPosition(pos - camPos);
-
-        }
-
-        public override void Destroy()
-        {
-            base.Destroy();
-            card.Destroy();
-        }
-    }
 }
