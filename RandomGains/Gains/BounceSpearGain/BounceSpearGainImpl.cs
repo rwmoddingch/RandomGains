@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace RandomGains.Gains.BounceSpearGain
 {
-    internal class BounceSpearGainData : GainData
+    internal class BounceSpearGainDataImpl : GainDataImpl
     {
         int cycleLeft;
 
@@ -41,7 +41,7 @@ namespace RandomGains.Gains.BounceSpearGain
             return cycleLeft.ToString();
         }
     }
-    internal class BounceSpearGain : Gain<BounceSpearGain, BounceSpearGainData>
+    internal class BounceSpearGainImpl : GainImpl<BounceSpearGainImpl, BounceSpearGainDataImpl>
     {
         public override GainID ID => BounceSpearGainHooks.bounceSpearID;
 
@@ -57,7 +57,7 @@ namespace RandomGains.Gains.BounceSpearGain
 
         public static void HooksOn()
         {
-            GainRegister.RegisterGain(bounceSpearID, typeof(BounceSpearGain), typeof(BounceSpearGainData));
+            GainRegister.RegisterGain(bounceSpearID, typeof(BounceSpearGainImpl), typeof(BounceSpearGainDataImpl));
             GainHookWarpper.WarpHook(new On.Spear.hook_LodgeInCreature(Spear_LodgeInCreature), bounceSpearID);
         }
 

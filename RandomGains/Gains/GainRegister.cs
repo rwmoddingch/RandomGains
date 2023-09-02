@@ -55,15 +55,23 @@ namespace RandomGains.Gains
         static void BuildID(GainID id)
         {
             var staticData = GainStaticDataLoader.GetStaticData(id);
-            typeToIDMapping[staticData.GainType].Add(id);
-            idToTypeMapping.Add(id, staticData.GainType);
-            typeToGainPropertyMapping[staticData.GainProperty].Add(id);
-            idToGainPropertyMapping.Add(id, staticData.GainProperty);
+            //TODO : Debug
+            typeToIDMapping[GainType.Positive].Add(id);
+            idToTypeMapping.Add(id, GainType.Positive);
+            typeToGainPropertyMapping[GainProperty.Normal].Add(id);
+            idToGainPropertyMapping.Add(id, GainProperty.Normal);
+
+            //typeToIDMapping[staticData.GainType].Add(id);
+            //idToTypeMapping.Add(id, staticData.GainType);
+            //typeToGainPropertyMapping[staticData.GainProperty].Add(id);
+            //idToGainPropertyMapping.Add(id, staticData.GainProperty);
         }
 
         class GainConflict
         {
             
         }
+
     }
+
 }

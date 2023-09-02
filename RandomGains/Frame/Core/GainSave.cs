@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 using UnityEngine;
 using CustomSaveTx;
 using BepInEx;
+using MonoMod.Utils;
+using Mono.Cecil.Cil;
+using Mono.Cecil;
+using OpCodes = System.Reflection.Emit.OpCodes;
 
 namespace RandomGains.Frame.Core
 {
@@ -17,8 +21,8 @@ namespace RandomGains.Frame.Core
         public static GainSave Singleton { get; private set; }
         public override string header => "GAINSAVE";
 
-        static Dictionary<GainID, Func<GainData>> dataCtors = new Dictionary<GainID, Func<GainData>>();
 
+        static Dictionary<GainID, Func<GainData>> dataCtors = new Dictionary<GainID, Func<GainData>>();
         public List<GainData> gainDatas = new List<GainData>();
         public Dictionary<GainID, GainData> dataMapping = new Dictionary<GainID, GainData>();
 
@@ -29,16 +33,6 @@ namespace RandomGains.Frame.Core
             Singleton = this;
         }
 
-        void ClearState()
-        {
-            for (int i = gainDatas.Count - 1; i >= 0; i--)
-            {
-                RemoveData(gainDatas[i].GainID);
-            }
-            dataMapping.Clear();
-            gainDatas.Clear();
-        }
-
         public override void ClearDataForNewSaveState(SlugcatStats.Name newSlugName)
         {
             base.ClearDataForNewSaveState(newSlugName);
@@ -46,6 +40,15 @@ namespace RandomGains.Frame.Core
             ClearState();
         }
 
+        void ClearState()
+        {
+            for (int i = gainDatas.Count - 1; i >= 0; i--)
+            {
+                RemoveData(gainDatas[i].getGainID());
+            }
+            dataMapping.Clear();
+            gainDatas.Clear();
+        }
         public override string SaveToString(bool saveAsIfPlayerDied, bool saveAsIfPlayerQuit)
         {
             if(saveAsIfPlayerDied || saveAsIfPlayerQuit)
@@ -57,7 +60,7 @@ namespace RandomGains.Frame.Core
             stringBuilder.Append("ThisIsAPlaceholder<dpC>");
             foreach(var mapping in dataMapping)
             {
-                stringBuilder.Append($"{mapping.Key.value}<dpD>{mapping.Value.stackLayer}<dpD>{mapping.Value}<dpC>");
+                stringBuilder.Append($"{mapping.Key.value}<dpD>{mapping.Value.StackLayer}<dpD>{mapping.Value}<dpC>");
             }
 
             return stringBuilder.ToString();
@@ -84,8 +87,8 @@ namespace RandomGains.Frame.Core
 
                     GainID id = new GainID(slicedData[0]);
                     var newGainData = GetData(id);
-                    newGainData.stackLayer = int.Parse(slicedData[1]);
-                    newGainData.ParseData(slicedData[2]);
+                    newGainData.StackLayer = int.Parse(slicedData[1]);
+                    newGainData.onParseData(slicedData[2]);
                 }
                 catch (Exception ex)
                 {
@@ -102,7 +105,7 @@ namespace RandomGains.Frame.Core
 
             for(int i = gainDatas.Count - 1; i >= 0; i--)
             {
-                if (gainDatas[i].SteppingCycle())
+                if (gainDatas[i].onSteppingCycle())
                 {
                     RemoveData(gainDatas[i].GainID);
                 }
@@ -110,16 +113,6 @@ namespace RandomGains.Frame.Core
             stepLocker = true;
         }
 
-        /// <summary>
-        /// 获取id对应的GainData实例。如果不存在该实例，则创建一个
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public T GetData<T>(GainID id) where T : GainData
-        {
-            return (T)GetData(id);
-        }
         /// <summary>
         /// 获取id对应的GainData实例。如果不存在该实例，则创建一个
         /// </summary>
@@ -131,7 +124,7 @@ namespace RandomGains.Frame.Core
             {
                 dataMapping.Add(id, value = InitProperData(id));
                 gainDatas.Add(value);
-                value.Init();
+                value.onInit();
             }
             return value;
         }
@@ -173,8 +166,65 @@ namespace RandomGains.Frame.Core
         {
             if (dataCtors.ContainsKey(gainID))
                 return;
+            if (type.GetConstructor(Type.EmptyTypes) == null)
+            {
+                Debug.LogException(new Exception($"{type.Name} must has a non-arg constructor"));
+                return;
+            }
+            try
+            {
+                DynamicMethodDefinition method =
+                    new DynamicMethodDefinition($"GainDataCtor_{gainID}", typeof(Gain), Type.EmptyTypes);
 
-            dataCtors.Add(gainID, GainCustom.GetTypeCtor<Func<GainData>>(type));
+           
+                var ilGenerator = method.GetILGenerator();
+                ilGenerator.DeclareLocal(typeof(GainData));
+                ilGenerator.DeclareLocal(type);
+                ilGenerator.Emit(OpCodes.Newobj, typeof(GainData).GetConstructor(Type.EmptyTypes));
+                ilGenerator.Emit(OpCodes.Stloc_0);
+                ilGenerator.Emit(OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));
+                ilGenerator.Emit(OpCodes.Stloc_1);
+                ilGenerator.Emit(OpCodes.Ldloc_0);
+                ilGenerator.Emit(OpCodes.Ldloc_1);
+                ilGenerator.Emit(OpCodes.Stfld, typeof(GainData).GetField("dataImpl"));
+                EmitFunction(ilGenerator, type, "ParseData", new[] { typeof(string) });
+                EmitFunction(ilGenerator, type, "SteppingCycle", Type.EmptyTypes);
+                EmitFunction(ilGenerator, type, "UnStack", Type.EmptyTypes);
+                EmitFunction(ilGenerator, type, "CanStackMore", Type.EmptyTypes);
+                EmitFunction(ilGenerator, type, "Init", Type.EmptyTypes);
+                EmitFunction(ilGenerator, type.GetProperty("GainID").GetGetMethod(), "getGainID");
+                EmitFunction(ilGenerator, type.GetProperty("stackLayer").GetSetMethod(), "setStackLayer");
+                EmitFunction(ilGenerator, type.GetProperty("stackLayer").GetGetMethod(), "getStackLayer");
+                ilGenerator.Emit(OpCodes.Ldloc_0);
+                ilGenerator.Emit(OpCodes.Ret);
+                var ctorDeg = method.Generate().GetFastDelegate().CastDelegate<Func<GainData>>();
+                dataCtors.Add(gainID, ctorDeg);
+                //foreach (var a in method.Definition.Body.Instructions)
+                //    Debug.Log($"{a}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
+
+        }
+
+        private static void EmitFunction(ILGenerator ilGenerator, Type type, string funcName, Type[] param)
+        {
+            if(type.GetMethod(funcName, param) == null)
+                throw new Exception($"Can't find function named {funcName}");
+            EmitFunction(ilGenerator,  type.GetMethod(funcName, param), $"on{funcName}");
+        }
+
+        private static void EmitFunction(ILGenerator ilGenerator, MethodInfo info, string funcName)
+        {
+            if (typeof(GainData).GetField(funcName) == null)
+                throw new Exception($"Can't find field named {funcName}");
+            ilGenerator.Emit(OpCodes.Ldloc_0);
+            ilGenerator.Emit(OpCodes.Ldloc_1);
+            ilGenerator.Emit(OpCodes.Ldftn, info);
+            ilGenerator.Emit(OpCodes.Newobj, typeof(GainData).GetField(funcName).FieldType.GetConstructor(new []{typeof(object), typeof(IntPtr)}));
+            ilGenerator.Emit(OpCodes.Stfld, typeof(GainData).GetField(funcName));
         }
     }
 }
