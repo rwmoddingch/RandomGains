@@ -3,13 +3,16 @@ using RandomGains.Frame.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using UnityEngine;
 
 namespace RandomGains.Gains.BounceSpearGain
 {
-    internal class BounceSpearGainDataImpl : GainDataImpl
+    internal class BounceSpearGainData : GainDataImpl
     {
         int cycleLeft;
 
@@ -41,7 +44,7 @@ namespace RandomGains.Gains.BounceSpearGain
             return cycleLeft.ToString();
         }
     }
-    internal class BounceSpearGainImpl : GainImpl<BounceSpearGainImpl, BounceSpearGainDataImpl>
+    internal class BounceSpearGain : GainImpl<BounceSpearGain, BounceSpearGainData>
     {
         public override GainID ID => BounceSpearGainHooks.bounceSpearID;
 
@@ -55,10 +58,29 @@ namespace RandomGains.Gains.BounceSpearGain
     {
         public static GainID bounceSpearID = new GainID("BounceSpear", true);
 
-        public static void HooksOn()
+        public static void Register()
         {
-            GainRegister.RegisterGain(bounceSpearID, typeof(BounceSpearGainImpl), typeof(BounceSpearGainDataImpl));
-            GainHookWarpper.WarpHook(new On.Spear.hook_LodgeInCreature(Spear_LodgeInCreature), bounceSpearID);
+            GainRegister.RegisterGain<BounceSpearGain,BounceSpearGainData, BounceSpearGainHooks>(bounceSpearID);
+        }
+
+        public static void HookOn()
+        {
+            On.Spear.LodgeInCreature += Spear_LodgeInCreature;
+            IL.Player.Update += Player_Update;
+            Hook newHook = new Hook(typeof(Player).GetProperty("isRivulet").GetGetMethod(),
+                typeof(BounceSpearGainHooks).GetMethod("Player_IsRiv", BindingFlags.Static | BindingFlags.NonPublic));
+
+        }
+
+        private static bool Player_IsRiv(Func<Player, bool> orig, Player self)
+        {
+            return true;
+        }
+
+        private static void Player_Update(MonoMod.Cil.ILContext il)
+        {
+            ILCursor c = new ILCursor(il);
+            c.EmitDelegate<Action>(() => Debug.Log("Sdsdsd"));
         }
 
         private static void Spear_LodgeInCreature(On.Spear.orig_LodgeInCreature orig, Spear self, SharedPhysics.CollisionResult result, bool eu)

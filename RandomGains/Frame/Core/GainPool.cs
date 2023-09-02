@@ -181,6 +181,7 @@ namespace RandomGains.Frame.Core
 
         }
 
+
         private static void ILLog(ILGenerator ilGenerator, string message)
         {
             ilGenerator.Emit(OpCodes.Ldstr,"[IL] "+message);

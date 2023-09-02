@@ -45,10 +45,33 @@ namespace RandomGains.Gains
         /// <param name="gainType">增益类的类型</param>
         /// <param name="dataType">增益数据的类型</param>
         /// <param name="conflicts"></param>
-        public static void RegisterGain(GainID id, Type gainType, Type dataType, GainID[] conflicts = null)
+        public static void RegisterGain(GainID id, Type gainType, Type dataType,Type hookType = null, GainID[] conflicts = null)
         {
             GainSave.RegisterGainData(id, dataType);
             GainPool.RegisterGain(id, gainType);
+            if(hookType != null)
+                GainHookWarpper.RegisterHook(id, hookType);
+            BuildID(id);
+        }
+
+        /// <summary>
+        /// 注册新的增益
+        /// </summary>
+        public static void RegisterGain<GainType,DataType,HookType>(GainID id, GainID[] conflicts = null)
+        {
+            GainSave.RegisterGainData(id, typeof(DataType));
+            GainPool.RegisterGain(id, typeof(GainType));
+            GainHookWarpper.RegisterHook(id, typeof(HookType));
+            BuildID(id);
+        }
+
+        /// <summary>
+        /// 注册新的增益
+        /// </summary>
+        public static void RegisterGain<GainType, DataType>(GainID id, GainID[] conflicts = null)
+        {
+            GainSave.RegisterGainData(id, typeof(DataType));
+            GainPool.RegisterGain(id, typeof(GainType));
             BuildID(id);
         }
 

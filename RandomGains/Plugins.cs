@@ -9,6 +9,8 @@ using System.Linq;
 using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using RandomGains.Frame;
 using RWCustom;
 using UnityEngine;
@@ -44,6 +46,8 @@ namespace RandomGains
             //}
         }
 
+        
+
         private static bool load = false;
         private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
         {
@@ -54,9 +58,8 @@ namespace RandomGains
                 {
                     GameHooks.HookOn();
                     DeathPersistentSaveDataRx.AppplyTreatment(new GainSave(null));
-                    BounceSpearGainHooks.HooksOn();
+                    BounceSpearGainHooks.Register();
                     On.Player.Update += Player_Update;
-                    update = t;
                     load = true;
                 }
 
@@ -68,12 +71,6 @@ namespace RandomGains
             }
         }
 
-        private Func<bool> update;
-
-        private bool t()
-        {
-            return false;
-        }
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
             orig.Invoke(self, eu);
@@ -84,9 +81,27 @@ namespace RandomGains
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
+                EmgTxCustom.Log("Plugins : Left Control pressed");
                 GainHookWarpper.DisableGain(BounceSpearGainHooks.bounceSpearID);
             }
 
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                EmgTxCustom.Log("Plugins : Add ILHook");
+                IL.Player.Update += Player_Update1;
+            }
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                IL.Player.Update -= Player_Update1;
+                EmgTxCustom.Log("Plugins : Remove ILHook");
+            }
+
+        }
+
+        private void Player_Update1(MonoMod.Cil.ILContext il)
+        {
+            //ILCursor c = new ILCursor(il);
+            //c.EmitDelegate<Action>(() => Debug.Log("sdsdsd"));
         }
 
         public static void LoadResources(RainWorld rainWorld)
@@ -99,14 +114,6 @@ namespace RandomGains
         }
     }
 
-    public class BounceSpearDataImpl : GainDataImpl
-    {
 
-    }
-
-    public class BounceSpearGainImpl : GainImpl<BounceSpearGainImpl, BounceSpearDataImpl>
-    {
-
-    }
 
 }
