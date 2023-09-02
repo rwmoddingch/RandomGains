@@ -10,7 +10,7 @@ namespace RandomGains.Frame.Core
 {
     internal static class GainHookWarpper
     {
-        static Dictionary<GainID, List<OnHookAddRemove>> registedHooks;
+        static Dictionary<GainID, List<OnHookAddRemove>> registedHooks = new Dictionary<GainID, List<OnHookAddRemove>>();
         public static void WarpHook<T>(T del, GainID id) where T : Delegate
         {
             if (id == GainID.None)
@@ -21,7 +21,6 @@ namespace RandomGains.Frame.Core
             var eventlst = typeof(T).DeclaringType.GetEvents();
             foreach(var eventInfo in eventlst)
             {
-                EmgTxCustom.Log(eventInfo.Name);
                 if (eventInfo.EventHandlerType == typeof(T))
                 {
                     var add = new Action(() => { eventInfo.GetAddMethod().Invoke(null, new object[] { del }); });
@@ -33,6 +32,7 @@ namespace RandomGains.Frame.Core
                         registedHooks.Add(id, lst);
                     }
                     lst.Add(new OnHookAddRemove(typeof(T).Name, add, remove));
+                    EmgTxCustom.Log($"HookWarpper : Match type : {eventInfo.EventHandlerType}");
                 }
             }
         }
@@ -52,10 +52,10 @@ namespace RandomGains.Frame.Core
         }
 
         public static void DisableGain(GainID gainID){
-                if(registedHooks.TryGetValue(gainID, out var lst)){
+            if(registedHooks.TryGetValue(gainID, out var lst)){
                 foreach(var hook in lst){
                     try{
-                        hook.InvokeAdd();
+                        hook.InvokeRemove();
                     }
                     catch(Exception ex){
                         EmgTxCustom.Log($"GainHookWarpper : Exception when disable hook ");
@@ -71,6 +71,8 @@ namespace RandomGains.Frame.Core
             internal readonly Delegate OnHookAdd;
             internal readonly Delegate OnHookRemove;
 
+            bool state;
+
             public OnHookAddRemove(string name, Delegate addHook, Delegate removeHook)
             {
                 OnHookAdd = addHook;
@@ -80,12 +82,22 @@ namespace RandomGains.Frame.Core
 
             public void InvokeAdd()
             {
+                if (state)
+                    return;
+
+                EmgTxCustom.Log($"{name} invoke add");
                 OnHookAdd.DynamicInvoke(null);
+                state = true;
             }
 
             public void InvokeRemove()
             {
+                if (!state)
+                    return;
+
+                EmgTxCustom.Log($"{name} invoke remove");
                 OnHookRemove.DynamicInvoke(null);
+                state = false;
             }
         }
     }

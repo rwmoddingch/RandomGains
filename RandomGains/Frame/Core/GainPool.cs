@@ -25,6 +25,12 @@ namespace RandomGains.Frame.Core
         {
             Game = game;
             Singleton = this;
+
+            GainSave.Singleton.stepLocker = false;
+            foreach(var id in GainSave.Singleton.dataMapping.Keys)
+            {
+                EnableGain(id);
+            }
         }
 
         public void AddGain(GainBase newGain)
@@ -35,13 +41,13 @@ namespace RandomGains.Frame.Core
             }
         }
 
-        public void Update()
+        public void Update(RainWorldGame game)
         {
             for (int i = updateObjects.Count - 1; i >= 0; i--)
             {
                 try
                 {
-                    updateObjects[i].Update();
+                    updateObjects[i].Update(game);
                 }
                 catch (Exception e)
                 {
@@ -63,13 +69,20 @@ namespace RandomGains.Frame.Core
                     Debug.LogException(e);
                 }
             }
+            Singleton = null;
         }
 
         public void EnableGain(GainID id)
         {
             if (gainMapping.ContainsKey(id))
             {
-                EmgTxCustom.Log($"GainPool : gain {id} already enabled");
+                if (GainSave.Singleton.GetData(id).CanStackMore())
+                {
+                    EmgTxCustom.Log($"GainPool : gain {id} add one more stack");
+                    GainSave.Singleton.GetData(id).Stack();
+                }
+                else
+                    EmgTxCustom.Log($"GainPool : gain {id} already enabled and cant stack more");
                 return;
             }
             EmgTxCustom.Log($"GainPool : enable gain {id}");
@@ -89,6 +102,15 @@ namespace RandomGains.Frame.Core
                 EmgTxCustom.Log($"GainPool : gain {id} still not enabled!");
                 return;
             }
+
+            if (GainSave.Singleton.GetData(id).stackLayer > 0)
+            {
+                EmgTxCustom.Log($"GainPool : gain {id} remove one stack");
+                GainSave.Singleton.GetData(id).UnStack();
+                if (GainSave.Singleton.GetData(id).stackLayer != 0)
+                    return;
+            }
+
             EmgTxCustom.Log($"GainPool : disable gain {id}");
 
             GainHookWarpper.DisableGain(id);
@@ -96,7 +118,7 @@ namespace RandomGains.Frame.Core
             updateObjects.Remove(gainMapping[id]);
             gainMapping.Remove(id);
 
-            GainSave.Singleton.dataMapping.Remove(id);
+            GainSave.Singleton.RemoveData(id);
         }
 
         public static void RegisterGain(GainID id, Type type)
