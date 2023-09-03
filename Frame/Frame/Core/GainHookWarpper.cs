@@ -16,7 +16,7 @@ using UnityEngine.Assertions;
 
 namespace RandomGains.Frame.Core
 {
-    internal static class GainHookWarpper
+    public static class GainHookWarpper
     {
         static Dictionary<GainID, List<OnHookAddRemove>> registedOnHooks = new Dictionary<GainID, List<OnHookAddRemove>>();
         static Dictionary<GainID, List<Hook>> registedRuntimeHooks = new Dictionary<GainID, List<Hook>>();

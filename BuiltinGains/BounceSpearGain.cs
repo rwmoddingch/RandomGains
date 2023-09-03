@@ -3,16 +3,13 @@ using RandomGains.Frame.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 using UnityEngine;
 
 namespace RandomGains.Gains.BounceSpearGain
 {
-    internal class BounceSpearGainData : GainDataImpl
+    internal class BounceSpearGainDataImpl : GainDataImpl
     {
         int cycleLeft;
 
@@ -35,7 +32,7 @@ namespace RandomGains.Gains.BounceSpearGain
         {
             EmgTxCustom.Log($"BounceSpearGainData : stepping cycle {cycleLeft}->{cycleLeft - 1}");
             cycleLeft--;
-            
+
             return cycleLeft <= 0;
         }
 
@@ -44,7 +41,7 @@ namespace RandomGains.Gains.BounceSpearGain
             return cycleLeft.ToString();
         }
     }
-    internal class BounceSpearGain : GainImpl<BounceSpearGain, BounceSpearGainData>
+    internal class BounceSpearGainImpl : GainImpl<BounceSpearGainImpl, BounceSpearGainDataImpl>
     {
         public override GainID ID => BounceSpearGainHooks.bounceSpearID;
 
@@ -58,7 +55,7 @@ namespace RandomGains.Gains.BounceSpearGain
     {
         public static GainID bounceSpearID = new GainID("BounceSpear", true);
 
-        public static void Register()
+        public static void HooksOn()
         {
             GainRegister.RegisterGain<BounceSpearGain,BounceSpearGainData, BounceSpearGainHooks>(bounceSpearID);
         }

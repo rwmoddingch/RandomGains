@@ -6,8 +6,10 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Frame\RandomGains.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
@@ -40,9 +42,6 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>..\includings\PUBLIC-Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Rain World\RainWorld_Data\Managed\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\includings\UnityEngine.dll</HintPath>
     </Reference>
@@ -59,7 +58,7 @@
       <HintPath>..\includings\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Rain World\RainWorld_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>..\includings\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

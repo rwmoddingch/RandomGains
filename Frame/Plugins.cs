@@ -2,7 +2,6 @@
 using CustomSaveTx;
 using RandomGains.Frame.Core;
 using RandomGains.Frame.Display;
-using RandomGains.Gains.BounceSpearGain;
 using System;
 using System.CodeDom;
 using System.Collections.Generic;
@@ -70,12 +69,11 @@ namespace RandomGains
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 EmgTxCustom.Log("Plugins : Space pressed");
-                GainPool.Singleton.EnableGain(BounceSpearGainHooks.bounceSpearID);
+                //GainPool.Singleton.EnableGain(BounceSpearGainHooks.bounceSpearID);
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
-                EmgTxCustom.Log("Plugins : Left Control pressed");
-                GainHookWarpper.DisableGain(BounceSpearGainHooks.bounceSpearID);
+                //GainHookWarpper.DisableGain(BounceSpearGainHooks.bounceSpearID);
             }
 
 
@@ -101,7 +99,4 @@ namespace RandomGains
         public static Font DescFont { get; private set; }
 
     }
-
-
-
 }

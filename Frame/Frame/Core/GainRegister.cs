@@ -11,7 +11,7 @@ using Random = UnityEngine.Random;
 
 namespace RandomGains.Gains
 {
-    internal static class GainRegister
+    public static class GainRegister
     {
         public static Dictionary<GainType, List<GainID>> typeToIDMapping = new Dictionary<GainType, List<GainID>>()
         {

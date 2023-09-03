@@ -24,9 +24,6 @@ namespace RandomGains.Frame.Core
         /// 注意：当一句游戏结束时所有的增益都会移除一次，无论增益是否用尽生命周期
         /// </summary>
         public Action onDestroy;
-
- 
-
     }
 
 

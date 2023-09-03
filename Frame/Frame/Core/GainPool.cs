@@ -16,7 +16,7 @@ using OpCodes = System.Reflection.Emit.OpCodes;
 namespace RandomGains.Frame.Core
 {
     /// <summary>
-    /// 获取增益的集合
+    /// 运行和管理增益实例的类
     /// </summary>
     internal class GainPool
     {
@@ -80,6 +80,10 @@ namespace RandomGains.Frame.Core
             Singleton = null;
         }
 
+        /// <summary>
+        /// 启用增益。从存档自动加载增益时也会调用这个方法
+        /// </summary>
+        /// <param name="id"></param>
         public void EnableGain(GainID id)
         {
           
@@ -107,6 +111,10 @@ namespace RandomGains.Frame.Core
 
         }
 
+        /// <summary>
+        /// 禁用增益，当增益达到生命周期末尾时，会自动运行该方法
+        /// </summary>
+        /// <param name="id"></param>
         public void DisableGain(GainID id)
         {
          
@@ -137,7 +145,12 @@ namespace RandomGains.Frame.Core
 
             GainSave.Singleton.RemoveData(id);
         }
-
+        
+        /// <summary>
+        /// 注册增益类型，获取增益id与对应增益实例的构造方法。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="type"></param>
         public static void RegisterGain(GainID id, Type type)
         {
             if (gainCtors.ContainsKey(id))
