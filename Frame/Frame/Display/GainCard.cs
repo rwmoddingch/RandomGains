@@ -48,7 +48,7 @@ namespace RandomGains.Frame
                 cardObjectB = CreateRenderQuad(false);
 
                 titleObject = CreateTextMesh(true, Plugins.TitleFont);
-                descObject = CreateTextMesh(false, Plugins.TitleFont,0.7f,Color.white);
+                descObject = CreateTextMesh(false, Plugins.DescFont,0.7f,Color.white);
                 cameraObject.transform.position = CurrentSetPos;
 
                 Title = "测试卡牌";
@@ -84,7 +84,6 @@ namespace RandomGains.Frame
                 re.GetComponent<TextMesh>().text = text;
                 re.GetComponent<TextMesh>().anchor = isSideA ? TextAnchor.LowerCenter : TextAnchor.UpperCenter;
                 re.GetComponent<TextMesh>().alignment = (isSideA ? TextAlignment.Center : TextAlignment.Left);
-                Plugins.DescFont.dynamic = true;
                 re.GetComponent<TextMesh>().fontSize = 100;
                 if (!color.HasValue) color = Color.black;
                 re.GetComponent<TextMesh>().color = color.Value;
@@ -153,7 +152,13 @@ namespace RandomGains.Frame
             public string Title
             {
                 get => titleObject.GetComponent<TextMesh>().text;
-                set => titleObject.GetComponent<TextMesh>().text = value;
+                set 
+                {
+                    var mesh = titleObject.GetComponent<TextMesh>();
+                    var text = LayoutText(value, mesh.font, mesh.characterSize, mesh.fontSize, mesh.fontStyle);
+                    FixBrokenWord(text, Plugins.DescFont);
+                    mesh.text = text;
+                }
             }
 
             public string Description
@@ -162,16 +167,23 @@ namespace RandomGains.Frame
                 set
                 {
                     var mesh = descObject.GetComponent<TextMesh>();
-                    mesh.text = LayoutText(value, mesh.font,mesh.characterSize,mesh.fontSize,mesh.fontStyle);
+                    var text = LayoutText(value, mesh.font, mesh.characterSize, mesh.fontSize, mesh.fontStyle);
+                    FixBrokenWord(text, Plugins.DescFont);
+                    mesh.text = text;
                 } 
             }
-
+        
             public float DescAlpha
             {
                 get => cardObjectB.GetComponent<MeshRenderer>().sharedMaterial.GetFloat("_Lerp");
                 set => cardObjectB.GetComponent<MeshRenderer>().sharedMaterial.SetFloat("_Lerp", value);
             }
-
+            private void FixBrokenWord(string str, Font font)
+            {
+                font.RequestCharactersInTexture(str);
+                Texture texture = font.material.mainTexture;
+                Debug.Log($"texture:{texture.width}   {texture.height}");
+            }
             public void UpdateVisible()
             {
                 IsSideA = cardObjectA.transform.forward.z > 0;
@@ -307,7 +319,17 @@ namespace RandomGains.Frame
             lastMouseInside = MouseInside;
             lastClick = click;
 
-            click = Input.GetMouseButton(0);
+            if (clickCounter > 0)
+            {
+                clickCounter--;
+                if (clickCounter == 0)
+                {
+                    MouseOnClick();
+                    OnMouseCardClick?.Invoke();
+                }
+            }
+
+            click = Input.GetMouseButton(0) && MouseInside;
             MouseInside = CheckMouseInside();
 
             if (MouseInside && !lastMouseInside && OnMoueCardEnter != null)
@@ -316,8 +338,17 @@ namespace RandomGains.Frame
                 OnMoueCardExit.Invoke();
             if (!lastClick && click)
             {
-                MouseOnClick();
-                OnMouseCardClick?.Invoke();
+                if (clickCounter != 0)
+                {
+                    OnMouseCardDoubleClick?.Invoke();
+                    EmgTxCustom.Log("Double Click");
+                    clickCounter = 0;
+                }
+                else
+                {
+                    clickCounter = 7;
+                }
+
             }
 
             MouseOnAnim();
@@ -376,6 +407,7 @@ namespace RandomGains.Frame
         }
 
         public event Action OnMouseCardClick;
+        public event Action OnMouseCardDoubleClick;
         public event Action OnMoueCardEnter;
         public event Action OnMoueCardExit;
         public event Action OnMoueCardUpdate;
@@ -389,5 +421,7 @@ namespace RandomGains.Frame
 
         private bool lastClick;
         private bool click;
+
+        private int clickCounter = 0;
     }
 }
