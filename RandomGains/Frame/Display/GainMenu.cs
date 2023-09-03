@@ -27,7 +27,7 @@ namespace RandomGains.Frame.Display
             Vector2 screenScale = Custom.rainWorld.screenSize;
             testExitButton = new SimpleButton(this, pages[0], "Exit GainMenu", "EXIT", new Vector2(screenScale.x - 110f - 20f, 30f / 2f + 20f), new Vector2(110f, 30f));
             pages[0].subObjects.Add(testExitButton);
-            //pages[0].subObjects.Add(new GainCardDrawer(this, null));
+            pages[0].subObjects.Add(new GainCardDrawer(this, null));
         }
 
         public override void Singal(MenuObject sender, string message)

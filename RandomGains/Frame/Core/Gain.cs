@@ -103,8 +103,5 @@ namespace RandomGains.Frame.Core
         {
         }
 
-        public GainID(string value) : base(value, false)
-        {
-        }
     }
 }

@@ -40,13 +40,15 @@ namespace RandomGains.Frame
                 camera = cameraObject.AddComponent<Camera>();
 
                 cameraObject.AddComponent<Transform>();
+                cameraObject.layer = 9;
                 camera.targetTexture = Texture;
+                camera.cullingMask = 1 << 9;
 
                 cardObjectA = CreateRenderQuad(true);
                 cardObjectB = CreateRenderQuad(false);
 
-                titleObject = CreateTextMesh(true, Resources.GetBuiltinResource<Font>("Arial.ttf"));
-                descObject = CreateTextMesh(false, Resources.GetBuiltinResource<Font>("Arial.ttf"),0.7f,Color.white);
+                titleObject = CreateTextMesh(true, Plugins.TitleFont);
+                descObject = CreateTextMesh(false, Plugins.DescFont,0.7f,Color.white);
                 cameraObject.transform.position = CurrentSetPos;
 
                 Title = "测试卡牌";
@@ -56,7 +58,9 @@ namespace RandomGains.Frame
             private GameObject CreateRenderQuad(bool isSideA)
             {
                 var re = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                re.GetComponent<MeshRenderer>().sharedMaterial = new Material(Custom.rainWorld.Shaders["Basic"].shader);
+                re.layer = 9;
+                re.GetComponent<MeshRenderer>().sharedMaterial =
+                    new Material(Custom.rainWorld.Shaders[Plugins.ModID + "CardBack"].shader);
                 if (!isSideA)
                 {
                     re.GetComponent<MeshRenderer>().material.SetTexture("_MainTex",
@@ -71,6 +75,8 @@ namespace RandomGains.Frame
             private GameObject CreateTextMesh(bool isSideA, Font font, float size = 1f, Color? color = null, string text = "")
             {
                 var re = new GameObject("GainCard_Text");
+                re.layer = 9;
+
                 re.AddComponent<Transform>();
                 re.transform.parent = cardObjectA.transform;
                 re.transform.localPosition = new Vector3(0, (isSideA ? -1 : 1) * 0.5f, -0.01f * (isSideA ? 1 : -1));
@@ -159,6 +165,12 @@ namespace RandomGains.Frame
                 } 
             }
 
+            public float DescAlpha
+            {
+                get => cardObjectB.GetComponent<MeshRenderer>().sharedMaterial.GetFloat("_Lerp");
+                set => cardObjectB.GetComponent<MeshRenderer>().sharedMaterial.SetFloat("_Lerp", value);
+            }
+
             public void UpdateVisible()
             {
                 IsSideA = cardObjectA.transform.forward.z > 0;
@@ -208,6 +220,8 @@ namespace RandomGains.Frame
         public void DrawSprites(float timeStacker)
         {
             sprites[0].SetPosition(Vector2.Lerp(lastPos,pos,timeStacker));
+            cardTexture.Rotation = LerpRotation(timeStacker);
+            cardTexture.DescAlpha = LerpRotation(timeStacker).y / 180f;
         }
 
         public void Destroy()
@@ -229,12 +243,12 @@ namespace RandomGains.Frame
             _mouseOnRotationLast = _mouseOnRotationSmooth;
             _mouseOnRotationSmooth = Vector3.Lerp(_mouseOnRotationLast, _mouseOnRotation, 0.2f);
 
+            rotationLast = rotationLerp;
             rotationLerp = Vector3.Lerp(rotationLerp, rotation, 0.2f);
 
             lastPos = pos;
 
             cardTexture.UpdateVisible();
-            cardTexture.Rotation = Rotation;
         }
 
 
@@ -257,6 +271,8 @@ namespace RandomGains.Frame
 
         private Vector3 rotation;
         private Vector3 rotationLerp;
+        private Vector3 rotationLast;
+
         private Vector3 Rotation
         {
             get => rotationLerp + _mouseOnRotationSmooth;
@@ -266,6 +282,11 @@ namespace RandomGains.Frame
                     return;
                 rotation = value;
             }
+        }
+
+        private Vector3 LerpRotation(float timeStacker)
+        {
+            return Vector3.Lerp(rotationLast + _mouseOnRotationSmooth, Rotation, timeStacker);
         }
 
         //12

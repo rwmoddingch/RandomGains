@@ -155,19 +155,17 @@ namespace RandomGains.Frame.Core
             }
             //foreach (var a in method.Definition.Body.Instructions)
             //    Debug.Log($"{a}");
+            
+            ILCursor c = new ILCursor(il);
+            while (c.TryGotoNext(MoveType.After,i => i.MatchNewobj<Hook>()))
+                c.EmitDelegate<Func<Hook,Hook>>(hook => AddRuntimeHook(id, hook));
+
             if (!registedAddHooks.ContainsKey(id))
-                registedAddHooks.Add(id,type.GetMethod("HookOn").CreateDelegate<Action>());
+                registedAddHooks.Add(id, type.GetMethod("HookOn").CreateDelegate<Action>());
             if (!registedRemoveHooks.ContainsKey(id))
                 registedRemoveHooks.Add(id, method.Generate().CreateDelegate<Action>());
             if (!registedRuntimeHooks.ContainsKey(id))
                 registedRuntimeHooks.Add(id, new List<Hook>());
-
-   
-            ILCursor c = new ILCursor(il);
-            while (c.TryGotoNext(MoveType.After,i => i.MatchNewobj<Hook>()))
-                c.EmitDelegate<Func<Hook,Hook>>(hook => AddRuntimeHook(id, hook));
-            
-
         }
 
         private static Hook AddRuntimeHook(GainID id, Hook hook)

@@ -4,14 +4,18 @@ using RandomGains.Frame.Core;
 using RandomGains.Frame.Display;
 using RandomGains.Gains.BounceSpearGain;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using RandomGains.Frame;
+using RandomGains.Gains;
 using RWCustom;
 using UnityEngine;
 
@@ -20,30 +24,18 @@ using UnityEngine;
 #pragma warning restore CS0618
 namespace RandomGains
 {
-    [BepInPlugin("randomgains", "RandomGains", "1.0.0")]
+    [BepInPlugin(ModID, "RandomGains", "1.0.0")]
     public class Plugins : BaseUnityPlugin
     {
         public static string MoonBack;
         public static string FPBack;
         public static string SlugBack;
 
+        public const string ModID = "randomgains";
+
         void OnEnable()
         {
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
-        }
-
-        void Update()
-        {
-            //if (Input.GetKeyDown(KeyCode.A))
-            //{
-            //    if (Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game &&
-            //        game.AlivePlayers[0].realizedCreature is Player player &&
-            //        player.room != null)
-            //    {
-            //        player.room.AddObject(new Test(player));
-            //        Debug.Log("[SSSS] Add Test");
-            //    }
-            //}
         }
 
         
@@ -59,10 +51,11 @@ namespace RandomGains
                     GameHooks.HookOn();
                     DeathPersistentSaveDataRx.AppplyTreatment(new GainSave(null));
                     BounceSpearGainHooks.Register();
+                    GainRegister.InitAllGainPlugin();
                     On.Player.Update += Player_Update;
+                    LoadResources(self);
                     load = true;
                 }
-
             }
 
             catch (Exception e) 
@@ -85,24 +78,10 @@ namespace RandomGains
                 GainHookWarpper.DisableGain(BounceSpearGainHooks.bounceSpearID);
             }
 
-            if (Input.GetKeyDown(KeyCode.A))
-            {
-                EmgTxCustom.Log("Plugins : Add ILHook");
-                IL.Player.Update += Player_Update1;
-            }
-            if (Input.GetKeyDown(KeyCode.S))
-            {
-                IL.Player.Update -= Player_Update1;
-                EmgTxCustom.Log("Plugins : Remove ILHook");
-            }
 
         }
 
-        private void Player_Update1(MonoMod.Cil.ILContext il)
-        {
-            //ILCursor c = new ILCursor(il);
-            //c.EmitDelegate<Action>(() => Debug.Log("sdsdsd"));
-        }
+  
 
         public static void LoadResources(RainWorld rainWorld)
         {
@@ -110,8 +89,17 @@ namespace RandomGains
             //FPBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/fpback").elements[0].name;
             //SlugBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/slugback").elements[0].name;
 
+            AssetBundle bundle = AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("gainassets/assetBundle/gainasset"));
+            TitleFont = bundle.LoadAsset<Font>("u4F53");
+            DescFont = bundle.LoadAsset<Font>("NotoSansHans-Regular-2");
+            Custom.rainWorld.Shaders.Add(ModID + "CardBack",FShader.CreateShader(ModID + "CardBack",bundle.LoadAsset<Shader>("CardBack")));
+            
             GainStaticDataLoader.Load(rainWorld);
         }
+
+        public static Font TitleFont { get; private set; }
+        public static Font DescFont { get; private set; }
+
     }
 
 

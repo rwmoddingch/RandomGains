@@ -69,7 +69,6 @@ namespace RandomGains.Gains.BounceSpearGain
             IL.Player.Update += Player_Update;
             Hook newHook = new Hook(typeof(Player).GetProperty("isRivulet").GetGetMethod(),
                 typeof(BounceSpearGainHooks).GetMethod("Player_IsRiv", BindingFlags.Static | BindingFlags.NonPublic));
-
         }
 
         private static bool Player_IsRiv(Func<Player, bool> orig, Player self)

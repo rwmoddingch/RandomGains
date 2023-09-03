@@ -1,7 +1,9 @@
 ﻿using RandomGains.Frame.Core;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -73,6 +75,39 @@ namespace RandomGains.Gains
             GainSave.RegisterGainData(id, typeof(DataType));
             GainPool.RegisterGain(id, typeof(GainType));
             BuildID(id);
+        }
+
+        public static void InitAllGainPlugin()
+        {
+            DirectoryInfo info = new DirectoryInfo(AssetManager.ResolveDirectory("gainplugins"));
+            foreach (var file in info.GetFiles("*.dll"))
+            {
+                var assembly = Assembly.LoadFile(file.FullName);
+
+                foreach (var type in assembly.GetTypes())
+                {
+                    bool isEntry = false;
+                    var baseType = type.BaseType;
+                    while (baseType != null)
+                    {
+                        if (baseType == typeof(GainEntry))
+                        {
+                            isEntry = true;
+                            break;
+                        }
+                        baseType = baseType.BaseType;
+
+                    }
+
+                    if (isEntry)
+                    {
+                        var obj = type.GetConstructor(Type.EmptyTypes).Invoke(Array.Empty<object>());
+                        type.GetMethod("OnEnable").Invoke(obj,Array.Empty<object>());
+                        EmgTxCustom.Log($"Invoke {type.Name}.OnEnable");
+                    }
+                }
+
+            }
         }
 
         static void BuildID(GainID id)
