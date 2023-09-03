@@ -16,7 +16,8 @@ namespace RandomGains.Frame.Core
         static Dictionary<GainID, GainStaticData> idDataMapping = new Dictionary<GainID, GainStaticData>();
         
         public static void Load(RainWorld rainWorld){
-            string rootPath = AssetManager.ResolveFilePath("gainassets/cardinfos");
+            string rootPath = AssetManager.ResolveDirectory("gainassets/cardinfos");
+            LoadInDirectory(new DirectoryInfo(rootPath), rainWorld);
         }
         static void LoadInDirectory(DirectoryInfo directoryInfo, RainWorld rainWorld){
             foreach(var directory in directoryInfo.GetDirectories()){
@@ -65,7 +66,7 @@ namespace RandomGains.Frame.Core
         public GainStaticData(DirectoryInfo directoryInfo, FileInfo jsonFile, RainWorld rainWorld){
             string text = File.ReadAllText(jsonFile.FullName);
             var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(text);
-
+            
             string dir = directoryInfo.FullName.Split(new []{"cardinfos"}, StringSplitOptions.None)[1];
             string imagePath = $"gainassets/cardinfos{dir}/{data["faceName"]}";
             faceElement = Futile.atlasManager.LoadImage(imagePath).elements[0];

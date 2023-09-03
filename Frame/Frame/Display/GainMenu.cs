@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Menu;
+using RandomGains.Frame.Core;
+using RandomGains.Gains;
 using RWCustom;
 using UnityEngine;
 using static ProcessManager;
@@ -17,6 +19,10 @@ namespace RandomGains.Frame.Display
         ProcessID origNextProcess;
         RainWorldGame origRainworldGame;
 
+        GainID[] choices;
+        int index;
+        int counter = 20;
+
         public GainMenu(ProcessID origID, RainWorldGame oldGame, ProcessManager processManager) : base(processManager, GainMenuID)
         {
             this.origNextProcess = origID;
@@ -27,7 +33,10 @@ namespace RandomGains.Frame.Display
             Vector2 screenScale = Custom.rainWorld.screenSize;
             testExitButton = new SimpleButton(this, pages[0], "Exit GainMenu", "EXIT", new Vector2(screenScale.x - 110f - 20f, 30f / 2f + 20f), new Vector2(110f, 30f));
             pages[0].subObjects.Add(testExitButton);
-            pages[0].subObjects.Add(new GainCardDrawer(this, null));
+
+            choices = GainRegister.InitNextChoices(Core.GainType.Positive);
+
+            
         }
 
         public override void Singal(MenuObject sender, string message)
@@ -45,6 +54,24 @@ namespace RandomGains.Frame.Display
             origRainworldGame = null;
         }
 
+        public override void Update()
+        {
+            base.Update();
+            if(index < choices.Length)
+            {
+                if(counter > 0)
+                {
+                    counter--;
+                }
+                else
+                {
+                    pages[0].subObjects.Add(new GainCardDrawer(this, null, new Vector2(500f + 280 * index, 350f)));
+                    counter = 20;
+                    index++;
+                }
+            }
+        }
+
         SimpleButton testExitButton;
     }
 
@@ -52,14 +79,15 @@ namespace RandomGains.Frame.Display
     {
         GainCard card;
         float t;
-        public GainCardDrawer(Menu.Menu menu, MenuObject menuObject) : base(menu, menuObject)
+        public GainCardDrawer(Menu.Menu menu, MenuObject menuObject, Vector2 pos) : base(menu, menuObject)
         {
-            card = new GainCard()
+            card = new GainCard(new GainID("BounceSpear"))
             {
-                pos = new Vector2(500f, 350f),
-                size = 40f
+                pos = new Vector2(1366f, 728f),
+                size = 0f
             };
             menu.container.AddChild(card.InitiateSprites());
+            card.TryAddAnimation(GainCard.CardAnimationID.DrawCards_FlipIn, new DrawCards_FlipInAnimationArg(pos, 40f));
         }
 
         public override void Update()

@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using MonoMod.Utils;
+using UnityEngine;
 
 namespace RandomGains
 {
@@ -24,6 +25,13 @@ namespace RandomGains
             il.Emit(OpCodes.Ret);
 
             return (T)ctorMethod.Generate().CreateDelegate(typeof(T));
+        }
+
+        public static Vector2 Bezier(Vector2 start, Vector2 end, Vector2 a, float t)
+        {
+            Vector2 a1 = Vector2.Lerp(start, a, t);
+            Vector2 a2 = Vector2.Lerp(a, end, t);
+            return Vector2.Lerp(a1, a2, t);
         }
     }
 }

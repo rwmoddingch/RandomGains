@@ -34,8 +34,9 @@ namespace RandomGains.Gains
             List<GainID> result = new List<GainID>();
             for(int i = 0;i < 3; i++)
             {
-                var lst = typeToIDMapping[gainType];
-                result.Add(lst[Random.Range(0, lst.Count)]);
+                //var lst = typeToIDMapping[gainType];
+                //result.Add(lst[Random.Range(0, lst.Count)]);
+                result.Add(new GainID("BounceSpear"));
             }
             return result.ToArray();
         }

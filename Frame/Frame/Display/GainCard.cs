@@ -1,4 +1,5 @@
-﻿using RandomGains.Frame.Display;
+﻿using RandomGains.Frame.Core;
+using RandomGains.Frame.Display;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,8 @@ namespace RandomGains.Frame
     {
         public class GainCardTexture
         {
+            public GainID ID;
+            public GainStaticData StaticData;
 
             public void Destroy()
             {
@@ -30,11 +33,12 @@ namespace RandomGains.Frame
             }
 
 
-            public GainCardTexture()
+            public GainCardTexture(GainID gainID)
             {
+                ID = gainID;
+                StaticData = GainStaticDataLoader.GetStaticData(ID);
                 count++;
 
-            
                 cameraObject = new GameObject("GainCard_Camera");
 
                 camera = cameraObject.AddComponent<Camera>();
@@ -47,12 +51,12 @@ namespace RandomGains.Frame
                 cardObjectA = CreateRenderQuad(true);
                 cardObjectB = CreateRenderQuad(false);
 
-                titleObject = CreateTextMesh(true, Plugins.TitleFont);
+                titleObject = CreateTextMesh(true, Plugins.TitleFont,1f, StaticData.color);
                 descObject = CreateTextMesh(false, Plugins.TitleFont,0.7f,Color.white);
                 cameraObject.transform.position = CurrentSetPos;
 
-                Title = "测试卡牌";
-                Description = "卡片内容因何而发生？ 一般来讲，我们都必须务必慎重的考虑考虑。 我认为， 现在，解决卡片内容的问题，是非常非常重要的";
+                Title = StaticData.gainName;
+                Description = StaticData.gainDescription;
             }
 
             private GameObject CreateRenderQuad(bool isSideA)
@@ -65,7 +69,11 @@ namespace RandomGains.Frame
                 {
                     re.GetComponent<MeshRenderer>().material.SetTexture("_MainTex",
                         Futile.atlasManager.GetAtlasWithName(Plugins.MoonBack).texture);
-
+                }
+                else
+                {
+                    re.GetComponent<MeshRenderer>().material.SetTexture("_MainTex",
+                        StaticData.faceElement.atlas.texture);
                 }
                 re.transform.position = CurrentSetPos + new Vector3(0,0, 1.3f);
                 re.transform.localScale = new Vector3(0.6f* (isSideA ? 1 : -1f) , 1f,1f);
@@ -84,7 +92,7 @@ namespace RandomGains.Frame
                 re.GetComponent<TextMesh>().text = text;
                 re.GetComponent<TextMesh>().anchor = isSideA ? TextAnchor.LowerCenter : TextAnchor.UpperCenter;
                 re.GetComponent<TextMesh>().alignment = (isSideA ? TextAlignment.Center : TextAlignment.Left);
-                Plugins.DescFont.dynamic = true;
+                //Plugins.DescFont.dynamic = true;
                 re.GetComponent<TextMesh>().fontSize = 100;
                 if (!color.HasValue) color = Color.black;
                 re.GetComponent<TextMesh>().color = color.Value;
@@ -185,12 +193,11 @@ namespace RandomGains.Frame
             private static int count = 0;
         }
 
-
-
-        public GainCard()
+        public GainCard(GainID gainID)
         {
             container = new FContainer();
-            cardTexture = new GainCardTexture();
+            cardTexture = new GainCardTexture(gainID);
+            this.ID = gainID;
         }
 
 
@@ -216,11 +223,13 @@ namespace RandomGains.Frame
         {
             RotateUpdate();
             InputUpdate();
+            AnimatioUpdate();
         }
 
         public void DrawSprites(float timeStacker)
         {
             sprites[0].SetPosition(Vector2.Lerp(lastPos,pos,timeStacker));
+            sprites[0].scale = size / 40f;
             cardTexture.Rotation = LerpRotation(timeStacker);
             cardTexture.DescAlpha =Mathf.InverseLerp(100,180,Vector3.Lerp(rotationLast,rotationLerp,timeStacker).y);
         }
@@ -234,11 +243,11 @@ namespace RandomGains.Frame
         public FContainer container;
         FSprite[] sprites;
         public GainCardTexture cardTexture;
+        public GainID ID;
     }
 
     internal partial class GainCard
     {
-   
         public void RotateUpdate()
         {
             _mouseOnRotationLast = _mouseOnRotationSmooth;
@@ -251,8 +260,6 @@ namespace RandomGains.Frame
 
             cardTexture.UpdateVisible();
         }
-
-
 
         public Vector2 GetFrameVertice(int index)
         {
@@ -270,11 +277,11 @@ namespace RandomGains.Frame
         private Vector3 _mouseOnRotation;
         private Vector3 _mouseOnRotationSmooth;
 
-        private Vector3 rotation;
-        private Vector3 rotationLerp;
-        private Vector3 rotationLast;
+        public Vector3 rotation;
+        public Vector3 rotationLerp;
+        public Vector3 rotationLast;
 
-        private Vector3 Rotation
+        public Vector3 Rotation
         {
             get => rotationLerp + _mouseOnRotationSmooth;
             set
@@ -301,7 +308,6 @@ namespace RandomGains.Frame
     /// </summary>
     internal partial class GainCard
     {
-        
         public void InputUpdate()
         {
             lastMouseInside = MouseInside;
@@ -389,5 +395,111 @@ namespace RandomGains.Frame
 
         private bool lastClick;
         private bool click;
+    }
+
+    /// <summary>
+    /// 动画部分
+    /// </summary>
+    internal partial class GainCard
+    {
+        public CardAnimationBase animation;
+
+        void AnimatioUpdate()
+        {
+            if(animation != null)
+            {
+                if(animation.stillActive)
+                    animation.Update();
+                else
+                {
+                    animation.Destroy();
+                    animation = null;
+                }
+            }
+        }
+
+        public void TryAddAnimation(CardAnimationID id, CardAnimationArg arg)
+        {
+            if(animation != null)
+            {
+                if (animation.id == id)
+                    return;
+
+                if (animation.stillActive)
+                {
+                    animation.stillActive = false;
+                    animation.Destroy();
+                }
+                animation = null;
+            }
+
+            arg.startRotaion = rotation;
+            arg.startPos = pos;
+            arg.startSize = size;
+            if(id == CardAnimationID.DrawCards_FlipIn)
+            {
+                animation = new DrawCards_FlipInAnimation(this, (DrawCards_FlipInAnimationArg)arg);
+            }
+        }
+
+
+        public abstract class CardAnimation<T> : CardAnimationBase where T : CardAnimationArg
+        {
+            protected T animationArg;
+            public CardAnimation(GainCard card, T animationArg, int maxLife, CardAnimationID id) : base(card, maxLife, id)
+            {
+                this.animationArg = animationArg;
+            }
+        }
+
+        public abstract class CardAnimationBase
+        {
+            protected GainCard card;
+            public CardAnimationID id;
+
+            protected int life;
+            protected int maxLife;
+            protected float tInLife => Mathf.Min(life / (float)(maxLife - 20), 1f);
+
+            public bool stillActive = true;
+
+            public CardAnimationBase(GainCard card, int maxLife, CardAnimationID id)
+            {
+                this.card = card;
+                this.maxLife = maxLife + 20;//略微延长时间让lerp函数工作正常
+            }
+
+            public virtual void Update()
+            {
+                if (maxLife > 0)
+                {
+                    if (life < maxLife)
+                        life++;
+                    else
+                        stillActive = false;
+                }
+            }
+
+            public virtual void Destroy()
+            {
+            }
+        }
+
+        public abstract class CardAnimationArg
+        {
+            public Vector3 startRotaion;
+            public float startSize;
+            public Vector2 startPos;
+        }
+
+        public class CardAnimationID : ExtEnum<CardAnimationID>
+        {
+            public CardAnimationID(string value, bool register = false) : base(value, register)
+            {
+            }
+
+            public static readonly CardAnimationID DrawCards_FlipIn = new CardAnimationID("DrawCards_FlipIn", true);
+            public static readonly CardAnimationID DrawCards_FlipOut = new CardAnimationID("DrawCards_FlipOut", true);
+        }
     }
 }

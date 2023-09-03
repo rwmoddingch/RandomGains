@@ -99,8 +99,8 @@ namespace RandomGains
             GainStaticDataLoader.Load(rainWorld);
         }
 
-        public static Font TitleFont { get; private set; }
-        public static Font DescFont { get; private set; }
+        public static Font TitleFont { get; set; }
+        public static Font DescFont { get; set; }
 
     }
 }
