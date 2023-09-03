@@ -114,29 +114,4 @@ namespace RandomGains.Frame.Core
     }
 
 
-    public enum GainType
-    {
-        Positive,
-        Negative,
-        Duality
-    }
-
-    public enum GainProperty
-    {
-        Normal,
-        Special
-    }
-
-    public class GainID : ExtEnum<GainID>
-    {
-        public static GainID None;
-        static GainID()
-        {
-            None = new GainID("None", true);
-        }
-
-        public GainID(string value, bool register = false) : base(value, register)
-        {
-        }
-    }
 }
