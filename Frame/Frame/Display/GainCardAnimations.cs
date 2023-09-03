@@ -32,6 +32,7 @@ namespace RandomGains.Frame.Display
             card.rotation = Vector3.zero;
             card.rotationLast = Vector3.zero;
             card.rotationLerp = Vector3.zero;
+            card.SwitchToHighQualityMode();
         }
     }
 

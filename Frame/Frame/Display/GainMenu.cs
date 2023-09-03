@@ -81,7 +81,7 @@ namespace RandomGains.Frame.Display
         float t;
         public GainCardDrawer(Menu.Menu menu, MenuObject menuObject, Vector2 pos) : base(menu, menuObject)
         {
-            card = new GainCard(new GainID("BounceSpear"))
+            card = new GainCard(new GainID("BounceSpear"), true)
             {
                 pos = new Vector2(1366f, 728f),
                 size = 0f
@@ -106,7 +106,7 @@ namespace RandomGains.Frame.Display
         {
             base.RemoveSprites();
             menu.container.RemoveChild(card.container);
-            card.Destroy();
+            card.ClearSprites();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using RandomGains.Frame.Core;
+﻿using Newtonsoft.Json.Linq;
+using RandomGains.Frame.Core;
 using RandomGains.Frame.Display;
 using RWCustom;
 using System;
@@ -33,7 +34,7 @@ namespace RandomGains.Frame
             }
 
 
-            public GainCardTexture(GainID gainID)
+            public GainCardTexture(GainCard card ,GainID gainID)
             {
                 ID = gainID;
                 StaticData = GainStaticDataLoader.GetStaticData(ID);
@@ -57,6 +58,11 @@ namespace RandomGains.Frame
 
                 Title = StaticData.gainName;
                 Description = StaticData.gainDescription;
+
+                cardObjectA.GetComponent<MeshRenderer>().enabled = card.sideA;
+                titleObject.GetComponent<MeshRenderer>().enabled = card.sideA;
+                cardObjectB.GetComponent<MeshRenderer>().enabled = !card.sideA;
+                descObject.GetComponent<MeshRenderer>().enabled = !card.sideA;
             }
 
             private GameObject CreateRenderQuad(bool isSideA)
@@ -75,7 +81,7 @@ namespace RandomGains.Frame
                     re.GetComponent<MeshRenderer>().material.SetTexture("_MainTex",
                         StaticData.faceElement.atlas.texture);
                 }
-                re.transform.position = CurrentSetPos + new Vector3(0,0, 1.3f);
+                re.transform.position = CurrentSetPos + new Vector3(0,0, 1.171f);
                 re.transform.localScale = new Vector3(0.6f* (isSideA ? 1 : -1f) , 1f,1f);
                 return re;
             }
@@ -206,28 +212,83 @@ namespace RandomGains.Frame
             private static int count = 0;
         }
 
-        public GainCard(GainID gainID)
+        public class LowPerformanceRenderer
         {
-            container = new FContainer();
-            cardTexture = new GainCardTexture(gainID);
-            this.ID = gainID;
+            GainCard card;
+            FSprite[] sprites;
+
+            public LowPerformanceRenderer(GainCard card)
+            {
+                this.card = card;
+            }
+
+            public void InitiateSprites()
+            {
+                sprites = new FSprite[2];
+                sprites[0] = new FSprite(card.staticData.faceElementName, true);
+                sprites[1] = new FSprite(Futile.atlasManager.GetAtlasWithName(Plugins.MoonBack).name, true);
+                AddToCard();
+            }
+
+            public void AddToCard()
+            {
+                foreach(var sprite in sprites)
+                {
+                    card.sprites.Add(sprite);
+                }
+            }
+
+            public void DrawSprites(float timeStacker)
+            {
+                sprites[0].isVisible = card.sideA;
+                sprites[1].isVisible = !card.sideA;
+                var sprite = card.sideA ? sprites[0] : sprites[1];
+
+                Vector2 center = Vector2.Lerp(card.lastPos, card.pos, timeStacker);
+                Vector3 rotaion = card.LerpRotation(timeStacker);
+
+                sprite.SetPosition(center);
+                sprite.rotation = rotaion.z;
+                sprite.width = (card.origVertices[2].x - card.origVertices[3].x) * card.size * Mathf.Abs(Mathf.Cos(rotaion.x * Mathf.Deg2Rad));
+                sprite.height = (card.origVertices[0].y - card.origVertices[3].y) * card.size * Mathf.Abs(Mathf.Cos(rotaion.y * Mathf.Deg2Rad));
+            }
+
+            public void Destroy()
+            {
+                foreach(var sprite in sprites)
+                {
+                    sprite.RemoveFromContainer();
+                }
+            }
         }
 
-
-        public FContainer InitiateSprites(bool autoAddContainer = true)
+        public GainCard(GainID gainID, bool lowPerformanceMode)
         {
-            sprites = new FSprite[1];
-            sprites[0] = new FTexture(cardTexture.Texture);
-            if (autoAddContainer)
-                AddToContainer(null);
+            container = new FContainer();
+            
+            this.ID = gainID;
+            staticData = GainStaticDataLoader.GetStaticData(gainID);
+            this.lowPerformanceMode = lowPerformanceMode;
+        }
+
+        public FContainer InitiateSprites()
+        {
+            if (lowPerformanceMode)
+            {
+                lowPerformanceRenderer = new LowPerformanceRenderer(this);
+                lowPerformanceRenderer.InitiateSprites();
+            }
+            else
+            {
+                cardTexture = new GainCardTexture(this, ID);
+                sprites.Add(new FTexture(cardTexture.Texture));
+            }
+            AddToContainer();
             return container;
         }
 
-        public void AddToContainer(FContainer container)
+        public void AddToContainer()
         {
-            if (container == null)
-                container = this.container;
-
             foreach(var sprite in sprites) 
                 container.AddChild(sprite);
         }
@@ -241,22 +302,75 @@ namespace RandomGains.Frame
 
         public void DrawSprites(float timeStacker)
         {
-            sprites[0].SetPosition(Vector2.Lerp(lastPos,pos,timeStacker));
-            sprites[0].scale = size / 40f;
-            cardTexture.Rotation = LerpRotation(timeStacker);
-            cardTexture.DescAlpha =Mathf.InverseLerp(100,180,Vector3.Lerp(rotationLast,rotationLerp,timeStacker).y);
+            if(cardTexture != null)
+            {
+                sprites[0].SetPosition(Vector2.Lerp(lastPos, pos, timeStacker));
+                sprites[0].scale = size / 40f;
+                cardTexture.Rotation = LerpRotation(timeStacker);
+                cardTexture.DescAlpha = Mathf.InverseLerp(100, 180, Vector3.Lerp(rotationLast, rotationLerp, timeStacker).y);
+            }
+            if(lowPerformanceRenderer != null)
+            {
+                lowPerformanceRenderer.DrawSprites(timeStacker);
+            }
         }
 
-        public void Destroy()
+        public void ClearSprites()
         {
-            cardTexture.Destroy();
+            if(cardTexture != null)
+            {
+                cardTexture.Destroy();
+                cardTexture = null;
+            }
+            if(lowPerformanceRenderer != null)
+            {
+                lowPerformanceRenderer.Destroy();
+                lowPerformanceRenderer = null;
+            }
+
+            foreach (var sprite in sprites)
+                sprite.RemoveFromContainer();
+            sprites.Clear();
+
             container.RemoveAllChildren();
         }
 
+        public void SwitchToLowPerformanceMode()
+        {
+            if (lowPerformanceMode)
+                return;
+            lowPerformanceMode = true;
+            ClearSprites();
+
+            lowPerformanceRenderer = new LowPerformanceRenderer(this);
+            lowPerformanceRenderer.InitiateSprites();
+
+            AddToContainer();
+        }
+
+        public void SwitchToHighQualityMode()
+        {
+            if (!lowPerformanceMode)
+                return;
+            lowPerformanceMode = false;
+            ClearSprites();
+
+            cardTexture = new GainCardTexture(this, ID);
+            sprites.Add(new FTexture(cardTexture.Texture));
+
+            AddToContainer();
+        }
+
         public FContainer container;
-        FSprite[] sprites;
+        List<FSprite> sprites = new List<FSprite>();
+
+        public LowPerformanceRenderer lowPerformanceRenderer;
         public GainCardTexture cardTexture;
+
         public GainID ID;
+        public GainStaticData staticData;
+
+        bool lowPerformanceMode;
     }
 
     internal partial class GainCard
@@ -271,7 +385,8 @@ namespace RandomGains.Frame
 
             lastPos = pos;
 
-            cardTexture.UpdateVisible();
+            if(cardTexture != null)
+                cardTexture.UpdateVisible();
         }
 
         public Vector2 GetFrameVertice(int index)
@@ -363,7 +478,8 @@ namespace RandomGains.Frame
 
         private void MouseOnClick()
         {
-            Rotation = cardTexture.IsSideA ? new Vector3(0, 180, 0) : new Vector3(0, 0, 0);
+            Rotation = sideA ? new Vector3(0, 180, 0) : new Vector3(0, 0, 0);
+            sideA = !sideA;
         }
         private void MouseOnAnim()
         {
@@ -378,6 +494,9 @@ namespace RandomGains.Frame
 
         bool CheckMouseInside()
         {
+            if(animation != null && animation.ignoreMouseInput)
+                return false;
+
             Vector3 mousePos = new Vector3(Futile.mousePosition.x, Futile.mousePosition.y, 0f);
             Vector3[] checkPoints = new Vector3[4]; 
 
@@ -420,6 +539,8 @@ namespace RandomGains.Frame
         public event Action OnMoueCardUpdate;
 
         public Vector2 MouseLocalPos { get; private set; }
+
+        internal bool sideA = true;
 
         private bool lastMouseInside;
         public bool MouseInside { get; private set; }
@@ -494,14 +615,16 @@ namespace RandomGains.Frame
 
             protected int life;
             protected int maxLife;
-            protected float tInLife => Mathf.Min(life / (float)(maxLife - 20), 1f);
+            protected float tInLife => Mathf.Min(life / (float)(maxLife - 30), 1f);
 
             public bool stillActive = true;
+
+            public bool ignoreMouseInput = true;
 
             public CardAnimationBase(GainCard card, int maxLife, CardAnimationID id)
             {
                 this.card = card;
-                this.maxLife = maxLife + 20;//略微延长时间让lerp函数工作正常
+                this.maxLife = maxLife + 30;//略微延长时间让lerp函数工作正常
             }
 
             public virtual void Update()
