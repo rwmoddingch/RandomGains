@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace RandomGains.Frame.Core
 {
-    internal static class GainHookWarpper
+    public static class GainHookWarpper
     {
         static Dictionary<GainID, List<OnHookAddRemove>> registedHooks = new Dictionary<GainID, List<OnHookAddRemove>>();
         public static void WarpHook<T>(T del, GainID id) where T : Delegate

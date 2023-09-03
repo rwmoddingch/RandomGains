@@ -2,7 +2,6 @@
 using CustomSaveTx;
 using RandomGains.Frame.Core;
 using RandomGains.Frame.Display;
-using RandomGains.Gains.BounceSpearGain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,12 +53,10 @@ namespace RandomGains
                 {
                     GameHooks.HookOn();
                     DeathPersistentSaveDataRx.AppplyTreatment(new GainSave(null));
-                    BounceSpearGainHooks.HooksOn();
                     On.Player.Update += Player_Update;
                     update = t;
                     load = true;
                 }
-
             }
 
             catch (Exception e) 
@@ -80,11 +77,11 @@ namespace RandomGains
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 EmgTxCustom.Log("Plugins : Space pressed");
-                GainPool.Singleton.EnableGain(BounceSpearGainHooks.bounceSpearID);
+                //GainPool.Singleton.EnableGain(BounceSpearGainHooks.bounceSpearID);
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
-                GainHookWarpper.DisableGain(BounceSpearGainHooks.bounceSpearID);
+                //GainHookWarpper.DisableGain(BounceSpearGainHooks.bounceSpearID);
             }
 
         }
@@ -98,15 +95,4 @@ namespace RandomGains
             GainStaticDataLoader.Load(rainWorld);
         }
     }
-
-    public class BounceSpearDataImpl : GainDataImpl
-    {
-
-    }
-
-    public class BounceSpearGainImpl : GainImpl<BounceSpearGainImpl, BounceSpearDataImpl>
-    {
-
-    }
-
 }
