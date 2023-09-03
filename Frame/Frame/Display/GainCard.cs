@@ -48,7 +48,7 @@ namespace RandomGains.Frame
                 cardObjectB = CreateRenderQuad(false);
 
                 titleObject = CreateTextMesh(true, Plugins.TitleFont);
-                descObject = CreateTextMesh(false, Plugins.DescFont,0.7f,Color.white);
+                descObject = CreateTextMesh(false, Plugins.TitleFont,0.7f,Color.white);
                 cameraObject.transform.position = CurrentSetPos;
 
                 Title = "测试卡牌";
@@ -84,6 +84,7 @@ namespace RandomGains.Frame
                 re.GetComponent<TextMesh>().text = text;
                 re.GetComponent<TextMesh>().anchor = isSideA ? TextAnchor.LowerCenter : TextAnchor.UpperCenter;
                 re.GetComponent<TextMesh>().alignment = (isSideA ? TextAlignment.Center : TextAlignment.Left);
+                Plugins.DescFont.dynamic = true;
                 re.GetComponent<TextMesh>().fontSize = 100;
                 if (!color.HasValue) color = Color.black;
                 re.GetComponent<TextMesh>().color = color.Value;
@@ -221,7 +222,7 @@ namespace RandomGains.Frame
         {
             sprites[0].SetPosition(Vector2.Lerp(lastPos,pos,timeStacker));
             cardTexture.Rotation = LerpRotation(timeStacker);
-            cardTexture.DescAlpha = LerpRotation(timeStacker).y / 180f;
+            cardTexture.DescAlpha =Mathf.InverseLerp(100,180,Vector3.Lerp(rotationLast,rotationLerp,timeStacker).y);
         }
 
         public void Destroy()

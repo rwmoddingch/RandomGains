@@ -3,13 +3,19 @@ using RandomGains.Frame.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using UnityEngine;
-
-namespace RandomGains.Gains.BounceSpearGain
+using System.Security.Permissions;
+#pragma warning disable CS0618
+[assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
+#pragma warning restore CS0618
+namespace RandomGains.Gains
 {
-    internal class BounceSpearGainDataImpl : GainDataImpl
+    internal class BounceSpearGainData : GainDataImpl
     {
         int cycleLeft;
 
@@ -41,7 +47,7 @@ namespace RandomGains.Gains.BounceSpearGain
             return cycleLeft.ToString();
         }
     }
-    internal class BounceSpearGainImpl : GainImpl<BounceSpearGainImpl, BounceSpearGainDataImpl>
+    internal class BounceSpearGain : GainImpl<BounceSpearGain, BounceSpearGainData>
     {
         public override GainID ID => BounceSpearGainHooks.bounceSpearID;
 
@@ -51,14 +57,9 @@ namespace RandomGains.Gains.BounceSpearGain
         }
     }
 
-    internal class BounceSpearGainHooks
+    internal class BounceSpearGainHooks : GainEntry
     {
         public static GainID bounceSpearID = new GainID("BounceSpear", true);
-
-        public static void HooksOn()
-        {
-            GainRegister.RegisterGain<BounceSpearGain,BounceSpearGainData, BounceSpearGainHooks>(bounceSpearID);
-        }
 
         public static void HookOn()
         {
@@ -93,6 +94,11 @@ namespace RandomGains.Gains.BounceSpearGain
 
             self.room.PlaySound(SoundID.Bomb_Explode, vector);
             self.room.InGameNoise(new InGameNoise(vector, 9000f, self, 1f));
+        }
+
+        public override void OnEnable()
+        {
+            GainRegister.RegisterGain<BounceSpearGain, BounceSpearGainData, BounceSpearGainHooks>(bounceSpearID);
         }
     }
 }

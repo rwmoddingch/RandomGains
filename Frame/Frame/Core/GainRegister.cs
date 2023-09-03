@@ -59,21 +59,21 @@ namespace RandomGains.Gains
         /// <summary>
         /// 注册新的增益
         /// </summary>
-        public static void RegisterGain<GainType,DataType,HookType>(GainID id, GainID[] conflicts = null)
+        public static void RegisterGain<_GainType,_DataType,_HookType>(GainID id, GainID[] conflicts = null)
         {
-            GainSave.RegisterGainData(id, typeof(DataType));
-            GainPool.RegisterGain(id, typeof(GainType));
-            GainHookWarpper.RegisterHook(id, typeof(HookType));
+            GainSave.RegisterGainData(id, typeof(_DataType));
+            GainPool.RegisterGain(id, typeof(_GainType));
+            GainHookWarpper.RegisterHook(id, typeof(_HookType));
             BuildID(id);
         }
 
         /// <summary>
         /// 注册新的增益
         /// </summary>
-        public static void RegisterGain<GainType, DataType>(GainID id, GainID[] conflicts = null)
+        public static void RegisterGain<_GainType, _DataType>(GainID id, GainID[] conflicts = null)
         {
-            GainSave.RegisterGainData(id, typeof(DataType));
-            GainPool.RegisterGain(id, typeof(GainType));
+            GainSave.RegisterGainData(id, typeof(_DataType));
+            GainPool.RegisterGain(id, typeof(_GainType));
             BuildID(id);
         }
 
@@ -83,7 +83,6 @@ namespace RandomGains.Gains
             foreach (var file in info.GetFiles("*.dll"))
             {
                 var assembly = Assembly.LoadFile(file.FullName);
-
                 foreach (var type in assembly.GetTypes())
                 {
                     bool isEntry = false;

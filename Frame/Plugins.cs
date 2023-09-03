@@ -49,7 +49,6 @@ namespace RandomGains
                 {
                     GameHooks.HookOn();
                     DeathPersistentSaveDataRx.AppplyTreatment(new GainSave(null));
-                    BounceSpearGainHooks.Register();
                     GainRegister.InitAllGainPlugin();
                     On.Player.Update += Player_Update;
                     LoadResources(self);
@@ -69,13 +68,18 @@ namespace RandomGains
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 EmgTxCustom.Log("Plugins : Space pressed");
-                //GainPool.Singleton.EnableGain(BounceSpearGainHooks.bounceSpearID);
+                GainPool.Singleton.EnableGain(new GainID("BounceSpear"));
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
-                //GainHookWarpper.DisableGain(BounceSpearGainHooks.bounceSpearID);
+                EmgTxCustom.Log("Plugins : LeftControl pressed");
+                GainHookWarpper.DisableGain(new GainID("BounceSpear"));
             }
 
+            if (Input.GetKeyDown(KeyCode.RightControl))
+            {
+                self.room.game.Win(false);
+            }
 
         }
 
