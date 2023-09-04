@@ -17,6 +17,7 @@ using RandomGains.Frame;
 using RandomGains.Gains;
 using RWCustom;
 using UnityEngine;
+using RandomGains.Frame.Display.GainHUD;
 
 #pragma warning disable CS0618
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
@@ -48,6 +49,7 @@ namespace RandomGains
                 if (!load)
                 {
                     GameHooks.HookOn();
+                    GainHUDHook.HookOn();
                     DeathPersistentSaveDataRx.AppplyTreatment(new GainSave(null));
                     GainRegister.InitAllGainPlugin();
                     On.Player.Update += Player_Update;

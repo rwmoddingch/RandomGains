@@ -20,8 +20,11 @@ namespace RandomGains.Frame.Display
         RainWorldGame origRainworldGame;
 
         GainID[] choices;
+        List<GainCardDrawer> cards = new List<GainCardDrawer>();
         int index;
         int counter = 20;
+
+        int preExitCounter;
 
         public GainMenu(ProcessID origID, RainWorldGame oldGame, ProcessManager processManager) : base(processManager, GainMenuID)
         {
@@ -34,17 +37,14 @@ namespace RandomGains.Frame.Display
             testExitButton = new SimpleButton(this, pages[0], "Exit GainMenu", "EXIT", new Vector2(screenScale.x - 110f - 20f, 30f / 2f + 20f), new Vector2(110f, 30f));
             pages[0].subObjects.Add(testExitButton);
 
-            choices = GainRegister.InitNextChoices(Core.GainType.Positive);
-
-            
+            choices = GainRegister.InitNextChoices(Core.GainType.Positive);  
         }
 
         public override void Singal(MenuObject sender, string message)
         {
-            if(message == "EXIT")
+            if(message == "EXIT" && preExitCounter == 0)
             {
-                manager.rainWorld.progression.SaveProgression(false, true);
-                manager.RequestMainProcessSwitch(origNextProcess);
+                preExitCounter = 40;
             }
         }
 
@@ -65,29 +65,53 @@ namespace RandomGains.Frame.Display
                 }
                 else
                 {
-                    pages[0].subObjects.Add(new GainCardDrawer(this, null, new Vector2(500f + 280 * index, 350f)));
+                    var card = new GainCardDrawer(this, null, new Vector2(500f + 280 * index, 350f));
+                    cards.Add(card);
+                    pages[0].subObjects.Add(card);
                     counter = 20;
                     index++;
                 }
+            }
+
+            if(preExitCounter > 0)
+            {
+                preExitCounter--;
+            }
+            if(preExitCounter == 1)
+            {
+                manager.rainWorld.progression.SaveProgression(false, true);
+                manager.RequestMainProcessSwitch(origNextProcess);
+            }
+            else if(preExitCounter == 39)
+            {
+                cards[2].card.TryAddAnimation(GainCard.CardAnimationID.DrawCards_FlipOut_NotChoose, new DrawCards_FlipAnimationArg(new Vector2(1566f, -200f), 0f));
+            }
+            else if (preExitCounter == 29)
+            {
+                cards[1].card.TryAddAnimation(GainCard.CardAnimationID.DrawCards_FlipOut_NotChoose, new DrawCards_FlipAnimationArg(new Vector2(1566f, -200f), 0f));
+            }
+            else if (preExitCounter == 19)
+            {
+                cards[0].card.TryAddAnimation(GainCard.CardAnimationID.DrawCards_FlipOut_NotChoose, new DrawCards_FlipAnimationArg(new Vector2(1566f, -200f), 0f));
             }
         }
 
         SimpleButton testExitButton;
     }
 
-    public class GainCardDrawer : MenuObject
+    internal class GainCardDrawer : MenuObject
     {
-        GainCard card;
+        public GainCard card;
         float t;
         public GainCardDrawer(Menu.Menu menu, MenuObject menuObject, Vector2 pos) : base(menu, menuObject)
         {
-            card = new GainCard(new GainID("BounceSpear"), true)
+            card = new GainCard(new GainID("BounceSpear"), false)
             {
                 pos = new Vector2(1366f, 728f),
                 size = 0f
             };
             menu.container.AddChild(card.InitiateSprites());
-            card.TryAddAnimation(GainCard.CardAnimationID.DrawCards_FlipIn, new DrawCards_FlipInAnimationArg(pos, 40f));
+            card.TryAddAnimation(GainCard.CardAnimationID.DrawCards_FlipIn, new DrawCards_FlipAnimationArg(pos, 40f));
         }
 
         public override void Update()

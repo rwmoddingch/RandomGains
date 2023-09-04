@@ -13,7 +13,7 @@ using static RewiredConsts.Layout;
 using Random = UnityEngine.Random;
 namespace RandomGains.Frame
 {
-   
+
     /// <summary>
     /// 渲染部分
     /// </summary>
@@ -249,8 +249,8 @@ namespace RandomGains.Frame
 
                 sprite.SetPosition(center);
                 sprite.rotation = rotaion.z;
-                sprite.width = (card.origVertices[2].x - card.origVertices[3].x) * card.size * Mathf.Abs(Mathf.Cos(rotaion.x * Mathf.Deg2Rad));
-                sprite.height = (card.origVertices[0].y - card.origVertices[3].y) * card.size * Mathf.Abs(Mathf.Cos(rotaion.y * Mathf.Deg2Rad));
+                sprite.width = (card.origVertices[2].x - card.origVertices[3].x) * card.size * Mathf.Abs(Mathf.Cos(rotaion.y * Mathf.Deg2Rad));
+                sprite.height = (card.origVertices[0].y - card.origVertices[3].y) * card.size * Mathf.Abs(Mathf.Cos(rotaion.x * Mathf.Deg2Rad));
             }
 
             public void Destroy()
@@ -373,6 +373,9 @@ namespace RandomGains.Frame
         bool lowPerformanceMode;
     }
 
+    /// <summary>
+    /// 旋转部分
+    /// </summary>
     internal partial class GainCard
     {
         public void RotateUpdate()
@@ -385,7 +388,12 @@ namespace RandomGains.Frame
 
             lastPos = pos;
 
-            if(cardTexture != null)
+            norm = new Vector3(0f, 0f, 1f);
+            norm = RotateRound(norm, Vector3.forward, Rotation.z, Vector3.zero);
+            norm = RotateRound(norm, Vector3.right, Rotation.x, Vector3.zero);
+            norm = RotateRound(norm, Vector3.up, Rotation.y, Vector3.zero);
+
+            if (cardTexture != null)
                 cardTexture.UpdateVisible();
         }
 
@@ -409,6 +417,8 @@ namespace RandomGains.Frame
         public Vector3 rotationLerp;
         public Vector3 rotationLast;
 
+        Vector3 norm = new Vector3(0f, 0f, 1f);
+
         public Vector3 Rotation
         {
             get => rotationLerp + _mouseOnRotationSmooth;
@@ -423,6 +433,11 @@ namespace RandomGains.Frame
         private Vector3 LerpRotation(float timeStacker)
         {
             return Vector3.Lerp(rotationLast + _mouseOnRotationSmooth, Rotation, timeStacker);
+        }
+
+        public Vector3 RotateRound(Vector3 position, Vector3 axis, float angle, Vector3 center)
+        {
+            return Quaternion.AngleAxis(angle, axis) * (position - center) + center;
         }
 
         //12
@@ -478,8 +493,9 @@ namespace RandomGains.Frame
 
         private void MouseOnClick()
         {
+            if (!internalInteractive)
+                return;
             Rotation = sideA ? new Vector3(0, 180, 0) : new Vector3(0, 0, 0);
-            sideA = !sideA;
         }
         private void MouseOnAnim()
         {
@@ -540,7 +556,7 @@ namespace RandomGains.Frame
 
         public Vector2 MouseLocalPos { get; private set; }
 
-        internal bool sideA = true;
+        internal bool sideA => norm.z > 0;
 
         private bool lastMouseInside;
         public bool MouseInside { get; private set; }
@@ -549,6 +565,8 @@ namespace RandomGains.Frame
 
         private bool lastClick;
         private bool click;
+
+        public bool internalInteractive = true; 
 
         private int clickCounter = 0;
     }
@@ -594,7 +612,15 @@ namespace RandomGains.Frame
             arg.startSize = size;
             if(id == CardAnimationID.DrawCards_FlipIn)
             {
-                animation = new DrawCards_FlipInAnimation(this, (DrawCards_FlipInAnimationArg)arg);
+                animation = new DrawCards_FlipInAnimation(this, (DrawCards_FlipAnimationArg)arg);
+            }
+            else if(id == CardAnimationID.DrawCards_FlipOut_NotChoose)
+            {
+                animation = new DrawCars_FlipOut_NotChooseAnimation(this, (DrawCards_FlipAnimationArg)arg);
+            }
+            else if(id == CardAnimationID.HUD_CardPickAnimation)
+            {
+                animation = new HUD_CardPickAnimation(this, (HUD_CardFlipAnimationArg)arg);
             }
         }
 
@@ -657,7 +683,8 @@ namespace RandomGains.Frame
             }
 
             public static readonly CardAnimationID DrawCards_FlipIn = new CardAnimationID("DrawCards_FlipIn", true);
-            public static readonly CardAnimationID DrawCards_FlipOut = new CardAnimationID("DrawCards_FlipOut", true);
+            public static readonly CardAnimationID DrawCards_FlipOut_NotChoose = new CardAnimationID("DrawCards_FlipOut_NotChoose", true);
+            public static readonly CardAnimationID HUD_CardPickAnimation = new CardAnimationID("HUD_CardPickAnimation", true);
         }
     }
 }

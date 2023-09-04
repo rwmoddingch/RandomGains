@@ -86,8 +86,6 @@ namespace RandomGains.Frame.Core
         /// <param name="id"></param>
         public void EnableGain(GainID id)
         {
-          
-
             if (gainMapping.ContainsKey(id))
             {
                 if (GainSave.Singleton.GetData(id).onCanStackMore())
@@ -157,7 +155,7 @@ namespace RandomGains.Frame.Core
                 return;
             if (type.GetConstructor(Type.EmptyTypes) == null)
             {
-                Debug.LogException(new Exception($"{type.Name} must has a non-arg constructor"));
+                Debug.LogException(new ArgumentException($"{type.Name} must has a non-arg constructor"));
                 return;
             }
             DynamicMethodDefinition method =
@@ -212,8 +210,6 @@ namespace RandomGains.Frame.Core
             ilGenerator.Emit(OpCodes.Newobj, typeof(Gain).GetField($"on{funcName}").FieldType.GetConstructor(new[] { typeof(object), typeof(IntPtr) }));
             ilGenerator.Emit(OpCodes.Stfld,typeof(Gain).GetField($"on{funcName}"));
             ILLog(ilGenerator, $"set {funcName}");
-
-
         }
     }
 }
