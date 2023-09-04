@@ -70,12 +70,12 @@ namespace RandomGains
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 EmgTxCustom.Log("Plugins : Space pressed");
-                GainPool.Singleton.EnableGain(new GainID("DangleBombGainID"));
+                GainPool.Singleton.EnableGain(new GainID("BounceSpear"));
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
                 EmgTxCustom.Log("Plugins : LeftControl pressed");
-                GainHookWarpper.DisableGain(new GainID("DangleBombGainID"));
+                GainHookWarpper.DisableGain(new GainID("BounceSpear"));
             }
 
             if (Input.GetKeyDown(KeyCode.RightControl))

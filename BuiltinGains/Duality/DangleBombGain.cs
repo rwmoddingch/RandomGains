@@ -97,7 +97,7 @@ namespace BuiltinGains.Duality
 
     internal class DangleBombGainImpl : GainImpl<DangleBombGainImpl, DangleBombGainDataImpl>
     {
-        public override GainID ID => DangleBombGainEntry.dangleBombGainID;
+        public override GainID GainID => DangleBombGainEntry.dangleBombGainID;
     }
 
     internal class DangleBombModule
