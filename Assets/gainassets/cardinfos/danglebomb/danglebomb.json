@@ -1,0 +1,10 @@
+{
+    "faceName": "danglebomb",
+    "gainID" : "DangleBombGainID",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "蓝果炸弹",
+    "gainDescription" : "wawa screamer's beast card ",
+    "color" : "#FFE7B0"
+}
