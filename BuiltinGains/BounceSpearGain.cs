@@ -49,11 +49,34 @@ namespace RandomGains.Gains
     }
     internal class BounceSpearGain : GainImpl<BounceSpearGain, BounceSpearGainData>
     {
-        public override GainID ID => BounceSpearGainHooks.bounceSpearID;
+        public override GainID GainID => BounceSpearGainHooks.bounceSpearID;
+        public override bool Trigger(RainWorldGame game)
+        {
+            active = true;
+            count++;
+            return count == 2;
+        }
 
+        public override bool Active => active;
+
+        public override bool Triggerable => !Active;
+
+        private bool active;
+        private int counter;
+        private int count = 0;
         public override void Update(RainWorldGame game)
         {
             base.Update(game);
+            if (active)
+            {
+                counter++;
+                if (counter > 120)
+                {
+                    counter = 0;
+                    active = false;
+                }
+            }
+            
         }
     }
 
@@ -77,7 +100,7 @@ namespace RandomGains.Gains
         private static void Player_Update(MonoMod.Cil.ILContext il)
         {
             ILCursor c = new ILCursor(il);
-            c.EmitDelegate<Action>(() => Debug.Log("Sdsdsd"));
+            //c.EmitDelegate<Action>(() => Debug.Log("Sdsdsd"));
         }
 
         private static void Spear_LodgeInCreature(On.Spear.orig_LodgeInCreature orig, Spear self, SharedPhysics.CollisionResult result, bool eu)

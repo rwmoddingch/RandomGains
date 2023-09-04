@@ -12,6 +12,7 @@ using UnityEngine;
 using Object = System.Object;
 using Mono.Cecil;
 using OpCodes = System.Reflection.Emit.OpCodes;
+using System.Reflection;
 
 namespace RandomGains.Frame.Core
 {
@@ -41,13 +42,17 @@ namespace RandomGains.Frame.Core
             }
         }
 
-        public void AddGain(Gain newGain)
+        public bool TryGetGain(GainID id,out Gain gain)
         {
-            if (!updateObjects.Contains(newGain))
+            if (gainMapping.ContainsKey(id))
             {
-                updateObjects.Add(newGain);
+                gain = gainMapping[id];
+                return true;
             }
+            gain = null;
+            return false;
         }
+
 
         public void Update(RainWorldGame game)
         {
@@ -183,6 +188,10 @@ namespace RandomGains.Frame.Core
             EmitFunction(ilGenerator, type, "Trigger", new[] { typeof(RainWorldGame) });
             EmitFunction(ilGenerator, type, "Update", new[] { typeof(RainWorldGame) });
             EmitFunction(ilGenerator, type, "Destroy", Type.EmptyTypes);
+            EmitFunction(ilGenerator, type.GetProperty("GainID").GetGetMethod(), "getGainID");
+            EmitFunction(ilGenerator, type.GetProperty("Triggerable").GetGetMethod(), "getTriggerable");
+            EmitFunction(ilGenerator, type.GetProperty("Active").GetGetMethod(), "getActive");
+
             ilGenerator.Emit(OpCodes.Ldloc_0);
             ilGenerator.Emit(OpCodes.Ret);
             var ctorDeg = method.Generate().GetFastDelegate().CastDelegate<Func<Gain>>();
@@ -200,16 +209,20 @@ namespace RandomGains.Frame.Core
         }
         private static void EmitFunction(ILGenerator ilGenerator, Type type, string funcName, Type[] param)
         {
-            if(typeof(Gain).GetField($"on{funcName}") == null)
-                throw new Exception($"Can't find field named {funcName}");
             if (type.GetMethod(funcName, param) == null)
                 throw new Exception($"Can't find function named {funcName}");
+            EmitFunction(ilGenerator, type.GetMethod(funcName, param), $"on{funcName}");
+        }
+
+        private static void EmitFunction(ILGenerator ilGenerator, MethodInfo info, string funcName)
+        {
+            if (typeof(Gain).GetField(funcName) == null)
+                throw new Exception($"Can't find field named {funcName}");
             ilGenerator.Emit(OpCodes.Ldloc_0);
             ilGenerator.Emit(OpCodes.Ldloc_1);
-            ilGenerator.Emit(OpCodes.Ldftn, type.GetMethod(funcName, param));
-            ilGenerator.Emit(OpCodes.Newobj, typeof(Gain).GetField($"on{funcName}").FieldType.GetConstructor(new[] { typeof(object), typeof(IntPtr) }));
-            ilGenerator.Emit(OpCodes.Stfld,typeof(Gain).GetField($"on{funcName}"));
-            ILLog(ilGenerator, $"set {funcName}");
+            ilGenerator.Emit(OpCodes.Ldftn, info);
+            ilGenerator.Emit(OpCodes.Newobj, typeof(Gain).GetField(funcName).FieldType.GetConstructor(new[] { typeof(object), typeof(IntPtr) }));
+            ilGenerator.Emit(OpCodes.Stfld, typeof(Gain).GetField(funcName));
         }
     }
 }

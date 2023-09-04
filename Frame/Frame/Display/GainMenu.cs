@@ -37,7 +37,7 @@ namespace RandomGains.Frame.Display
             testExitButton = new SimpleButton(this, pages[0], "Exit GainMenu", "EXIT", new Vector2(screenScale.x - 110f - 20f, 30f / 2f + 20f), new Vector2(110f, 30f));
             pages[0].subObjects.Add(testExitButton);
 
-            choices = GainRegister.InitNextChoices(Core.GainType.Positive);  
+            choices = GainRegister.InitNextChoices(GainType.Positive);  
         }
 
         public override void Singal(MenuObject sender, string message)

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using RandomGains.Frame.Display.GainCardAnimations;
 using UnityEngine;
 using static RewiredConsts.Layout;
 using Random = UnityEngine.Random;
@@ -17,12 +18,15 @@ namespace RandomGains.Frame
     /// <summary>
     /// 渲染部分
     /// </summary>
-    internal partial class GainCard
+    public partial class GainCard
     {
         public class GainCardTexture
         {
             public GainID ID;
             public GainStaticData StaticData;
+            public GainCard card;
+
+            public FTexture mainTexture;
 
             public void Destroy()
             {
@@ -63,6 +67,7 @@ namespace RandomGains.Frame
                 titleObject.GetComponent<MeshRenderer>().enabled = card.sideA;
                 cardObjectB.GetComponent<MeshRenderer>().enabled = !card.sideA;
                 descObject.GetComponent<MeshRenderer>().enabled = !card.sideA;
+                this.card = card;
             }
 
             private GameObject CreateRenderQuad(bool isSideA)
@@ -108,6 +113,16 @@ namespace RandomGains.Frame
                 re.transform.localScale = new Vector3((isSideA ? 1 : -1f) / 0.6f, 1f, 1f);
 
                 return re;
+            }
+
+            public void InitiateSprites()
+            {
+                card.sprites.Add(mainTexture = new FTexture(Texture));
+            }
+
+            public void Hide()
+            {
+                mainTexture.isVisible = false;
             }
 
             private string LayoutText(string text,Font font, float characterSize, int fontSize, FontStyle style)
@@ -244,13 +259,19 @@ namespace RandomGains.Frame
                 sprites[1].isVisible = !card.sideA;
                 var sprite = card.sideA ? sprites[0] : sprites[1];
 
-                Vector2 center = Vector2.Lerp(card.lastPos, card.pos, timeStacker);
+                Vector2 center = card.Position(timeStacker);
                 Vector3 rotaion = card.LerpRotation(timeStacker);
 
                 sprite.SetPosition(center);
                 sprite.rotation = rotaion.z;
                 sprite.width = (card.origVertices[2].x - card.origVertices[3].x) * card.size * Mathf.Abs(Mathf.Cos(rotaion.y * Mathf.Deg2Rad));
                 sprite.height = (card.origVertices[0].y - card.origVertices[3].y) * card.size * Mathf.Abs(Mathf.Cos(rotaion.x * Mathf.Deg2Rad));
+            }
+
+            public void Hide()
+            {
+                foreach (var sprite in sprites)
+                    sprite.isVisible = false;
             }
 
             public void Destroy()
@@ -269,10 +290,18 @@ namespace RandomGains.Frame
             this.ID = gainID;
             staticData = GainStaticDataLoader.GetStaticData(gainID);
             this.lowPerformanceMode = lowPerformanceMode;
+            OnMouseCardClick += MouseOnClick;
         }
 
+        public void Hide()
+        {
+            lowPerformanceRenderer?.Hide();
+            cardTexture?.Hide();
+            Hidden = true;
+        }
         public FContainer InitiateSprites()
         {
+           
             if (lowPerformanceMode)
             {
                 lowPerformanceRenderer = new LowPerformanceRenderer(this);
@@ -281,7 +310,7 @@ namespace RandomGains.Frame
             else
             {
                 cardTexture = new GainCardTexture(this, ID);
-                sprites.Add(new FTexture(cardTexture.Texture));
+                cardTexture.InitiateSprites();
             }
             AddToContainer();
             return container;
@@ -289,7 +318,9 @@ namespace RandomGains.Frame
 
         public void AddToContainer()
         {
-            foreach(var sprite in sprites) 
+            sprites.Insert(0, backGlow = new FSprite("Futile_White") { shader = Custom.rainWorld.Shaders[Plugins.ModID + "FlatLight"], color = staticData.color });
+            sprites.Add(frontGlow = new FSprite("Futile_White") { shader = Custom.rainWorld.Shaders["FlatLight"], color = staticData.color });
+            foreach (var sprite in sprites) 
                 container.AddChild(sprite);
         }
 
@@ -297,22 +328,38 @@ namespace RandomGains.Frame
         {
             RotateUpdate();
             InputUpdate();
-            AnimatioUpdate();
+            AnimationUpdate();
+            lastPosOffset = posOffset;
+            posOffset = Mathf.Lerp(posOffset, MouseInside ? 1 : 0, 0.1f);
         }
 
+        public Vector2 Position(float timeStacker)
+        {
+            return Vector2.Lerp(lastPos, pos, timeStacker) + posOffset * 20 * Vector2.up;
+        }
         public void DrawSprites(float timeStacker)
         {
             if(cardTexture != null)
             {
-                sprites[0].SetPosition(Vector2.Lerp(lastPos, pos, timeStacker));
-                sprites[0].scale = size / 40f;
+                cardTexture.mainTexture.SetPosition(Position(timeStacker));
+                cardTexture.mainTexture.scale = size / 40f;
                 cardTexture.Rotation = LerpRotation(timeStacker);
                 cardTexture.DescAlpha = Mathf.InverseLerp(100, 180, Vector3.Lerp(rotationLast, rotationLerp, timeStacker).y);
             }
-            if(lowPerformanceRenderer != null)
-            {
-                lowPerformanceRenderer.DrawSprites(timeStacker);
-            }
+       
+            lowPerformanceRenderer?.DrawSprites(timeStacker);
+      
+            var fade = Mathf.Lerp(lastFadeTimer, fadeTimer, timeStacker);
+            frontGlow.SetPosition(Position(timeStacker));
+            frontGlow.width = (origVertices[2].x - origVertices[3].x) * size * 4 * Mathf.Abs(Mathf.Cos(LerpRotation(timeStacker).y * Mathf.Deg2Rad)) * Mathf.Lerp(0.2f, 1.5f, fade);
+            frontGlow.height = (origVertices[0].y - origVertices[3].y) * size * 4 * Mathf.Abs(Mathf.Cos(LerpRotation(timeStacker).x * Mathf.Deg2Rad)) * Mathf.Lerp(0.2f,1.5f,fade);
+            frontGlow.alpha = fade;
+
+            if (!Hidden) fade = Mathf.Lerp(lastActiveTimer, activeTimer, timeStacker);
+            backGlow.SetPosition(Position(timeStacker));
+            backGlow.width = (origVertices[2].x - origVertices[3].x) * size * 2 * Mathf.Abs(Mathf.Cos(LerpRotation(timeStacker).y * Mathf.Deg2Rad));
+            backGlow.height = (origVertices[0].y - origVertices[3].y) * size * 2 * Mathf.Abs(Mathf.Cos(LerpRotation(timeStacker).x * Mathf.Deg2Rad));
+            backGlow.alpha = Mathf.Min(Mathf.Lerp(lastActiveTimer, activeTimer, timeStacker),fade);
         }
 
         public void ClearSprites()
@@ -356,7 +403,7 @@ namespace RandomGains.Frame
             ClearSprites();
 
             cardTexture = new GainCardTexture(this, ID);
-            sprites.Add(new FTexture(cardTexture.Texture));
+            cardTexture.InitiateSprites();
 
             AddToContainer();
         }
@@ -370,13 +417,28 @@ namespace RandomGains.Frame
         public GainID ID;
         public GainStaticData staticData;
 
-        bool lowPerformanceMode;
+        private float posOffset;
+        private float lastPosOffset;
+
+        private FSprite backGlow;
+        private FSprite frontGlow;
+
+        public bool Active;
+        private float activeTimer;
+        private float lastActiveTimer;
+
+        public float fadeTimer;
+        private float lastFadeTimer;
+
+        public bool Hidden { get; private set; }
+
+        private bool lowPerformanceMode;
     }
 
     /// <summary>
     /// 旋转部分
     /// </summary>
-    internal partial class GainCard
+    public partial class GainCard
     {
         public void RotateUpdate()
         {
@@ -449,8 +511,9 @@ namespace RandomGains.Frame
     /// <summary>
     /// 输入部分
     /// </summary>
-    internal partial class GainCard
+    public partial class GainCard
     {
+        public bool isDisableInput = true;
         public void InputUpdate()
         {
             lastMouseInside = MouseInside;
@@ -460,13 +523,11 @@ namespace RandomGains.Frame
             {
                 clickCounter--;
                 if (clickCounter == 0)
-                {
-                    MouseOnClick();
                     OnMouseCardClick?.Invoke();
-                }
+                
             }
 
-            click = Input.GetMouseButton(0) && MouseInside;
+            click = Input.GetMouseButton(0) && MouseInside && isDisableInput;
             MouseInside = CheckMouseInside();
 
             if (MouseInside && !lastMouseInside && OnMoueCardEnter != null)
@@ -478,12 +539,11 @@ namespace RandomGains.Frame
                 if (clickCounter != 0)
                 {
                     OnMouseCardDoubleClick?.Invoke();
-                    EmgTxCustom.Log("Double Click");
                     clickCounter = 0;
                 }
                 else
                 {
-                    clickCounter = 7;
+                    clickCounter = 15;
                 }
 
             }
@@ -574,11 +634,11 @@ namespace RandomGains.Frame
     /// <summary>
     /// 动画部分
     /// </summary>
-    internal partial class GainCard
+    public partial class GainCard
     {
         public CardAnimationBase animation;
 
-        void AnimatioUpdate()
+        void AnimationUpdate()
         {
             if(animation != null)
             {
@@ -590,6 +650,10 @@ namespace RandomGains.Frame
                     animation = null;
                 }
             }
+
+            lastActiveTimer = activeTimer;
+            activeTimer = Mathf.Lerp(activeTimer, Active ? 1 : 0, 0.1f);
+            lastFadeTimer = fadeTimer;
         }
 
         public void TryAddAnimation(CardAnimationID id, CardAnimationArg arg)
@@ -621,6 +685,10 @@ namespace RandomGains.Frame
             else if(id == CardAnimationID.HUD_CardPickAnimation)
             {
                 animation = new HUD_CardPickAnimation(this, (HUD_CardFlipAnimationArg)arg);
+            }
+            else if (id == CardAnimationID.HUD_CardRightAnimation)
+            {
+                animation = new HUD_CardRightAnimation(this, (HUD_CardRightAnimationArg)arg);
             }
         }
 
@@ -685,6 +753,7 @@ namespace RandomGains.Frame
             public static readonly CardAnimationID DrawCards_FlipIn = new CardAnimationID("DrawCards_FlipIn", true);
             public static readonly CardAnimationID DrawCards_FlipOut_NotChoose = new CardAnimationID("DrawCards_FlipOut_NotChoose", true);
             public static readonly CardAnimationID HUD_CardPickAnimation = new CardAnimationID("HUD_CardPickAnimation", true);
+            public static readonly CardAnimationID HUD_CardRightAnimation = new CardAnimationID("HUD_CardRightAnimation", true);
         }
     }
 }
