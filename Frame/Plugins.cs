@@ -97,7 +97,8 @@ namespace RandomGains
             TitleFont = bundle.LoadAsset<Font>("u4F53");
             DescFont = bundle.LoadAsset<Font>("NotoSansHans-Regular-2");
             Custom.rainWorld.Shaders.Add(ModID + "CardBack",FShader.CreateShader(ModID + "CardBack",bundle.LoadAsset<Shader>("CardBack")));
-            
+            Custom.rainWorld.Shaders.Add(ModID + "FlatLight",FShader.CreateShader(ModID + "FlatLight", bundle.LoadAsset<Shader>("FlatLight")));
+
             GainStaticDataLoader.Load(rainWorld);
         }
 

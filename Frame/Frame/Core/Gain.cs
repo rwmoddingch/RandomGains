@@ -10,6 +10,12 @@ namespace RandomGains.Frame.Core
     {
         public object gainImpl;
 
+        public GainID GainID => getGainID();
+
+        public bool Triggerable => getTriggerable();
+
+        public bool Active => getActive();
+
         public Func<RainWorldGame, bool> onTrigger;
 
         /// <summary>
@@ -24,6 +30,13 @@ namespace RandomGains.Frame.Core
         /// 注意：当一句游戏结束时所有的增益都会移除一次，无论增益是否用尽生命周期
         /// </summary>
         public Action onDestroy;
+
+        public Func<GainID> getGainID;
+
+        public Func<bool> getTriggerable;
+
+        public Func<bool> getActive;
+
     }
 
 

@@ -7,11 +7,14 @@ using System.Linq;
 using UnityEngine;
 using System.Text;
 using System.Threading.Tasks;
+using RandomGains.Frame.Display.GainCardAnimations;
 
 namespace RandomGains.Frame.Display.GainHUD
 {
     internal class GainHud : HudPart
     {
+
+        public static GainHud Singleton { get; private set; }
         public FContainer container;
 
         public Dictionary<GainID, GainCardHUDRepresent> idToRepresentMapping = new Dictionary<GainID, GainCardHUDRepresent>(); 
@@ -41,6 +44,8 @@ namespace RandomGains.Frame.Display.GainHUD
             {
                 AddGainCardRepresent(id);
             }
+
+            Singleton = this;
         }
 
         public override void Update()
@@ -79,7 +84,7 @@ namespace RandomGains.Frame.Display.GainHUD
             represent.typeIndex = lst.Count;
             lst.Add(represent);
             allCardHUDRepresemts.Add(represent);
-
+            idToRepresentMapping.Add(id, represent);
             represent.InitiateSprites();
         }
 
@@ -107,6 +112,7 @@ namespace RandomGains.Frame.Display.GainHUD
     {
         public GainStaticData data;
 
+
         GainHud hud;
         GainCard card;
         FContainer cardContainer;
@@ -121,6 +127,8 @@ namespace RandomGains.Frame.Display.GainHUD
         public Vector2 lastPos;
         public float size;
         public float lastSize;
+
+        private RainWorldGame Game => hud.hud.rainWorld.processManager.currentMainLoop as RainWorldGame;
 
         public Vector2 UpMid => new Vector2(Custom.rainWorld.options.ScreenSize.x / 2f, Custom.rainWorld.options.ScreenSize.y - (data.GainType == GainType.Positive ? 40f : 80f));
         public List<GainCardHUDRepresent> OwnerLst => data.GainType == GainType.Positive ? hud.positiveCardHUDRepresents : hud.notPositiveCardHUDRepresents;
@@ -138,8 +146,34 @@ namespace RandomGains.Frame.Display.GainHUD
                 lastPos = UpMid,
                 internalInteractive = false
             };
-
+            card.OnMouseCardDoubleClick += Card_OnMouseCardDoubleClick;
             card.OnMouseCardClick += Card_OnMouseCardClick;
+        }
+
+        private void Card_OnMouseCardDoubleClick()
+        {
+            if (card.staticData.triggerable && GainPool.Singleton.TryGetGain(card.ID,out var gain) && gain.Triggerable)
+            {
+                card.TryAddAnimation(GainCard.CardAnimationID.HUD_CardRightAnimation,
+                    new HUD_CardRightAnimationArg(gain.onTrigger(Game),pos));
+            }
+        }
+        public void CardReset()
+        {
+            cardPicked = false;
+            if (!cardPicked)
+                card.internalInteractive = false;
+
+            MoveToOrigin();
+            card.isDisableInput = hud.hudShow;
+            forceCardTransform = !cardPicked;
+
+            Vector2 endPos = cardPicked ? Custom.rainWorld.options.ScreenSize / 2f : pos;
+            float endSize = cardPicked ? 40f : 10f;
+            bool switchToLowQuality = !cardPicked;
+
+            HUD_CardFlipAnimationArg arg = new HUD_CardFlipAnimationArg(endPos, endSize, switchToLowQuality, cardPicked,-360);
+            card.TryAddAnimation(GainCard.CardAnimationID.HUD_CardPickAnimation, arg);
         }
 
         private void Card_OnMouseCardClick()
@@ -162,6 +196,8 @@ namespace RandomGains.Frame.Display.GainHUD
             HUD_CardFlipAnimationArg arg = new HUD_CardFlipAnimationArg(endPos, endSize, switchToLowQuality, cardPicked);
             card.TryAddAnimation(GainCard.CardAnimationID.HUD_CardPickAnimation, arg);
         }
+
+        
 
         public void InitiateSprites()
         {
@@ -191,6 +227,9 @@ namespace RandomGains.Frame.Display.GainHUD
                 card.pos = pos;
                 card.size = size;
             }
+
+            if (GainPool.Singleton.TryGetGain(card.ID, out var gain))
+                card.Active = gain.Active;
         }
 
         public void ToggleShow(bool show)

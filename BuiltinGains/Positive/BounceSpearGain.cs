@@ -53,11 +53,34 @@ namespace BuiltinGains.Positive
     }
     internal class BounceSpearGain : GainImpl<BounceSpearGain, BounceSpearGainData>
     {
-        public override GainID ID => BounceSpearGainHooks.bounceSpearID;
+        public override GainID GainID => BounceSpearGainHooks.bounceSpearID;
+        public override bool Trigger(RainWorldGame game)
+        {
+            active = true;
+            count++;
+            return count == 2;
+        }
 
+        public override bool Active => active;
+
+        public override bool Triggerable => !Active;
+
+        private bool active;
+        private int counter;
+        private int count = 0;
         public override void Update(RainWorldGame game)
         {
             base.Update(game);
+            if (active)
+            {
+                counter++;
+                if (counter > 120)
+                {
+                    counter = 0;
+                    active = false;
+                }
+            }
+            
         }
     }
 

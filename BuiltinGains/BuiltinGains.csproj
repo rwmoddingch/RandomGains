@@ -3,7 +3,7 @@
     <TargetFramework>net48</TargetFramework>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <BaseOutputPath>C:\Users\Administrator\source\repos\RandomGains\build</BaseOutputPath>
+    <BaseOutputPath>bin\</BaseOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />

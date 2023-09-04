@@ -15,14 +15,15 @@ namespace RandomGains.Frame.Core
     public abstract class GainImpl<GainT,DataT> : GainBase where GainT : GainImpl<GainT,DataT> where DataT : GainDataImpl
     {
         public GainT Singleton { get; private set; }
-        public DataT SingletonData => (DataT)GainSave.Singleton.GetData(ID).dataImpl;
+        public DataT SingletonData => (DataT)GainSave.Singleton.GetData(GainID).dataImpl;
         public readonly GainStaticData StaticData;
 
         public GainImpl()
         {
             Singleton = (GainT)this;
-            StaticData = GainStaticDataLoader.GetStaticData(ID);
+            StaticData = GainStaticDataLoader.GetStaticData(GainID);
         }
+
     }
 
     /// <summary>
@@ -30,8 +31,17 @@ namespace RandomGains.Frame.Core
     /// </summary>
     public abstract class GainBase
     {
-        public virtual GainID ID => GainID.None;
+        public virtual GainID GainID => GainID.None;
 
+        /// <summary>
+        /// 当前是否可以触发
+        /// </summary>
+        public virtual bool Triggerable => false;
+
+        /// <summary>
+        /// 当前是否是激活状态
+        /// </summary>
+        public virtual bool Active => false;
 
         /// <summary>
         /// 点击触发方法，仅对可触发的增益有效。当返回true时，代表该增益已经完全触发，增益将会被移除
