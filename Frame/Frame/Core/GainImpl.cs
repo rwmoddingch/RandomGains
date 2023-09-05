@@ -14,7 +14,7 @@ namespace RandomGains.Frame.Core
     /// <typeparam name="DataT">增益数据的类型</typeparam>
     public abstract class GainImpl<GainT,DataT> : GainBase where GainT : GainImpl<GainT,DataT> where DataT : GainDataImpl
     {
-        public GainT Singleton { get; private set; }
+        public static GainT Singleton { get; private set; }
         public DataT SingletonData => (DataT)GainSave.Singleton.GetData(GainID).dataImpl;
         public readonly GainStaticData StaticData;
 
