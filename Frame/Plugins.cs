@@ -70,19 +70,18 @@ namespace RandomGains
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 EmgTxCustom.Log("Plugins : Space pressed");
-                GainPool.Singleton.EnableGain(new GainID("BounceSpear"));
+                GainPool.Singleton.EnableGain(new GainID("DeathFreeMedallion"));
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
                 EmgTxCustom.Log("Plugins : LeftControl pressed");
-                GainHookWarpper.DisableGain(new GainID("BounceSpear"));
+                GainHookWarpper.DisableGain(new GainID("DeathFreeMedallion"));
             }
 
             if (Input.GetKeyDown(KeyCode.RightControl))
             {
                 self.room.game.Win(false);
             }
-
         }
 
   
