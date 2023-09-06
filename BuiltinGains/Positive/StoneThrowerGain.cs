@@ -46,11 +46,14 @@ namespace BuiltinGains.Positive
             if (result.obj is Creature)
             {
                 float stunBonus = 45f;
-                if (ModManager.MMF && MMF.cfgIncreaseStuns.Value && (result.obj is Cicada || result.obj is LanternMouse || (ModManager.MSC && result.obj is Yeek)))
+                if (ModManager.MMF && MMF.cfgIncreaseStuns.Value && 
+                    (result.obj is Cicada || result.obj is LanternMouse || (ModManager.MSC && result.obj is Yeek)))
                 {
                     stunBonus = 90f;
                 }
-                if (ModManager.MSC && self.room.game.IsArenaSession && self.room.game.GetArenaGameSession.chMeta != null)
+                if (ModManager.MSC && 
+                    self.room.game.IsArenaSession && 
+                    self.room.game.GetArenaGameSession.chMeta != null)
                 {
                     stunBonus = 90f;
                 }

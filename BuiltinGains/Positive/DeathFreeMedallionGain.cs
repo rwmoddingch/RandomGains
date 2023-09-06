@@ -275,7 +275,12 @@ namespace BuiltinGains.Positive
                 
                 if(bindAbPlayer.Room.creatures.Contains(bindAbPlayer))
                     bindAbPlayer.Room.AddEntity(bindAbPlayer);
-                
+
+                if (!bindAbPlayer.Room.realizedRoom.updateList.Contains(bindAbPlayer.realizedCreature))
+                    bindAbPlayer.Room.realizedRoom.AddObject(bindAbPlayer.realizedCreature);
+
+                bindAbPlayer.realizedCreature.deaf = 0;
+
                 playerRespawned = true;
             }
         }

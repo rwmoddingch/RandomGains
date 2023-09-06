@@ -62,7 +62,4 @@
       <HintPath>..\includings\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Negative\" />
-  </ItemGroup>
 </Project>
