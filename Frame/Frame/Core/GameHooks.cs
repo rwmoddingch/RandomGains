@@ -16,9 +16,11 @@ namespace RandomGains.Frame.Core
             On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
             On.RainWorldGame.Update += RainWorldGame_Update;
             On.RainWorldGame.CommunicateWithUpcomingProcess += RainWorldGame_CommunicateWithUpcomingProcess;
-            On.RainWorldGame.Win += RainWorldGame_Win;
+
+            On.RainWorldGame.Win += RainWorldGame_Win;//雨眠的时候让卡牌过一个减少剩余时间的判断
         }
 
+        
         private static void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished)
         {
             GainSave.Singleton.SteppingCycle();

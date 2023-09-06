@@ -1,0 +1,10 @@
+{
+  "id": "randomgain",
+  "name": "RandomGain",
+  "version": "1.0.0",
+  "hide_version": false,
+  "description": "",
+  "requirements": [ "emgtx" ],
+  "requirements_names": [ "EmgTx"],
+  "checksum_override_version": false
+}
