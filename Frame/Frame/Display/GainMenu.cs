@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Menu;
 using RandomGains.Frame.Core;
 using RandomGains.Gains;
@@ -33,10 +34,6 @@ namespace RandomGains.Frame.Display
 
             pages.Add(new Page(this, null, "GainMenu", 0));
 
-            Vector2 screenScale = Custom.rainWorld.screenSize;
-            testExitButton = new SimpleButton(this, pages[0], "Exit GainMenu", "EXIT", new Vector2(screenScale.x - 110f - 20f, 30f / 2f + 20f), new Vector2(110f, 30f));
-            pages[0].subObjects.Add(testExitButton);
-
             choices = GainRegister.InitNextChoices(GainType.Positive);  
         }
 
@@ -65,9 +62,10 @@ namespace RandomGains.Frame.Display
                 }
                 else
                 {
-                    var card = new GainCardDrawer(this, null, new Vector2(500f + 280 * index, 350f));
+                    var card = new GainCardDrawer(this, choices[index], new Vector2(500f + 280 * index, 350f));
                     cards.Add(card);
                     pages[0].subObjects.Add(card);
+                    card.card.OnMouseCardDoubleClick += Card_OnMouseCardDoubleClick;
                     counter = 20;
                     index++;
                 }
@@ -79,7 +77,7 @@ namespace RandomGains.Frame.Display
             }
             if(preExitCounter == 1)
             {
-                manager.rainWorld.progression.SaveProgression(false, true);
+                manager.rainWorld.progression.SaveToDisk(true,false, true);
                 manager.RequestMainProcessSwitch(origNextProcess);
             }
             else if(preExitCounter == 39)
@@ -96,6 +94,13 @@ namespace RandomGains.Frame.Display
             }
         }
 
+        private void Card_OnMouseCardDoubleClick([NotNull]GainCard card)
+        {
+            GainSave.Singleton.GetData(card.ID);
+            card.TryAddAnimation(GainCard.CardAnimationID.DrawCards_FlipOut_NotChoose, new DrawCards_FlipAnimationArg(new Vector2(1566f, -200f), 0f));
+            preExitCounter = 40;
+        }
+
         SimpleButton testExitButton;
     }
 
@@ -103,9 +108,9 @@ namespace RandomGains.Frame.Display
     {
         public GainCard card;
         float t;
-        public GainCardDrawer(Menu.Menu menu, MenuObject menuObject, Vector2 pos) : base(menu, menuObject)
+        public GainCardDrawer(Menu.Menu menu,GainID id , Vector2 pos) : base(menu, null)
         {
-            card = new GainCard(new GainID("BounceSpear"), false)
+            card = new GainCard(id, false)
             {
                 pos = new Vector2(1366f, 728f),
                 size = 0f

@@ -70,6 +70,7 @@ namespace BuiltinGains.Positive
         public override void OnEnable()
         {
             GainRegister.RegisterGain<DeathFreeMedallionGain, DeathFreeMedallionGainData, DeathFreeMedallionGainEntry>(deathFreeMedallionGainID);
+            GainRegister.PriorityQueue(deathFreeMedallionGainID);
         }
     }
 

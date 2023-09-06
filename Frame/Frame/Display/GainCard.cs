@@ -57,7 +57,7 @@ namespace RandomGains.Frame
                 cardObjectB = CreateRenderQuad(false);
 
                 titleObject = CreateTextMesh(true, Plugins.TitleFont,1f, StaticData.color);
-                descObject = CreateTextMesh(false, Plugins.TitleFont,0.7f,Color.white);
+                descObject = CreateTextMesh(false, Plugins.DescFont,0.7f,Color.white);
                 cameraObject.transform.position = CurrentSetPos;
 
                 Title = StaticData.gainName;
@@ -83,8 +83,9 @@ namespace RandomGains.Frame
                 }
                 else
                 {
-                    re.GetComponent<MeshRenderer>().material.SetTexture("_MainTex",
-                        StaticData.faceElement.atlas.texture);
+                    if(StaticData.faceElement?.atlas?.texture != null)
+                        re.GetComponent<MeshRenderer>().material.SetTexture("_MainTex",
+                            StaticData.faceElement.atlas.texture);
                 }
                 re.transform.position = CurrentSetPos + new Vector3(0,0, 1.171f);
                 re.transform.localScale = new Vector3(0.6f* (isSideA ? 1 : -1f) , 1f,1f);
@@ -109,6 +110,7 @@ namespace RandomGains.Frame
                 re.GetComponent<TextMesh>().color = color.Value;
                 re.GetComponent<TextMesh>().characterSize = 0.01f * size;
                 re.AddComponent<MeshRenderer>();
+                re.GetComponent<MeshRenderer>().material = font.material;
                 re.GetComponent<MeshRenderer>().material.renderQueue = 3998 + (isSideA ? 0 : 1);
                 re.transform.localScale = new Vector3((isSideA ? 1 : -1f) / 0.6f, 1f, 1f);
 
@@ -186,7 +188,6 @@ namespace RandomGains.Frame
                 {
                     var mesh = titleObject.GetComponent<TextMesh>();
                     var text = LayoutText(value, mesh.font, mesh.characterSize, mesh.fontSize, mesh.fontStyle);
-                    FixBrokenWord(text, Plugins.DescFont);
                     mesh.text = text;
                 }
             }
@@ -198,7 +199,6 @@ namespace RandomGains.Frame
                 {
                     var mesh = descObject.GetComponent<TextMesh>();
                     var text = LayoutText(value, mesh.font, mesh.characterSize, mesh.fontSize, mesh.fontStyle);
-                    FixBrokenWord(text, Plugins.DescFont);
                     mesh.text = text;
                 } 
             }
@@ -207,12 +207,6 @@ namespace RandomGains.Frame
             {
                 get => cardObjectB.GetComponent<MeshRenderer>().sharedMaterial.GetFloat("_Lerp");
                 set => cardObjectB.GetComponent<MeshRenderer>().sharedMaterial.SetFloat("_Lerp", value);
-            }
-            private void FixBrokenWord(string str, Font font)
-            {
-                font.RequestCharactersInTexture(str);
-                Texture texture = font.material.mainTexture;
-                Debug.Log($"texture:{texture.width}   {texture.height}");
             }
             public void UpdateVisible()
             {
@@ -240,8 +234,8 @@ namespace RandomGains.Frame
             public void InitiateSprites()
             {
                 sprites = new FSprite[2];
-                sprites[0] = new FSprite(card.staticData.faceElementName, true);
-                sprites[1] = new FSprite(Futile.atlasManager.GetAtlasWithName(Plugins.MoonBack).name, true);
+                sprites[0] = new FSprite(Futile.atlasManager.DoesContainElementWithName(card.staticData.faceElementName) ? card.staticData.faceElementName : "Futile_White");
+                sprites[1] = new FSprite(Futile.atlasManager.GetAtlasWithName(Plugins.MoonBack).name);
                 AddToCard();
             }
 
@@ -523,7 +517,7 @@ namespace RandomGains.Frame
             {
                 clickCounter--;
                 if (clickCounter == 0)
-                    OnMouseCardClick?.Invoke();
+                    OnMouseCardClick?.Invoke(this);
                 
             }
 
@@ -538,7 +532,7 @@ namespace RandomGains.Frame
             {
                 if (clickCounter != 0)
                 {
-                    OnMouseCardDoubleClick?.Invoke();
+                    OnMouseCardDoubleClick?.Invoke(this);
                     clickCounter = 0;
                 }
                 else
@@ -551,7 +545,7 @@ namespace RandomGains.Frame
             MouseOnAnim();
         }
 
-        private void MouseOnClick()
+        private void MouseOnClick(GainCard card)
         {
             if (!internalInteractive)
                 return;
@@ -608,8 +602,8 @@ namespace RandomGains.Frame
             return Vector3.Dot(Vector3.Cross((a - b), (mouse - b)), norm) > 0f;
         }
 
-        public event Action OnMouseCardClick;
-        public event Action OnMouseCardDoubleClick;
+        public event Action<GainCard> OnMouseCardClick;
+        public event Action<GainCard> OnMouseCardDoubleClick;
         public event Action OnMoueCardEnter;
         public event Action OnMoueCardExit;
         public event Action OnMoueCardUpdate;

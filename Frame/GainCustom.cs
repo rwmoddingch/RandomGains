@@ -13,20 +13,7 @@ namespace RandomGains
 {
     internal static class GainCustom
     {
-        public static T GetTypeCtor<T>(Type type) where T : Delegate
-        {
-            DynamicMethodDefinition ctorMethod = new DynamicMethodDefinition($"Ctro{type.Name}", type, new Type[0]);
-            ConstructorInfo origCtor = type.GetConstructor(new Type[0]);
-            if (origCtor == null)
-                throw new ArgumentNullException($"{type} dont have matching ctor method");
-
-            ILGenerator il = ctorMethod.GetILGenerator();
-            il.Emit(OpCodes.Newobj, origCtor);
-            il.Emit(OpCodes.Ret);
-
-            return (T)ctorMethod.Generate().CreateDelegate(typeof(T));
-        }
-
+        
         public static Vector2 Bezier(Vector2 start, Vector2 end, Vector2 a, float t)
         {
             Vector2 a1 = Vector2.Lerp(start, a, t);

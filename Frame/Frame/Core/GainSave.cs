@@ -21,6 +21,7 @@ namespace RandomGains.Frame.Core
         public static GainSave Singleton { get; private set; }
         public override string header => "GAINSAVE";
 
+        public List<GainID> priorityQueue = new List<GainID>();
 
         static Dictionary<GainID, Func<GainData>> dataCtors = new Dictionary<GainID, Func<GainData>>();
         public List<GainData> gainDatas = new List<GainData>();
@@ -199,8 +200,6 @@ namespace RandomGains.Frame.Core
                 ilGenerator.Emit(OpCodes.Ret);
                 var ctorDeg = method.Generate().GetFastDelegate().CastDelegate<Func<GainData>>();
                 dataCtors.Add(gainID, ctorDeg);
-                //foreach (var a in method.Definition.Body.Instructions)
-                //    Debug.Log($"{a}");
             }
             catch (Exception e)
             {
