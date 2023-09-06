@@ -113,7 +113,9 @@ namespace BuiltinGains.Positive
         private static void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
         {
             orig.Invoke(self, eu);
-            if (!modules.TryGetValue(self, out var module) && !(self is ExplosiveSpear))
+            if (self is ExplosiveSpear)
+                return;
+            if (!modules.TryGetValue(self, out var module))
             {
                 modules.Add(self, new BounceSpearModule(self));
             }
@@ -140,21 +142,19 @@ namespace BuiltinGains.Positive
             if (!modules.TryGetValue(self, out var module))
                 return;
 
-            Vector2 vector = Vector2.Lerp(self.firstChunk.pos, self.firstChunk.lastPos, 0.35f);
+            if (module.InitShoot(self))
+            {
+                Vector2 vector = Vector2.Lerp(self.firstChunk.pos, self.firstChunk.lastPos, 0.35f);
 
-            self.room.AddObject(new Explosion.ExplosionLight(vector, 280f, 1f, 7, Color.red));
-            self.room.AddObject(new Explosion.ExplosionLight(vector, 230f, 1f, 3, new Color(1f, 1f, 1f)));
-            self.room.AddObject(new ExplosionSpikes(self.room, vector, 14, 30f, 9f, 7f, 170f, Color.red));
-            //self.room.AddObject(new ShockWave(vector, 330f, 0.045f, 5, false));
-
-            self.room.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, vector);
-
-            module.InitShoot(self);
+                self.room.AddObject(new ExplosionSpikes(self.room, vector, 14, 30f, 9f, 7f, 170f, BounceTrail.TrailColor)); ;
+                self.room.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, vector);
+            }
         }
 
         public override void OnEnable()
         {
             GainRegister.RegisterGain<BounceSpearGain, BounceSpearGainData, BounceSpearGainHooks>(bounceSpearID);
+            GainRegister.PriorityQueue(bounceSpearID);
         }
     }
 
@@ -196,13 +196,20 @@ namespace BuiltinGains.Positive
                 trail = null;
         }
 
-        public void InitShoot(Spear self)
+        public bool InitShoot(Spear self)
         {
-            shootDelay = 2;
+            if (!(self.thrownBy is Player))
+                return false;
+
+            
             if (!(self.stuckInObject is Creature stuckIn))
             {
-                return;
+                return false;
             }
+            if (NextTarget(self) == null)
+                return false;
+
+            shootDelay = 2;
             ignoreRad = stuckIn.mainBodyChunk.rad * 2f;
             ignoreList.Add(stuckIn.abstractCreature);
 
@@ -211,39 +218,20 @@ namespace BuiltinGains.Positive
 
             if(trail == null)
             {
-                trail = new BounceTrail(self, self.room, Color.red);
+                trail = new BounceTrail(self, self.room, BounceTrail.TrailColor, self.thrownBy as Player);
                 self.room.AddObject(trail);
             }
+            return true;
         }
 
         public void ShootNextTarget(Spear self)
         {
-            float minDist = float.MaxValue;
-            Creature nextTarget = null;
-
-            foreach (var obj in self.room.updateList)
-            {
-                if (!(obj is Creature creature))
-                    continue;
-                if (ignoreList.Contains(creature.abstractCreature))
-                    continue;
-                if (creature is Player)
-                    continue;
-                if (creature.dead)
-                    continue;
-                if (!self.room.VisualContact(self.firstChunk.pos, creature.DangerPos))
-                    continue;
-                
-                float dist = Vector2.Distance(self.firstChunk.pos, creature.DangerPos);
-                if (dist < minDist)
-                {
-                    nextTarget = creature;
-                    minDist = dist;
-                }
-            }
+            Creature nextTarget = NextTarget(self);
 
             if (nextTarget == null)
             {
+                trail.Destroy();
+                trail = null;
                 noGmode = false;
                 return;
             }
@@ -265,10 +253,40 @@ namespace BuiltinGains.Positive
             if (trail != null)
                 trail.bounceHit++;
         }
+
+        public Creature NextTarget(Spear self)
+        {
+            float minDist = float.MaxValue;
+            Creature nextTarget = null;
+
+            foreach (var obj in self.room.updateList)
+            {
+                if (!(obj is Creature creature))
+                    continue;
+                if (ignoreList.Contains(creature.abstractCreature))
+                    continue;
+                if (creature is Player)
+                    continue;
+                if (creature.dead)
+                    continue;
+                if (!self.room.VisualContact(self.firstChunk.pos, creature.DangerPos))
+                    continue;
+
+                float dist = Vector2.Distance(self.firstChunk.pos, creature.DangerPos);
+                if (dist < minDist)
+                {
+                    nextTarget = creature;
+                    minDist = dist;
+                }
+            }
+            return nextTarget;
+        }
     }
 
     public class BounceTrail : CosmeticSprite
     {
+        public static Color TrailColor = new Color(0.43f, 0.8f, 1f);
+
         public Spear spear;
         public List<Vector2> positionsList = new List<Vector2>();
         public List<Color> colorsList = new List<Color>();
@@ -276,16 +294,16 @@ namespace BuiltinGains.Positive
         public Color color;
         public int savPoss;
 
-        public FLabel label;
-
         int life;
         public int bounceHit = 0;
 
-        public BounceTrail(Spear spear, Room room, Color color)
+        public Player throwByKeeper;
+        public BounceTrail(Spear spear, Room room, Color color, Player player)
         {
             this.room = room;
             this.spear = spear;
             this.color = color;
+            this.throwByKeeper = player;
             savPoss = 20;
 
             positionsList = new List<Vector2>()
@@ -305,6 +323,9 @@ namespace BuiltinGains.Positive
             if (room != spear.room)
                 Destroy();
 
+            if (spear == null)
+                return;
+
             if (spear.mode != Weapon.Mode.Thrown)
                 life--;
             else
@@ -313,7 +334,10 @@ namespace BuiltinGains.Positive
             if (life == 0)
                 Destroy();
 
-            positionsList.Insert(0, spear.firstChunk.pos);
+            if(spear.stuckInObject != null)
+                positionsList.Insert(0, spear.stuckInObject.firstChunk.pos);
+            else
+                positionsList.Insert(0, spear.firstChunk.pos);
             if (positionsList.Count > savPoss)
             {
                 positionsList.RemoveAt(savPoss);
@@ -329,7 +353,9 @@ namespace BuiltinGains.Positive
             {
                 colorsList.RemoveAt(savPoss);
             }
-            label.text = bounceHit.ToString();
+
+            throwByKeeper.mushroomCounter = 1;
+            throwByKeeper.mushroomEffect = Mathf.Min(bounceHit / 5f, 0.5f);
         }
 
         public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
@@ -337,7 +363,6 @@ namespace BuiltinGains.Positive
             sLeaser.sprites = new FSprite[1];
             sLeaser.sprites[0] = TriangleMesh.MakeLongMesh(savPoss - 1, false, true);
 
-            label = new FLabel(Custom.GetFont(),"0");
             AddToContainer(sLeaser, rCam, null);
         }
 
@@ -347,7 +372,6 @@ namespace BuiltinGains.Positive
                 newContatiner = rCam.ReturnFContainer("Water");
 
             newContatiner.AddChild(sLeaser.sprites[0]);
-            newContatiner.AddChild(label);
             base.AddToContainer(sLeaser, rCam, newContatiner);
         }
 
@@ -373,8 +397,6 @@ namespace BuiltinGains.Positive
                 float num = (float)j / (float)((sLeaser.sprites[0] as TriangleMesh).verticeColors.Length - 1);
                 (sLeaser.sprites[0] as TriangleMesh).verticeColors[j] = GetCol(j);
             }
-            label.SetPosition(a + Vector2.up * 20f - camPos);
-            label.color = color;
         }
 
         private Vector2 GetPos(int i)

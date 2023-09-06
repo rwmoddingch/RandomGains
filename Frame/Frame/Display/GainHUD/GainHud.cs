@@ -38,8 +38,6 @@ namespace RandomGains.Frame.Display.GainHUD
             container = new FContainer();
             hud.fContainers[0].AddChild(container);
 
-            GainPool.Singleton.EnableGain(new GainID("BounceSpear"));
-
             foreach(var id in GainPool.Singleton.gainMapping.Keys)
             {
                 AddGainCardRepresent(id);
@@ -130,14 +128,14 @@ namespace RandomGains.Frame.Display.GainHUD
 
         private RainWorldGame Game => hud.hud.rainWorld.processManager.currentMainLoop as RainWorldGame;
 
-        public Vector2 UpMid => new Vector2(Custom.rainWorld.options.ScreenSize.x / 2f, Custom.rainWorld.options.ScreenSize.y - (data.GainType == GainType.Positive ? 40f : 80f));
+        public Vector2 UpMid => new Vector2(Custom.rainWorld.options.ScreenSize.x / 2f, Custom.rainWorld.options.ScreenSize.y - (data.GainType == GainType.Positive ? 40f : 80f)) + ((OwnerLst.Count-1)/2f -containerIndex) * new Vector2(6*2*size,0);
         public List<GainCardHUDRepresent> OwnerLst => data.GainType == GainType.Positive ? hud.positiveCardHUDRepresents : hud.notPositiveCardHUDRepresents;
 
         public GainCardHUDRepresent(GainHud hud, GainID id, int containerIndex)
         {
             this.hud = hud;
             this.id = id;
-
+            this.containerIndex = containerIndex;
             data = GainStaticDataLoader.GetStaticData(id);
             card = new GainCard(id, true)
             {
@@ -150,7 +148,7 @@ namespace RandomGains.Frame.Display.GainHUD
             card.OnMouseCardClick += Card_OnMouseCardClick;
         }
 
-        private void Card_OnMouseCardDoubleClick()
+        private void Card_OnMouseCardDoubleClick(GainCard self)
         {
             if (card.staticData.triggerable && GainPool.Singleton.TryGetGain(card.ID,out var gain) && gain.Triggerable)
             {
@@ -176,7 +174,7 @@ namespace RandomGains.Frame.Display.GainHUD
             card.TryAddAnimation(GainCard.CardAnimationID.HUD_CardPickAnimation, arg);
         }
 
-        private void Card_OnMouseCardClick()
+        private void Card_OnMouseCardClick(GainCard self)
         {
             cardPicked = !cardPicked;
             if(!cardPicked)

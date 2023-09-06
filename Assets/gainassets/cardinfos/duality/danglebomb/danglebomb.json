@@ -5,6 +5,6 @@
     "gainProperty" : "Normal",
     "triggerable" : "false",
     "gainName" : "蓝果炸弹",
-    "gainDescription" : "wawa screamer's beast card ",
+    "gainDescription" : "使所有蓝果变成定时炸弹，被投出后倒计时并爆炸，食用也会导致爆炸",
     "color" : "#FFE7B0"
 }

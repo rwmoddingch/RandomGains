@@ -59,6 +59,7 @@ namespace BuiltinGains.Duality
         public override void OnEnable()
         {
             GainRegister.RegisterGain<DangleBombGainImpl, DangleBombGainDataImpl, DangleBombGainEntry>(dangleBombGainID);
+            GainRegister.PriorityQueue(dangleBombGainID);
         }
     }
 

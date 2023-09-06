@@ -51,9 +51,9 @@ namespace RandomGains
                     GameHooks.HookOn();
                     GainHUDHook.HookOn();
                     DeathPersistentSaveDataRx.AppplyTreatment(new GainSave(null));
-                    GainRegister.InitAllGainPlugin();
                     On.Player.Update += Player_Update;
                     LoadResources(self);
+                    GainRegister.InitAllGainPlugin();
                     load = true;
                 }
             }
@@ -70,7 +70,7 @@ namespace RandomGains
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 EmgTxCustom.Log("Plugins : Space pressed");
-                GainPool.Singleton.EnableGain(new GainID("ByeByeWeaponID"));
+                GainPool.Singleton.EnableGain(new GainID("DeathFreeMedallion"));
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
@@ -93,12 +93,13 @@ namespace RandomGains
             //SlugBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/slugback").elements[0].name;
 
             AssetBundle bundle = AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("gainassets/assetBundle/gainasset"));
-            TitleFont = bundle.LoadAsset<Font>("u4F53");
+            TitleFont = bundle.LoadAsset<Font>("峰广明锐体");
             DescFont = bundle.LoadAsset<Font>("NotoSansHans-Regular-2");
             Custom.rainWorld.Shaders.Add(ModID + "CardBack",FShader.CreateShader(ModID + "CardBack",bundle.LoadAsset<Shader>("CardBack")));
             Custom.rainWorld.Shaders.Add(ModID + "FlatLight",FShader.CreateShader(ModID + "FlatLight", bundle.LoadAsset<Shader>("FlatLight")));
 
             GainStaticDataLoader.Load(rainWorld);
+            Futile.atlasManager.LogAllElementNames();
         }
 
         public static Font TitleFont { get; set; }

@@ -29,16 +29,17 @@ namespace RandomGains.Frame.Core
 
         private static void ProcessManager_PostSwitchMainProcess(On.ProcessManager.orig_PostSwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)
         {
-            if (self.oldProcess is RainWorldGame && (ID == ProcessManager.ProcessID.SleepScreen || ID == ProcessManager.ProcessID.Dream))
+            if (self.oldProcess is RainWorldGame game && (ID == ProcessManager.ProcessID.SleepScreen || ID == ProcessManager.ProcessID.Dream))
             {
                 GainPool.Singleton.Destroy();
-                self.currentMainLoop = new GainMenu(ID, self.oldProcess as RainWorldGame, self);
+                self.currentMainLoop = new GainMenu(ID, game, self);
                 ID = GainMenu.GainMenuID;
+                return;
             }
             orig.Invoke(self, ID);
-            if(self.currentMainLoop is RainWorldGame game && GainPool.Singleton == null)
+            if(self.currentMainLoop is RainWorldGame game1 && GainPool.Singleton == null)
             {
-                new GainPool(game);
+                new GainPool(game1);
             }
         }
 

@@ -1,0 +1,10 @@
+{
+    "faceName": "bouncespear",
+    "gainID" : "BounceSpear",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "弹射矛",
+    "gainDescription" : "使普通矛和电矛具有弹射效果，命中一个目标后会射向最近的生物",
+    "color" : "#74D8FF"
+}

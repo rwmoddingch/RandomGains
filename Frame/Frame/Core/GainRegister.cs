@@ -34,9 +34,13 @@ namespace RandomGains.Gains
             List<GainID> result = new List<GainID>();
             for(int i = 0;i < 3; i++)
             {
-                //var lst = typeToIDMapping[gainType];
-                //result.Add(lst[Random.Range(0, lst.Count)]);
-                result.Add(new GainID("BounceSpear"));
+                if(GainSave.Singleton.priorityQueue.Count > i)
+                    result.Add(GainSave.Singleton.priorityQueue[i]);
+                else
+                {
+                    var lst = typeToIDMapping[gainType];
+                    result.Add(lst[Random.Range(0, lst.Count)]);
+                }
             }
             return result.ToArray();
         }
@@ -50,6 +54,12 @@ namespace RandomGains.Gains
         /// <param name="conflicts"></param>
         public static void RegisterGain(GainID id, Type gainType, Type dataType,Type hookType = null, GainID[] conflicts = null)
         {
+            if (GainStaticDataLoader.GetStaticData(id) == null)
+            {
+                Debug.LogError($"[Random Gains] Missing static data for gain: {id}");
+                return;
+            }
+
             GainSave.RegisterGainData(id, dataType);
             GainPool.RegisterGain(id, gainType);
             if(hookType != null)
@@ -62,10 +72,7 @@ namespace RandomGains.Gains
         /// </summary>
         public static void RegisterGain<_GainType,_DataType,_HookType>(GainID id, GainID[] conflicts = null)
         {
-            GainSave.RegisterGainData(id, typeof(_DataType));
-            GainPool.RegisterGain(id, typeof(_GainType));
-            GainHookWarpper.RegisterHook(id, typeof(_HookType));
-            BuildID(id);
+            RegisterGain(id, typeof(_GainType), typeof(_DataType), typeof(_HookType),  conflicts);
         }
 
         /// <summary>
@@ -73,9 +80,13 @@ namespace RandomGains.Gains
         /// </summary>
         public static void RegisterGain<_GainType, _DataType>(GainID id, GainID[] conflicts = null)
         {
-            GainSave.RegisterGainData(id, typeof(_DataType));
-            GainPool.RegisterGain(id, typeof(_GainType));
-            BuildID(id);
+            RegisterGain(id, typeof(_GainType), typeof(_DataType), null, conflicts);
+        }
+
+        public static void PriorityQueue(GainID id)
+        {
+            if(!GainSave.Singleton.priorityQueue.Contains(id) && GainStaticDataLoader.GetStaticData(id) != null)
+                GainSave.Singleton.priorityQueue.Add(id);
         }
 
         public static void InitAllGainPlugin()
