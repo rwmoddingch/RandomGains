@@ -130,7 +130,7 @@ namespace RandomGains.Frame.Display.GainHUD
 
         private RainWorldGame Game => hud.hud.rainWorld.processManager.currentMainLoop as RainWorldGame;
 
-        public Vector2 UpMid => new Vector2(Custom.rainWorld.options.ScreenSize.x / 2f, Custom.rainWorld.options.ScreenSize.y - (data.GainType == GainType.Positive ? 40f : 80f));
+        public Vector2 UpMid => new Vector2(Custom.rainWorld.options.ScreenSize.x / 2f, Custom.rainWorld.options.ScreenSize.y - (data?.GainType == GainType.Positive ? 40f : 80f));
         public List<GainCardHUDRepresent> OwnerLst => data.GainType == GainType.Positive ? hud.positiveCardHUDRepresents : hud.notPositiveCardHUDRepresents;
 
         public GainCardHUDRepresent(GainHud hud, GainID id, int containerIndex)

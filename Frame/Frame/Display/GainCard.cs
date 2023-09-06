@@ -44,6 +44,7 @@ namespace RandomGains.Frame
                 StaticData = GainStaticDataLoader.GetStaticData(ID);
                 count++;
 
+                Texture.filterMode = FilterMode.Point;
                 cameraObject = new GameObject("GainCard_Camera");
 
                 camera = cameraObject.AddComponent<Camera>();
@@ -57,7 +58,7 @@ namespace RandomGains.Frame
                 cardObjectB = CreateRenderQuad(false);
 
                 titleObject = CreateTextMesh(true, Plugins.TitleFont,1f, StaticData.color);
-                descObject = CreateTextMesh(false, Plugins.TitleFont,0.7f,Color.white);
+                descObject = CreateTextMesh(false, Plugins.DescFont,0.7f,Color.white);
                 cameraObject.transform.position = CurrentSetPos;
 
                 Title = StaticData.gainName;
@@ -68,6 +69,7 @@ namespace RandomGains.Frame
                 cardObjectB.GetComponent<MeshRenderer>().enabled = !card.sideA;
                 descObject.GetComponent<MeshRenderer>().enabled = !card.sideA;
                 this.card = card;
+
             }
 
             private GameObject CreateRenderQuad(bool isSideA)
@@ -109,6 +111,9 @@ namespace RandomGains.Frame
                 re.GetComponent<TextMesh>().color = color.Value;
                 re.GetComponent<TextMesh>().characterSize = 0.01f * size;
                 re.AddComponent<MeshRenderer>();
+                EmgTxCustom.Log($"font:{font}");
+                EmgTxCustom.Log($"{font.material}");
+                re.GetComponent<MeshRenderer>().material = font.material;
                 re.GetComponent<MeshRenderer>().material.renderQueue = 3998 + (isSideA ? 0 : 1);
                 re.transform.localScale = new Vector3((isSideA ? 1 : -1f) / 0.6f, 1f, 1f);
 
@@ -154,7 +159,7 @@ namespace RandomGains.Frame
             /// <summary>
             /// 渲染贴图
             /// </summary>
-            public RenderTexture Texture { get; private set; } = RenderTexture.GetTemporary(900, 540);
+            public RenderTexture Texture { get; private set; } = RenderTexture.GetTemporary(900,540);
 
             public Vector3 Rotation
             {

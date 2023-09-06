@@ -1,0 +1,10 @@
+{
+    "faceName": "bouncespear",
+    "gainID" : "BounceSpear",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "弹射矛",
+    "gainDescription" : "wawa screamer's beast card3",
+    "color" : "#74D8FF"
+}
