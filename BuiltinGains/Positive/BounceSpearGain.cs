@@ -142,9 +142,8 @@ namespace BuiltinGains.Positive
 
             Vector2 vector = Vector2.Lerp(self.firstChunk.pos, self.firstChunk.lastPos, 0.35f);
 
-            self.room.AddObject(new Explosion.ExplosionLight(vector, 280f, 1f, 7, Color.red));
-            self.room.AddObject(new Explosion.ExplosionLight(vector, 230f, 1f, 3, new Color(1f, 1f, 1f)));
-            self.room.AddObject(new ExplosionSpikes(self.room, vector, 14, 30f, 9f, 7f, 170f, Color.red));
+            //self.room.AddObject(new Explosion.ExplosionLight(vector, 280f, 1f, 7, BounceTrail.TrailColor));
+            self.room.AddObject(new ExplosionSpikes(self.room, vector, 14, 30f, 9f, 7f, 170f, BounceTrail.TrailColor));
             //self.room.AddObject(new ShockWave(vector, 330f, 0.045f, 5, false));
 
             self.room.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, vector);
@@ -199,6 +198,9 @@ namespace BuiltinGains.Positive
 
         public void InitShoot(Spear self)
         {
+            if (!(self.thrownBy is Player))
+                return;
+
             shootDelay = 2;
             if (!(self.stuckInObject is Creature stuckIn))
             {
@@ -212,7 +214,7 @@ namespace BuiltinGains.Positive
 
             if(trail == null)
             {
-                trail = new BounceTrail(self, self.room, Color.red);
+                trail = new BounceTrail(self, self.room, BounceTrail.TrailColor);
                 self.room.AddObject(trail);
             }
         }
@@ -270,14 +272,14 @@ namespace BuiltinGains.Positive
 
     public class BounceTrail : CosmeticSprite
     {
+        public static Color TrailColor = new Color(0.43f, 0.8f, 1f);
+
         public Spear spear;
         public List<Vector2> positionsList = new List<Vector2>();
         public List<Color> colorsList = new List<Color>();
 
         public Color color;
         public int savPoss;
-
-        public FLabel label;
 
         int life;
         public int bounceHit = 0;
@@ -314,7 +316,10 @@ namespace BuiltinGains.Positive
             if (life == 0)
                 Destroy();
 
-            positionsList.Insert(0, spear.firstChunk.pos);
+            if(spear.stuckInChunk != null)
+                positionsList.Insert(0, spear.stuckInChunk.pos);
+            else
+                positionsList.Insert(0, spear.firstChunk.pos);
             if (positionsList.Count > savPoss)
             {
                 positionsList.RemoveAt(savPoss);
@@ -330,7 +335,6 @@ namespace BuiltinGains.Positive
             {
                 colorsList.RemoveAt(savPoss);
             }
-            label.text = bounceHit.ToString();
         }
 
         public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
@@ -338,7 +342,6 @@ namespace BuiltinGains.Positive
             sLeaser.sprites = new FSprite[1];
             sLeaser.sprites[0] = TriangleMesh.MakeLongMesh(savPoss - 1, false, true);
 
-            label = new FLabel(Custom.GetFont(),"0");
             AddToContainer(sLeaser, rCam, null);
         }
 
@@ -348,7 +351,6 @@ namespace BuiltinGains.Positive
                 newContatiner = rCam.ReturnFContainer("Water");
 
             newContatiner.AddChild(sLeaser.sprites[0]);
-            newContatiner.AddChild(label);
             base.AddToContainer(sLeaser, rCam, newContatiner);
         }
 
@@ -374,8 +376,6 @@ namespace BuiltinGains.Positive
                 float num = (float)j / (float)((sLeaser.sprites[0] as TriangleMesh).verticeColors.Length - 1);
                 (sLeaser.sprites[0] as TriangleMesh).verticeColors[j] = GetCol(j);
             }
-            label.SetPosition(a + Vector2.up * 20f - camPos);
-            label.color = color;
         }
 
         private Vector2 GetPos(int i)

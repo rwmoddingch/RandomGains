@@ -44,6 +44,7 @@ namespace RandomGains.Frame
                 StaticData = GainStaticDataLoader.GetStaticData(ID);
                 count++;
 
+                Texture.filterMode = FilterMode.Point;
                 cameraObject = new GameObject("GainCard_Camera");
 
                 camera = cameraObject.AddComponent<Camera>();
@@ -68,6 +69,7 @@ namespace RandomGains.Frame
                 cardObjectB.GetComponent<MeshRenderer>().enabled = !card.sideA;
                 descObject.GetComponent<MeshRenderer>().enabled = !card.sideA;
                 this.card = card;
+
             }
 
             private GameObject CreateRenderQuad(bool isSideA)
@@ -156,7 +158,7 @@ namespace RandomGains.Frame
             /// <summary>
             /// 渲染贴图
             /// </summary>
-            public RenderTexture Texture { get; private set; } = RenderTexture.GetTemporary(900, 540);
+            public RenderTexture Texture { get; private set; } = RenderTexture.GetTemporary(900,540);
 
             public Vector3 Rotation
             {

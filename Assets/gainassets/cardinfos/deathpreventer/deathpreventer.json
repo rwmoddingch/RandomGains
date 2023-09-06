@@ -1,6 +1,6 @@
 {
     "faceName": "deathpreventer",
-    "gainID" : "BounceSpear",
+    "gainID" : "DeathFreeMedallion",
     "gainType" : "Positive",
     "gainProperty" : "Normal",
     "triggerable" : "false",

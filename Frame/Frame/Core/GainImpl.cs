@@ -122,6 +122,4 @@ namespace RandomGains.Frame.Core
         {
         }
     }
-
-
 }

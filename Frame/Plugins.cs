@@ -99,6 +99,7 @@ namespace RandomGains
             Custom.rainWorld.Shaders.Add(ModID + "FlatLight",FShader.CreateShader(ModID + "FlatLight", bundle.LoadAsset<Shader>("FlatLight")));
 
             GainStaticDataLoader.Load(rainWorld);
+            Futile.atlasManager.LogAllElementNames();
         }
 
         public static Font TitleFont { get; set; }
