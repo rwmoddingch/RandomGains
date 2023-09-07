@@ -16,7 +16,7 @@ namespace RandomGains.Frame.Display.GainHUD
     {
         public static GainHud Singleton { get; private set; }
         public FContainer container;
-        public GainSlot slot;
+        public GainSlot2 slot;
 
         bool keyPress;
         bool lastKeyPress;
@@ -25,7 +25,7 @@ namespace RandomGains.Frame.Display.GainHUD
         {
             container = new FContainer();
             hud.fContainers[0].AddChild(container);
-            slot = new GainSlot(container, hud.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            slot = new GainSlot2(container);
             Singleton = this;
         }
 
@@ -38,7 +38,7 @@ namespace RandomGains.Frame.Display.GainHUD
             
             if(keyPress && !lastKeyPress)
             {
-                slot.ToggleShow(!slot.show);
+                slot.ToggleShow();
             }
             slot.Update();
         }
@@ -52,12 +52,12 @@ namespace RandomGains.Frame.Display.GainHUD
 
         public void AddGainCardRepresent(GainID id)
         {
-            slot.AddGainCardRepresent(id);
+            slot.AddGain(id);
         }
 
         public void RemoveGainCardRepresent(GainID id)
         {
-            slot.RemoveGainCardRepresent(id);
+            //slot.RemoveGainCardRepresent(id);
         }
     }
 

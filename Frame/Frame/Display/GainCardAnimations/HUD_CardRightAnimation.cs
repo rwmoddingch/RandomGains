@@ -38,7 +38,7 @@ namespace RandomGains.Frame.Display.GainCardAnimations
             {
 
                 card.rotation = new Vector3(0, 0, 0);
-                GainHUD.GainHud.Singleton.slot.idToRepresentMapping[card.ID].CardReset();
+                //GainHUD.GainHud.Singleton.slot.idToRepresentMapping[card.ID].CardReset();
                 Destroy(true);
 
             }
