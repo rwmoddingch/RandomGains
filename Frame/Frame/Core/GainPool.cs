@@ -13,6 +13,7 @@ using Object = System.Object;
 using Mono.Cecil;
 using OpCodes = System.Reflection.Emit.OpCodes;
 using System.Reflection;
+using RandomGains.Frame.Display.GainHUD;
 
 namespace RandomGains.Frame.Core
 {
@@ -111,7 +112,7 @@ namespace RandomGains.Frame.Core
             gainMapping.Add(id, gain);
 
             GainSave.Singleton.GetData(id);
-
+            GainHud.Singleton?.AddGainCardRepresent(id);
         }
 
         /// <summary>
@@ -120,8 +121,6 @@ namespace RandomGains.Frame.Core
         /// <param name="id"></param>
         public void DisableGain(GainID id)
         {
-         
-
             if (!gainMapping.ContainsKey(id))
             {
                 EmgTxCustom.Log($"GainPool : gain {id} still not enabled!");
@@ -147,6 +146,7 @@ namespace RandomGains.Frame.Core
             gainMapping.Remove(id);
 
             GainSave.Singleton.RemoveData(id);
+            GainHud.Singleton?.RemoveGainCardRepresent(id);
         }
         
         /// <summary>

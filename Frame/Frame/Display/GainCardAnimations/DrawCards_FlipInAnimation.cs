@@ -25,12 +25,15 @@ namespace RandomGains.Frame.Display
             card.rotation = new Vector3(0f, 180f * (1f - tExposeReverse), 180f * (1f - tExpose));
             card.size = Mathf.Lerp(animationArg.startSize, animationArg.endSize, tExpose);
         }
-        public override void Destroy()
+        public override void Destroy(bool hardSetTransform)
         {
-            base.Destroy();
-            card.rotation = Vector3.zero;
-            card.rotationLast = Vector3.zero;
-            card.rotationLerp = Vector3.zero;
+            base.Destroy(hardSetTransform);
+            if (hardSetTransform)
+            {
+                card.rotation = Vector3.zero;
+                card.rotationLast = Vector3.zero;
+                card.rotationLerp = Vector3.zero;
+            }
         }
     }
 
@@ -38,6 +41,7 @@ namespace RandomGains.Frame.Display
     {
         public Vector2 endPos;
         public float endSize;
+       
 
         public DrawCards_FlipAnimationArg(Vector2 endPos, float endSize)
         {

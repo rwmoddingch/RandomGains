@@ -297,11 +297,11 @@ namespace RandomGains.Frame
         }
         public FContainer InitiateSprites()
         {
-           
             if (lowPerformanceMode)
             {
                 lowPerformanceRenderer = new LowPerformanceRenderer(this);
                 lowPerformanceRenderer.InitiateSprites();
+                EmgTxCustom.Log($"Init {ID}, lowperformance, {lowPerformanceRenderer}");
             }
             else
             {
@@ -325,17 +325,15 @@ namespace RandomGains.Frame
             RotateUpdate();
             InputUpdate();
             AnimationUpdate();
-            lastPosOffset = posOffset;
-            posOffset = Mathf.Lerp(posOffset, MouseInside ? 1 : 0, 0.1f);
         }
 
         public Vector2 Position(float timeStacker)
         {
-            return Vector2.Lerp(lastPos, pos, timeStacker) + posOffset * 20 * Vector2.up;
+            return Vector2.Lerp(lastPos, pos, timeStacker);
         }
         public void DrawSprites(float timeStacker)
         {
-            if(cardTexture != null)
+            if (cardTexture != null)
             {
                 cardTexture.mainTexture.SetPosition(Position(timeStacker));
                 cardTexture.mainTexture.scale = size / 40f;
@@ -413,8 +411,6 @@ namespace RandomGains.Frame
         public GainID ID;
         public GainStaticData staticData;
 
-        private float posOffset;
-        private float lastPosOffset;
 
         private FSprite backGlow;
         private FSprite frontGlow;
@@ -509,11 +505,11 @@ namespace RandomGains.Frame
     /// </summary>
     public partial class GainCard
     {
-        public bool isDisableInput = true;
         public void InputUpdate()
         {
             lastMouseInside = MouseInside;
-            lastClick = click;
+            lastLeftClick = leftClick;
+            lastRightClick = rightClick;
 
             if (clickCounter > 0)
             {
@@ -523,14 +519,18 @@ namespace RandomGains.Frame
                 
             }
 
-            click = Input.GetMouseButton(0) && MouseInside && isDisableInput;
+            leftClick = Input.GetMouseButton(0) && MouseInside && internalInteractive;
+            rightClick = Input.GetMouseButton(1) && MouseInside && internalInteractive;
             MouseInside = CheckMouseInside();
 
-            if (MouseInside && !lastMouseInside && OnMoueCardEnter != null)
-                OnMoueCardEnter.Invoke();
-            if (!MouseInside && lastMouseInside && OnMoueCardExit != null)
-                OnMoueCardExit.Invoke();
-            if (!lastClick && click)
+            if (MouseInside && !lastMouseInside && OnMouseCardEnter != null)
+                OnMouseCardEnter.Invoke();
+            if (!MouseInside && lastMouseInside && OnMouseCardExit != null)
+                OnMouseCardExit.Invoke();
+            if (MouseInside && rightClick && !lastRightClick)
+                OnMouseCardRightClick?.Invoke(this);
+
+            if (!lastLeftClick && leftClick)
             {
                 if (clickCounter != 0)
                 {
@@ -539,9 +539,8 @@ namespace RandomGains.Frame
                 }
                 else
                 {
-                    clickCounter = 15;
+                    clickCounter = 10;
                 }
-
             }
 
             MouseOnAnim();
@@ -604,11 +603,23 @@ namespace RandomGains.Frame
             return Vector3.Dot(Vector3.Cross((a - b), (mouse - b)), norm) > 0f;
         }
 
+        public void ClearInputEvents()
+        {
+            OnMouseCardClick = null;
+            OnMouseCardDoubleClick = null;
+            OnMouseCardRightClick = null;
+            OnMouseCardEnter = null;
+            OnMouseCardExit = null;
+            OnMouseCardUpdate = null;
+            OnMouseCardClick += MouseOnClick;
+        }
+
         public event Action<GainCard> OnMouseCardClick;
         public event Action<GainCard> OnMouseCardDoubleClick;
-        public event Action OnMoueCardEnter;
-        public event Action OnMoueCardExit;
-        public event Action OnMoueCardUpdate;
+        public event Action<GainCard> OnMouseCardRightClick;
+        public event Action OnMouseCardEnter;
+        public event Action OnMouseCardExit;
+        public event Action OnMouseCardUpdate;
 
         public Vector2 MouseLocalPos { get; private set; }
 
@@ -619,8 +630,11 @@ namespace RandomGains.Frame
 
         private int remainMoveCounter;
 
-        private bool lastClick;
-        private bool click;
+        private bool lastLeftClick;
+        private bool leftClick;
+
+        private bool lastRightClick;
+        private bool rightClick;
 
         public bool internalInteractive = true; 
 
@@ -642,7 +656,7 @@ namespace RandomGains.Frame
                     animation.Update();
                 else
                 {
-                    animation.Destroy();
+                    animation.Destroy(true);
                     animation = null;
                 }
             }
@@ -654,6 +668,7 @@ namespace RandomGains.Frame
 
         public void TryAddAnimation(CardAnimationID id, CardAnimationArg arg)
         {
+            EmgTxCustom.Log($"New animation : {id}");
             if(animation != null)
             {
                 if (animation.id == id)
@@ -662,7 +677,7 @@ namespace RandomGains.Frame
                 if (animation.stillActive)
                 {
                     animation.stillActive = false;
-                    animation.Destroy();
+                    animation.Destroy(false);
                 }
                 animation = null;
             }
@@ -696,6 +711,12 @@ namespace RandomGains.Frame
             {
                 this.animationArg = animationArg;
             }
+
+            public override void Destroy(bool hardSetTransform)
+            {
+                base.Destroy(hardSetTransform);
+                animationArg.OnDestroyAction?.Invoke();
+            }
         }
 
         public abstract class CardAnimationBase
@@ -728,7 +749,7 @@ namespace RandomGains.Frame
                 }
             }
 
-            public virtual void Destroy()
+            public virtual void Destroy(bool hardSetTransform)
             {
             }
         }
@@ -738,6 +759,8 @@ namespace RandomGains.Frame
             public Vector3 startRotaion;
             public float startSize;
             public Vector2 startPos;
+
+            public Action OnDestroyAction;
         }
 
         public class CardAnimationID : ExtEnum<CardAnimationID>
@@ -751,5 +774,16 @@ namespace RandomGains.Frame
             public static readonly CardAnimationID HUD_CardPickAnimation = new CardAnimationID("HUD_CardPickAnimation", true);
             public static readonly CardAnimationID HUD_CardRightAnimation = new CardAnimationID("HUD_CardRightAnimation", true);
         }
+    }
+
+    public interface IGainCardOwner
+    {
+        FContainer container { get; }
+        GainCard Card { get; set; }
+        void InitiateSprites();
+        void Update();
+        void Draw(float timeStacker);
+        void Destroy();
+        void TransferCard(IGainCardOwner origin);
     }
 }
