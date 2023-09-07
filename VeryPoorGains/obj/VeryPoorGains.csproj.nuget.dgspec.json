@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Shan_\\source\\repos\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj": {}
+    "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Shan_\\source\\repos\\RandomGains\\Frame\\RandomGains.csproj": {
+    "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Shan_\\source\\repos\\RandomGains\\Frame\\RandomGains.csproj",
+        "projectUniqueName": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj",
         "projectName": "RandomGains",
-        "projectPath": "C:\\Users\\Shan_\\source\\repos\\RandomGains\\Frame\\RandomGains.csproj",
-        "packagesPath": "C:\\Users\\Shan_\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Shan_\\source\\repos\\RandomGains\\Frame\\obj\\",
+        "projectPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj",
+        "packagesPath": "C:\\Users\\qianlong\\.nuget\\packages\\",
+        "outputPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "D:\\Program Files\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Shan_\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\qianlong\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -26,7 +22,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -58,25 +53,21 @@
               "version": "[4.5.0, )"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\Shan_\\source\\repos\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj": {
+    "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Shan_\\source\\repos\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
+        "projectUniqueName": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
         "projectName": "VeryPoorGains",
-        "projectPath": "C:\\Users\\Shan_\\source\\repos\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
-        "packagesPath": "C:\\Users\\Shan_\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Shan_\\source\\repos\\RandomGains\\VeryPoorGains\\obj\\",
+        "projectPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
+        "packagesPath": "C:\\Users\\qianlong\\.nuget\\packages\\",
+        "outputPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "D:\\Program Files\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Shan_\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\qianlong\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -84,15 +75,14 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net48": {
             "targetAlias": "net48",
             "projectReferences": {
-              "C:\\Users\\Shan_\\source\\repos\\RandomGains\\Frame\\RandomGains.csproj": {
-                "projectPath": "C:\\Users\\Shan_\\source\\repos\\RandomGains\\Frame\\RandomGains.csproj"
+              "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj": {
+                "projectPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj"
               }
             }
           }
@@ -116,7 +106,7 @@
               "version": "[4.5.0, )"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
         }
       }
     }

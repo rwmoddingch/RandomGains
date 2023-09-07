@@ -57,6 +57,7 @@ namespace BuiltinGains
         public static void HookOn()
         {
             On.Player.ThrowObject += Player_ThrowObject;
+            On.Scavenger.Throw += Scavenger_Throw;
             On.ScavengerBomb.HitSomething += ScavengerBomb_HitSomething;
             On.ScavengerBomb.TerrainImpact += ScavengerBomb_TerrainImpact;
             On.ScavengerBomb.Update += ScavengerBomb_Update;
@@ -77,6 +78,23 @@ namespace BuiltinGains
                 }
             }
             orig(self, grasp, eu);
+        }
+
+        private static void Scavenger_Throw(On.Scavenger.orig_Throw orig, Scavenger self, Vector2 throwDir)
+        {
+            if (self.grasps[0] != null && self.grasps[0].grabbed is ScavengerBomb bomb)
+            {
+                if (module.TryGetValue(bomb, out var bombmodule))
+                {
+                    bombmodule.startBurn = true;
+                }
+                else
+                {
+                    module.Add(bomb, new DelayedExplosionModule(bomb));
+                    Debug.Log("[Test]Bomb added to delay module, thrown by scav");
+                }
+            }
+            orig(self, throwDir);
         }
 
         private static void ScavengerBomb_Update(On.ScavengerBomb.orig_Update orig, ScavengerBomb self, bool eu)
