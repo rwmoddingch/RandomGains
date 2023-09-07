@@ -1,7 +1,7 @@
 {
     "faceName": "byebyeweapon",
     "gainID" : "ByeByeWeaponID",
-    "gainType" : "Negative",
+    "gainType" : "Positive",
     "gainProperty" : "Normal",
     "triggerable" : "false",
     "gainName" : "再见武器",

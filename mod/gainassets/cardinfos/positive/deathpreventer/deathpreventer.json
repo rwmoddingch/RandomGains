@@ -1,10 +1,10 @@
 {
     "faceName": "deathpreventer",
-    "gainID" : "BounceSpear",
+    "gainID" : "DeathFreeMedallion",
     "gainType" : "Positive",
     "gainProperty" : "Normal",
     "triggerable" : "false",
     "gainName" : "免死金牌",
-    "gainDescription" : "wawa screamer's beast card",
+    "gainDescription" : "抵消一次死亡，并且把玩家传送到安全的地方",
     "color" : "#FFE7B0"
 }

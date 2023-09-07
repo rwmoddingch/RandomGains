@@ -1,0 +1,10 @@
+{
+    "faceName": "StomachAche",
+    "gainID" : "StomachAcheID",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "我肚子疼",
+    "gainDescription" : "吃食物后会被眩晕2秒",
+    "color" : "#ff1df0"
+}

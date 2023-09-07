@@ -1,0 +1,10 @@
+{
+    "faceName": "HandAche",
+    "gainID" : "HandAcheID",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "我手疼疼",
+    "gainDescription" : "握持5秒就会松手",
+    "color" : "#da792f"
+}
