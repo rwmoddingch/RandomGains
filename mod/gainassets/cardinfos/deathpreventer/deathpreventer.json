@@ -1,0 +1,10 @@
+{
+    "faceName": "deathpreventer",
+    "gainID" : "BounceSpear",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "免死金牌",
+    "gainDescription" : "wawa screamer's beast card",
+    "color" : "#FFE7B0"
+}
