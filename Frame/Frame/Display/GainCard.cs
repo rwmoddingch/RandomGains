@@ -443,9 +443,9 @@ namespace RandomGains.Frame
             lastPos = pos;
 
             norm = new Vector3(0f, 0f, 1f);
-            norm = RotateRound(norm, Vector3.forward, Rotation.z, Vector3.zero);
-            norm = RotateRound(norm, Vector3.right, Rotation.x, Vector3.zero);
-            norm = RotateRound(norm, Vector3.up, Rotation.y, Vector3.zero);
+            norm = RotateRound(norm, Vector3.forward, Rotation.z % 360f, Vector3.zero);
+            norm = RotateRound(norm, Vector3.right, Rotation.x % 360f, Vector3.zero);
+            norm = RotateRound(norm, Vector3.up, Rotation.y % 360f, Vector3.zero);
 
             if (cardTexture != null)
                 cardTexture.UpdateVisible();
@@ -550,17 +550,23 @@ namespace RandomGains.Frame
         {
             if (!internalInteractive)
                 return;
-            Rotation = sideA ? new Vector3(0, 180, 0) : new Vector3(0, 0, 0);
+            Rotation = sideA ? new Vector3(rotation.x, rotation.y + 180f, rotation.z) : new Vector3(rotation.x, rotation.y - 180f, rotation.z);
         }
         private void MouseOnAnim()
         {
+            if(!internalInteractive)
+            {
+                _mouseOnRotation = Vector3.zero;
+                return;
+            }
+
             if (remainMoveCounter > 0)
                 remainMoveCounter--;
             if (MouseInside)
                 remainMoveCounter = 20;
 
             Vector2 midMousePos = MouseInside ? MouseLocalPos - new Vector2(0.5f, 0.5f) : Vector2.zero;
-            _mouseOnRotation = new Vector3(-20 * midMousePos.x, 20 * midMousePos.y, 0f);
+            _mouseOnRotation = new Vector3(20 * midMousePos.x * (sideA ? -1f : 1f), -20 * midMousePos.y, 0f);
         }
 
         bool CheckMouseInside()

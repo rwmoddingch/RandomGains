@@ -28,7 +28,7 @@ namespace RandomGains.Frame.Core
 
         static Dictionary<GainID, Func<Gain>> gainCtors = new Dictionary<GainID, Func<Gain>>();
         public Dictionary<GainID, Gain> gainMapping = new Dictionary<GainID, Gain>();
-        public List<Gain> updateObjects = new List<Gain>();
+        public List<Gain> updateGains = new List<Gain>();
 
    
         public GainPool(RainWorldGame game)
@@ -57,11 +57,11 @@ namespace RandomGains.Frame.Core
 
         public void Update(RainWorldGame game)
         {
-            for (int i = updateObjects.Count - 1; i >= 0; i--)
+            for (int i = updateGains.Count - 1; i >= 0; i--)
             {
                 try
                 {
-                    updateObjects[i].onUpdate(game);
+                    updateGains[i].onUpdate(game);
                 }
                 catch (Exception e)
                 {
@@ -72,11 +72,12 @@ namespace RandomGains.Frame.Core
 
         public void Destroy()
         {
-            for (int i = updateObjects.Count - 1; i >= 0; i--)
+            for (int i = updateGains.Count - 1; i >= 0; i--)
             {
                 try
                 {
-                    updateObjects[i].onDestroy();
+                    GainHookWarpper.DisableGain(updateGains[i].getGainID());
+                    updateGains[i].onDestroy();
                 }
                 catch (Exception e)
                 {
@@ -108,7 +109,7 @@ namespace RandomGains.Frame.Core
             GainHookWarpper.EnableGain(id);
             Gain gain = gainCtors[id].Invoke();
 
-            updateObjects.Add(gain);
+            updateGains.Add(gain);
             gainMapping.Add(id, gain);
 
             GainSave.Singleton.GetData(id);
@@ -142,7 +143,7 @@ namespace RandomGains.Frame.Core
             GainHookWarpper.DisableGain(id);
 
             gainMapping[id].onDestroy();
-            updateObjects.Remove(gainMapping[id]);
+            updateGains.Remove(gainMapping[id]);
             gainMapping.Remove(id);
 
             GainSave.Singleton.RemoveData(id);

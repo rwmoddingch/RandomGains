@@ -12,12 +12,13 @@ namespace RandomGains.Frame.Display
     /// </summary>
     internal partial class GainCardRepresent
     {
-        FContainer Container;
+        public FContainer Container;
         public GainSlot2 owner;
         public GainRepresentSelector selector;
         public GainCard bindCard;
 
         public bool show;
+        public bool slateForDeletion;
 
         /// <summary>
         /// 在该类卡牌代表中的序号。当owner为空的时候，请不要使用这个属性
@@ -31,7 +32,7 @@ namespace RandomGains.Frame.Display
         public GainCardRepresent(GainSlot2 owner, GainRepresentSelector selector)
         {
             Container = new FContainer();
-            owner.Container.AddChild(Container);
+            owner?.Container.AddChild(Container);
             this.owner = owner;
             this.selector = selector;
 
@@ -54,7 +55,8 @@ namespace RandomGains.Frame.Display
             bindCard = card;
             EmgTxCustom.Log($"Represent add card: {card.ID}");
             AddCardEvents();
-            NewTransformer(new StaticHoverPosTransformer(this));
+            if(owner != null)
+                NewTransformer(new StaticHoverPosTransformer(this));
         }
 
         public void Update()
@@ -71,14 +73,41 @@ namespace RandomGains.Frame.Display
             TransformerUpdateSmooth(timeStacker);
         }
 
+        public void Destroy()
+        {
+            slateForDeletion = true;
+            bindCard?.ClearInputEvents();
+            bindCard?.ClearSprites();
+            Container.RemoveFromContainer();
+            OnDoubleClick = null;
+
+            owner?.RemoveRepresent(this);
+        }
+
         public void ToggleShow(bool show)
         {
             this.show = show;
-            if(!show && selector.currentSelectedRepresent == this)
+            if (!show && selector.currentSelectedRepresent == this)
             {
                 selector.currentSelectedRepresent = null;
                 NewTransformer(new StaticHoverPosTransformer(this));
             }
+        }
+
+        public void BringTop()
+        {
+            Container.MoveToFront();
+        }
+
+        public void BringBack()
+        {
+            Container.MoveToBack();
+        }
+
+        public void MoveIntoSlot(GainSlot2 slot)
+        {
+            owner = slot;
+            NewTransformer(new StaticHoverPosTransformer(this));
         }
     }
 
@@ -91,9 +120,11 @@ namespace RandomGains.Frame.Display
         bool transformerEverFinished;
 
         readonly int tranformTimeSpan = 20;
+        int lastTransformCounter;
         int transformCounter;
 
         float transformer_tInSpan => transformCounter / (float)tranformTimeSpan;
+        float last_transformer_tInSpan => lastTransformCounter / (float)tranformTimeSpan;
 
         GainRepresentTransformer currentTransformer;
         GainRepresentTransformer lastTransformer;
@@ -108,6 +139,7 @@ namespace RandomGains.Frame.Display
             currentTransformer?.Update();
             lastTransformer?.Update();
 
+            lastTransformCounter = transformCounter;
             if (bindCard.animation == null && usingTransformer)
             {
                 if (transformCounter < tranformTimeSpan)
@@ -126,7 +158,10 @@ namespace RandomGains.Frame.Display
         /// <param name="timeStacker"></param>
         void TransformerUpdateSmooth(float timeStacker)
         {
-            if(bindCard.animation == null && usingTransformer)
+            //当部分动画完成后不再强制设定卡牌的位移，让单击反面正常工作
+            if (bindCard.animation == null && 
+                usingTransformer && 
+                (currentTransformer != null && currentTransformer.ForceTransform(Mathf.Lerp(last_transformer_tInSpan, transformer_tInSpan, timeStacker))))
             {
                 bindCard.pos = GetBlendPos(timeStacker);
                 bindCard.rotation = GetBlendRotation(timeStacker);
@@ -186,19 +221,21 @@ namespace RandomGains.Frame.Display
     /// </summary>
     internal partial class GainCardRepresent
     {
-        public int sortIndex => owner == null ? 0 : owner.allCardHUDRepresemts.IndexOf(this);
+        public int sortIndex => owner == null ? 1000 : owner.allCardHUDRepresemts.IndexOf(this);
 
         public readonly bool mouseMode;
 
         public bool currentHoverd;//鼠标是否悬浮在上面，由Selector进行控制。
         public bool currentSelected;//是否被鼠标单击选中，鼠标模式下由鼠标进行控制。
 
+        public bool inputEnable = true;
+
         void InputUpdate()
         {
             if (bindCard == null)
                 return;
 
-            bindCard.internalInteractive = currentHoverd;//当鼠标未悬浮的时候，直接禁用鼠标点击的控制。
+            bindCard.internalInteractive = !InputDisabled();//当鼠标未悬浮的时候，直接禁用鼠标点击的控制。
         }
 
         void AddCardEvents()
@@ -208,11 +245,19 @@ namespace RandomGains.Frame.Display
             bindCard.OnMouseCardExit += BindCard_OnMouseCardExit;
             bindCard.OnMouseCardClick += BindCard_OnMouseCardClick;
             bindCard.OnMouseCardRightClick += BindCard_OnMouseCardRightClick;
+            bindCard.OnMouseCardDoubleClick += BindCard_OnMouseCardDoubleClick;
+        }
+
+        private void BindCard_OnMouseCardDoubleClick(GainCard obj)
+        {
+            if(InputDisabled()) 
+                return;
+            OnDoubleClick?.Invoke(this);
         }
 
         private void BindCard_OnMouseCardRightClick(GainCard obj)
         {
-            if (!currentHoverd || !show)//不show的时候就不控制了
+            if (InputDisabled() || owner == null)//不show的时候就不控制了
                 return;
             if (selector.currentSelectedRepresent == this)
                 selector.currentSelectedRepresent = null;
@@ -222,7 +267,7 @@ namespace RandomGains.Frame.Display
 
         private void BindCard_OnMouseCardClick(GainCard obj)
         {
-            if (!currentHoverd || !show)//不show的时候就不控制了
+            if (InputDisabled() || owner == null)//不show的时候就不控制了
                 return;
             if (selector.currentSelectedRepresent == null)
             {
@@ -230,6 +275,11 @@ namespace RandomGains.Frame.Display
                 currentSelected = true;
                 NewTransformer(new MiddleFocusTransformer(this));
             }
+        }
+
+        public bool InputDisabled()
+        {
+            return !currentHoverd || (owner != null && !show) || !inputEnable;
         }
 
         private void BindCard_OnMouseCardExit()
@@ -240,10 +290,10 @@ namespace RandomGains.Frame.Display
 
         private void BindCard_OnMouseCardEnter()
         {
-            if (!selector.currentHoverOnRepresents.Contains(this) && show)
+            if (!selector.currentHoverOnRepresents.Contains(this) && (owner == null || show) && inputEnable)
                 selector.AddHoverRepresent(this);
         }
-    }
 
-    
+        public event Action<GainCardRepresent> OnDoubleClick;
+    }
 }

@@ -58,6 +58,39 @@ namespace RandomGains.Frame.Display
             return true;
         }
 
+        public void MoveRepresentInside(GainCardRepresent represent)
+        {
+            represent.Container.RemoveFromContainer();
+            Container.AddChild(represent.Container);
+            allCardHUDRepresemts.Add(represent);
+            represent.owner = this;
+
+            if (idToRepresentMapping.ContainsKey(represent.bindCard.ID))
+            {
+                var presentRepresent = idToRepresentMapping[represent.bindCard.ID];
+                
+                represent.NewTransformer(new StaticHoverPosTransformer(represent, true, presentRepresent.InTypeIndex));
+            }
+            else
+            {
+                var data = GainStaticDataLoader.GetStaticData(represent.bindCard.ID);
+                var lst = data.GainType == GainType.Positive ? positiveCardHUDRepresents : notPositiveCardHUDRepresents;
+
+                lst.Add(represent);
+                idToRepresentMapping.Add(represent.bindCard.ID, represent);
+                represent.NewTransformer(new StaticHoverPosTransformer(represent));
+            }
+        }
+
+        public void RemoveRepresent(GainCardRepresent represent)
+        {
+            var id = represent.bindCard.ID;
+            idToRepresentMapping.Remove(id);
+            allCardHUDRepresemts.Remove(represent);
+            var lst = represent.bindCard.staticData.GainType == GainType.Positive ? positiveCardHUDRepresents : notPositiveCardHUDRepresents;
+            lst.Remove(represent);
+        }
+
         public void Update()
         {
             selector.Update();
@@ -98,7 +131,6 @@ namespace RandomGains.Frame.Display
 
         public GainCardRepresent currentSelectedRepresent;
         public List<GainCardRepresent> currentHoverOnRepresents = new List<GainCardRepresent>();
-
 
         public GainRepresentSelector(GainSlot2 slot, bool mouseMode)
         {

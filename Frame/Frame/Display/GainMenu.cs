@@ -21,43 +21,36 @@ namespace RandomGains.Frame.Display
         ProcessID origNextProcess;
         RainWorldGame origRainworldGame;
 
-        public GainSlotDrawer slotDrawer;
-        public GainCardPicker cardPicker;
+        public GainPicker2 picker;
+        public GainSlot2 slot;
+        public GainRepresentSelector selector;
 
-        FContainer upperContainer;
-        FContainer lowerContainer;
+        public FContainer upperContainer;
+        public FContainer lowerContainer;
 
-        int index;
-        int counter = 20;
-
-        int preExitCounter;
-
-        ChoiceType nextChoiceType = ChoiceType.Positive;
+        public ChoiceType nextChoiceType = ChoiceType.Positive;
+        bool keyPress;
+        bool lastKeyPress;
 
         public GainMenu(ProcessID origID, RainWorldGame oldGame, ProcessManager processManager) : base(processManager, GainMenuID)
         {
-            this.origNextProcess = origID;
-            this.origRainworldGame = oldGame;
+            origNextProcess = origID;
+            origRainworldGame = oldGame;
 
             lowerContainer = new FContainer();
             container.AddChild(lowerContainer);
             upperContainer = new FContainer();
             container.AddChild(upperContainer);
 
+            slot = new GainSlot2(upperContainer);
+            selector = slot.selector;
+            picker = new GainPicker2(this);
+
             pages.Add(new Page(this, null, "GainMenu", 0));
-
-            slotDrawer = new GainSlotDrawer(this, upperContainer);
-            pages[0].subObjects.Add(slotDrawer);
-
-            NextChoice();
         }
 
         public override void Singal(MenuObject sender, string message)
         {
-            if(message == "EXIT" && preExitCounter == 0)
-            {
-                preExitCounter = 40;
-            }
         }
 
         public override void CommunicateWithUpcomingProcess(MainLoopProcess nextProcess)
@@ -69,27 +62,47 @@ namespace RandomGains.Frame.Display
         public override void Update()
         {
             base.Update();
+            slot?.Update();
+            picker?.Update();
+
+            lastKeyPress = keyPress;
+            keyPress = Input.GetKey(KeyCode.Tab);
+
+            if (keyPress && !lastKeyPress)
+            {
+                slot.ToggleShow();
+                picker.ToggleShow(!slot.show);
+            }
         }
 
-        void NextChoice()
+        public override void GrafUpdate(float timeStacker)
         {
-            GainType gainType = nextChoiceType == ChoiceType.Positive ? GainType.Positive : GainType.Negative;
-            cardPicker = new GainCardPicker(this, lowerContainer, gainType);
-            pages[0].subObjects.Add(cardPicker);
+            base.GrafUpdate(timeStacker);
+            slot?.Draw(timeStacker);
+            picker?.Draw(timeStacker);
+        }
 
-            if (nextChoiceType != ChoiceType.NegativeAndDuality)
-                cardPicker.OnDestroyAction += NextChoice;
-            else
+        public override void ShutDownProcess()
+        {
+            base.ShutDownProcess();
+            picker?.Destroy();
+        }
+
+        public void NextChoice()
+        {
+            if (nextChoiceType == ChoiceType.Positive)
+            {
+                nextChoiceType = ChoiceType.NegativeAndDuality;
+                picker = new GainPicker2(this);
+            }
+            else if (nextChoiceType == ChoiceType.NegativeAndDuality)
             {
                 manager.rainWorld.progression.SaveToDisk(true, false, true);
                 manager.RequestMainProcessSwitch(origNextProcess);
             }
-
-            if (nextChoiceType == ChoiceType.Positive)
-                nextChoiceType = ChoiceType.NegativeAndDuality;
         }
 
-        enum ChoiceType
+        public enum ChoiceType
         {
             Positive,
             NegativeAndDuality,
@@ -97,201 +110,201 @@ namespace RandomGains.Frame.Display
         }
     }
 
-    internal class GainCardDrawer : MenuObject
-    {
-        public GainCard card;
-        float t;
+    //internal class GainCardDrawer : MenuObject
+    //{
+    //    public GainCard card;
+    //    float t;
 
-        bool cardRemoved;
-        Vector2 pos;
+    //    bool cardRemoved;
+    //    Vector2 pos;
 
-        FContainer container;
+    //    FContainer container;
 
-        public GainCardDrawer(Menu.Menu menu,GainID id , Vector2 pos, FContainer container) : base(menu, null)
-        {
-            this.container = new FContainer();
-            container.AddChild(this.container);
+    //    public GainCardDrawer(Menu.Menu menu,GainID id , Vector2 pos, FContainer container) : base(menu, null)
+    //    {
+    //        this.container = new FContainer();
+    //        container.AddChild(this.container);
 
-            card = new GainCard(id, false)
-            {
-                pos = new Vector2(1366f, 728f),
-                size = 0f
-            };
-            this.container.AddChild(card.InitiateSprites());
-            card.TryAddAnimation(GainCard.CardAnimationID.DrawCards_FlipIn, new DrawCards_FlipAnimationArg(pos, 40f));
-        }
+    //        card = new GainCard(id, false)
+    //        {
+    //            pos = new Vector2(1366f, 728f),
+    //            size = 0f
+    //        };
+    //        this.container.AddChild(card.InitiateSprites());
+    //        card.TryAddAnimation(GainCard.CardAnimationID.DrawCards_FlipIn, new DrawCards_FlipAnimationArg(pos, 40f));
+    //    }
 
-        public override void Update()
-        {
-            base.Update();
-            card?.Update();
-        }
+    //    public override void Update()
+    //    {
+    //        base.Update();
+    //        card?.Update();
+    //    }
 
-        public override void GrafUpdate(float timeStacker)
-        {
-            base.GrafUpdate(timeStacker);
-            card?.DrawSprites(timeStacker);
-        }
+    //    public override void GrafUpdate(float timeStacker)
+    //    {
+    //        base.GrafUpdate(timeStacker);
+    //        card?.DrawSprites(timeStacker);
+    //    }
 
-        public override void RemoveSprites()
-        {
-            base.RemoveSprites();
-            card?.container.RemoveFromContainer();
-            container.RemoveFromContainer();
-        }
-    }
+    //    public override void RemoveSprites()
+    //    {
+    //        base.RemoveSprites();
+    //        card?.container.RemoveFromContainer();
+    //        container.RemoveFromContainer();
+    //    }
+    //}
 
-    internal class GainCardPicker : MenuObject
-    {
-        public Action OnDestroyAction;
+    //internal class GainCardPicker : MenuObject
+    //{
+    //    public Action OnDestroyAction;
 
-        FContainer container;
-        GainID[] choices;
+    //    FContainer container;
+    //    GainID[] choices;
 
-        int counter = 20;
-        int index;
+    //    int counter = 20;
+    //    int index;
 
-        int preExitCounter;
+    //    int preExitCounter;
 
-        List<GainCardDrawer> cardDrawers = new List<GainCardDrawer>();
+    //    List<GainCardDrawer> cardDrawers = new List<GainCardDrawer>();
 
-        public GainCardPicker(GainMenu menu, FContainer container, GainType choiceType) : base(menu, null)
-        {
-            choices = GainRegister.InitNextChoices(choiceType);
-            this.container = container;
-        }
+    //    public GainCardPicker(GainMenu menu, FContainer container, GainType choiceType) : base(menu, null)
+    //    {
+    //        choices = GainRegister.InitNextChoices(choiceType);
+    //        this.container = container;
+    //    }
 
-        public override void Update()
-        {
-            base.Update();
-            if (index < choices.Length)
-            {
-                if (counter > 0)
-                {
-                    counter--;
-                }
-                else
-                {
-                    var card = new GainCardDrawer(menu, choices[index], new Vector2(500f + 280 * index, 350f), container);
-                    cardDrawers.Add(card);
-                    subObjects.Add(card);
-                    card.card.OnMouseCardDoubleClick += Card_OnMouseCardDoubleClick;
-                    counter = 20;
-                    index++;
-                }
-            }
-            if(preExitCounter > 0)
-            {
-                preExitCounter--;
-                if(preExitCounter == 1)
-                {
-                    if (cardDrawers.Count > 0)
-                    {
-                        CardDestoryAnimation(cardDrawers.Pop());
-                        preExitCounter = 20;
-                    }
-                    else
-                    {
-                        RemoveSprites();
-                    }
-                }
-            }
+    //    public override void Update()
+    //    {
+    //        base.Update();
+    //        if (index < choices.Length)
+    //        {
+    //            if (counter > 0)
+    //            {
+    //                counter--;
+    //            }
+    //            else
+    //            {
+    //                var card = new GainCardDrawer(menu, choices[index], new Vector2(500f + 280 * index, 350f), container);
+    //                cardDrawers.Add(card);
+    //                subObjects.Add(card);
+    //                card.card.OnMouseCardDoubleClick += Card_OnMouseCardDoubleClick;
+    //                counter = 20;
+    //                index++;
+    //            }
+    //        }
+    //        if(preExitCounter > 0)
+    //        {
+    //            preExitCounter--;
+    //            if(preExitCounter == 1)
+    //            {
+    //                if (cardDrawers.Count > 0)
+    //                {
+    //                    CardDestoryAnimation(cardDrawers.Pop());
+    //                    preExitCounter = 20;
+    //                }
+    //                else
+    //                {
+    //                    RemoveSprites();
+    //                }
+    //            }
+    //        }
 
-            void CardDestoryAnimation(GainCardDrawer drawer)
-            {
-                EmgTxCustom.Log($"pop out {drawer.card.ID}");
+    //        void CardDestoryAnimation(GainCardDrawer drawer)
+    //        {
+    //            EmgTxCustom.Log($"pop out {drawer.card.ID}");
                 
-                drawer.card.TryAddAnimation(GainCard.CardAnimationID.DrawCards_FlipOut_NotChoose, new DrawCards_FlipAnimationArg(new Vector2(1566f, -200f), 0f)
-                {
-                    OnDestroyAction = () =>
-                    {
-                        drawer.RemoveSprites();
-                        subObjects.Remove(drawer);
-                    }
-                });
+    //            drawer.card.TryAddAnimation(GainCard.CardAnimationID.DrawCards_FlipOut_NotChoose, new DrawCards_FlipAnimationArg(new Vector2(1566f, -200f), 0f)
+    //            {
+    //                OnDestroyAction = () =>
+    //                {
+    //                    drawer.RemoveSprites();
+    //                    subObjects.Remove(drawer);
+    //                }
+    //            });
 
-            }
-        }
+    //        }
+    //    }
 
-        public override void RemoveSprites()
-        {
-            menu.pages[0].RemoveSubObject(this);
-            base.RemoveSprites();
-            OnDestroyAction?.Invoke();
-        }
+    //    public override void RemoveSprites()
+    //    {
+    //        menu.pages[0].RemoveSubObject(this);
+    //        base.RemoveSprites();
+    //        OnDestroyAction?.Invoke();
+    //    }
 
-        private void Card_OnMouseCardDoubleClick([NotNull] GainCard card)
-        {
-            GainSave.Singleton.GetData(card.ID);
-            foreach(var c in cardDrawers)
-            {
-                c.card.internalInteractive = false;
-            }
-            for(int i = cardDrawers.Count - 1; i >= 0; i--)//移除被选择的增益，将其移动到slot内
-            {
-                if (cardDrawers[i].card == card)
-                {
-                    EmgTxCustom.Log($"Pick gain {cardDrawers[i].card.ID}");
+    //    private void Card_OnMouseCardDoubleClick([NotNull] GainCard card)
+    //    {
+    //        GainSave.Singleton.GetData(card.ID);
+    //        foreach(var c in cardDrawers)
+    //        {
+    //            c.card.internalInteractive = false;
+    //        }
+    //        for(int i = cardDrawers.Count - 1; i >= 0; i--)//移除被选择的增益，将其移动到slot内
+    //        {
+    //            if (cardDrawers[i].card == card)
+    //            {
+    //                EmgTxCustom.Log($"Pick gain {cardDrawers[i].card.ID}");
 
-                    var drawer = cardDrawers[i];
-                    drawer.card.container.RemoveFromContainer();
-                    if(!(menu as GainMenu).slotDrawer.slot.AddGainCardRepresent(cardDrawers[i].card))
-                    {
-                        Vector2 pos = (menu as GainMenu).slotDrawer.slot.idToRepresentMapping[card.ID].pos;
-                        float size = (menu as GainMenu).slotDrawer.slot.idToRepresentMapping[card.ID].size;
+    //                var drawer = cardDrawers[i];
+    //                drawer.card.container.RemoveFromContainer();
+    //                if(!(menu as GainMenu).slotDrawer.slot.AddGainCardRepresent(cardDrawers[i].card))
+    //                {
+    //                    Vector2 pos = (menu as GainMenu).slotDrawer.slot.idToRepresentMapping[card.ID].pos;
+    //                    float size = (menu as GainMenu).slotDrawer.slot.idToRepresentMapping[card.ID].size;
 
-                        HUD_CardFlipAnimationArg arg = new HUD_CardFlipAnimationArg(pos, size, false, false);
-                        arg.OnDestroyAction += () =>
-                        {
-                            subObjects.Remove(drawer);
-                            drawer.RemoveSprites();
-                            EmgTxCustom.Log($"Destory card {drawer.card.ID}");
-                        };
-                        card.TryAddAnimation(GainCard.CardAnimationID.HUD_CardPickAnimation, arg);
-                    }
-                    else
-                    {
-                        cardDrawers[i].card = null;
-                        subObjects.Remove(cardDrawers[i]);
-                        cardDrawers[i].RemoveSprites();
-                    }
-                    cardDrawers.RemoveAt(i);
-                }  
-            }
-            //card.TryAddAnimation(GainCard.CardAnimationID.DrawCards_FlipOut_NotChoose, new DrawCards_FlipAnimationArg(new Vector2(1566f, -200f), 0f));
-            preExitCounter = 20;
-        }
-    }
+    //                    HUD_CardFlipAnimationArg arg = new HUD_CardFlipAnimationArg(pos, size, false, false);
+    //                    arg.OnDestroyAction += () =>
+    //                    {
+    //                        subObjects.Remove(drawer);
+    //                        drawer.RemoveSprites();
+    //                        EmgTxCustom.Log($"Destory card {drawer.card.ID}");
+    //                    };
+    //                    card.TryAddAnimation(GainCard.CardAnimationID.HUD_CardPickAnimation, arg);
+    //                }
+    //                else
+    //                {
+    //                    cardDrawers[i].card = null;
+    //                    subObjects.Remove(cardDrawers[i]);
+    //                    cardDrawers[i].RemoveSprites();
+    //                }
+    //                cardDrawers.RemoveAt(i);
+    //            }  
+    //        }
+    //        //card.TryAddAnimation(GainCard.CardAnimationID.DrawCards_FlipOut_NotChoose, new DrawCards_FlipAnimationArg(new Vector2(1566f, -200f), 0f));
+    //        preExitCounter = 20;
+    //    }
+    //}
 
-    internal class GainSlotDrawer : MenuObject
-    {
-        FContainer container;
-        public GainSlot slot;
-        public GainSlotDrawer(GainMenu menu, FContainer container) : base(menu, null)
-        {
-            this.container = new FContainer();
-            container.AddChild(this.container);
+    //internal class GainSlotDrawer : MenuObject
+    //{
+    //    FContainer container;
+    //    public GainSlot slot;
+    //    public GainSlotDrawer(GainMenu menu, FContainer container) : base(menu, null)
+    //    {
+    //        this.container = new FContainer();
+    //        container.AddChild(this.container);
 
-            slot = new GainSlot(this.container);
-        }
+    //        slot = new GainSlot(this.container);
+    //    }
 
-        public override void Update()
-        {
-            base.Update();
-            slot.Update();
-        }
+    //    public override void Update()
+    //    {
+    //        base.Update();
+    //        slot.Update();
+    //    }
 
-        public override void GrafUpdate(float timeStacker)
-        {
-            base.GrafUpdate(timeStacker);
-            slot.Draw(timeStacker);
-        }
+    //    public override void GrafUpdate(float timeStacker)
+    //    {
+    //        base.GrafUpdate(timeStacker);
+    //        slot.Draw(timeStacker);
+    //    }
 
-        public override void RemoveSprites()
-        {
-            base.RemoveSprites();
-            container.RemoveAllChildren();
-            container.RemoveFromContainer();
-        }
-    }
+    //    public override void RemoveSprites()
+    //    {
+    //        base.RemoveSprites();
+    //        container.RemoveAllChildren();
+    //        container.RemoveFromContainer();
+    //    }
+    //}
 }
