@@ -56,7 +56,7 @@ namespace RandomGains.Gains
         {
             if (GainStaticDataLoader.GetStaticData(id) == null)
             {
-                Debug.LogError($"[Random Gains] Missing static data for gain: {id}");
+                Debug.LogError($"[Random Gains] Missing static data for gain: {id}");  
                 return;
             }
 
@@ -125,8 +125,8 @@ namespace RandomGains.Gains
         {
             var staticData = GainStaticDataLoader.GetStaticData(id);
             //TODO : Debug
-            typeToIDMapping[GainType.Positive].Add(id);
-            idToTypeMapping.Add(id, GainType.Positive);
+            typeToIDMapping[staticData.GainType].Add(id);
+            idToTypeMapping.Add(id, staticData.GainType);
             typeToGainPropertyMapping[GainProperty.Normal].Add(id);
             idToGainPropertyMapping.Add(id, GainProperty.Normal);
 
