@@ -1,0 +1,10 @@
+{
+    "faceName": "delayedexplosion",
+    "gainID" : "DelayedExplosionGainID",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "延时炸弹",
+    "gainDescription" : "我亲爱的达瓦里希，这玩意在冒烟啊！",
+    "color" : "#E90000"
+}

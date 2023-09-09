@@ -1,0 +1,10 @@
+{
+    "faceName": "desperateeater",
+    "gainID" : "DesperateEaterGain",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "饥不择食",
+    "gainDescription" : "只要不挑食，饥饿就追不上我。",
+    "color" : "#E90000"
+}
