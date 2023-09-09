@@ -11,7 +11,10 @@ using Random = UnityEngine.Random;
 using RandomGains.Gains;
 using RandomGains;
 using System.Runtime.CompilerServices;
-
+using System.Security.Permissions;
+#pragma warning disable CS0618
+[assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
+#pragma warning restore CS0618
 namespace BuiltinGains
 {
     internal class DelayedExplosionGainData:GainDataImpl
@@ -24,7 +27,7 @@ namespace BuiltinGains
         public override void Init()
         {
             base.Init();
-            cycleLeft = 1;
+            cycleLeft = 2;
         }
 
         public override void ParseData(string data)
@@ -48,6 +51,28 @@ namespace BuiltinGains
     internal class DelayedExplosionGainImpl : GainImpl<DelayedExplosionGainImpl, DelayedExplosionGainData>
     {
         public override GainID GainID => DelayedExplosionGainData.delayedExplosionID;
+
+        public override bool Active => active;
+
+        public override bool Triggerable => !Active;
+
+        private bool active;
+        private int counter;
+        private int count = 0;
+        public override void Update(RainWorldGame game)
+        {
+            base.Update(game);
+            if (active)
+            {
+                counter++;
+                if (counter > 120)
+                {
+                    counter = 0;
+                    active = false;
+                }
+            }
+
+        }
     }
 
     internal class DelayedExplosionGainEntry : GainEntry
@@ -63,6 +88,7 @@ namespace BuiltinGains
             On.ScavengerBomb.Update += ScavengerBomb_Update;
         }
 
+
         private static void Player_ThrowObject(On.Player.orig_ThrowObject orig, Player self, int grasp, bool eu)
         {
             if (self.grasps[grasp] != null && self.grasps[grasp].grabbed is ScavengerBomb bomb)
@@ -70,12 +96,7 @@ namespace BuiltinGains
                 if (module.TryGetValue(bomb, out var bombmodule))
                 {
                     bombmodule.startBurn = true;
-                }
-                else
-                {
-                    module.Add(bomb, new DelayedExplosionModule(bomb));
-                    Debug.Log("$Bomb added to delay module");
-                }
+                }               
             }
             orig(self, grasp, eu);
         }
@@ -87,12 +108,7 @@ namespace BuiltinGains
                 if (module.TryGetValue(bomb, out var bombmodule))
                 {
                     bombmodule.startBurn = true;
-                }
-                else
-                {
-                    module.Add(bomb, new DelayedExplosionModule(bomb));
-                    Debug.Log("[Test]Bomb added to delay module, thrown by scav");
-                }
+                }              
             }
             orig(self, throwDir);
         }
@@ -103,8 +119,14 @@ namespace BuiltinGains
             if (module.TryGetValue(self, out var bombModule))
             {
                 bombModule.Update();
-                bombModule.startBurn = true;
-                self.burn = 999;
+                if (bombModule.startBurn)
+                {
+                    self.burn = 999;
+                }                          
+            }
+            else
+            {
+                module.Add(self,new DelayedExplosionModule(self));
             }
         }
 
@@ -151,6 +173,8 @@ namespace BuiltinGains
         {
             bombRef = new WeakReference<ScavengerBomb>(scavengerBomb);
             self = scavengerBomb;
+            delayBurn = 90;
+            startBurn = false;
         }
 
         public bool HitSomething(SharedPhysics.CollisionResult result, bool eu)

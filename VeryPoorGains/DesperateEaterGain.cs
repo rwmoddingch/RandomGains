@@ -84,6 +84,7 @@ namespace VeryPoorGains
                         {
                             playermodule.PickUpUpdate();
                         }
+                        break;
                     }
                 }
             }
@@ -163,7 +164,8 @@ namespace VeryPoorGains
     internal class EaterModule
     {
         public Player self;
-        public int grabCounter;
+        public int grabCounter;       
+
         public EaterModule(Player player)
         {
             self = player;
@@ -180,7 +182,7 @@ namespace VeryPoorGains
                 grabCounter--;
             }
 
-            if (grabCounter >= 40)
+            if (grabCounter >= 50)
             {
                 self.BiteEdibleObject(self.input[0].pckp);
                 grabCounter = 20;
@@ -195,6 +197,30 @@ namespace VeryPoorGains
         public PhysicalObject self;
         public RoomCamera.SpriteLeaser spriteLeasers;
         public int maxPips;
+        public static Dictionary<string, float> pipDict = new Dictionary<string, float>() 
+        {
+            {"Spear",2f},
+            {"VultureMask", 1.5f},
+            {"Rock",0.5f },
+            {"Oracle",10f },
+            {"SeedCob",30f },
+            {"Lantern",0.75f },
+            {"VoidSpawn",0f },
+            {"FlareBomb",0.5f },
+            {"FlyLure",0.5f },
+            {"ScavengerBomb",1.5f },
+            {"SporePlant",2f },
+            {"AttachedBee",0f },
+            {"NeedleEgg",4f },
+            {"DartMaggot",0.5f },
+            {"BubbleGrass",0.25f },
+            {"OverseerCarcass",0.75f },
+            {"BlinkingFlower",0.5f },
+            {"Bullet",0.25f },
+            {"SingularityBomb",6f },
+            {"EnergyCell",10f },
+            {"MoonCloak",0.75f },           
+        };
 
         public ItemModule(PhysicalObject physicalObject)
         {
@@ -203,7 +229,7 @@ namespace VeryPoorGains
 
         public bool ReversedErase(PhysicalObject resultObj)
         {
-            return (resultObj is ExplosiveSpear || resultObj is SingularityBomb);
+            return (resultObj is ExplosiveSpear || resultObj is SingularityBomb || resultObj is Oracle);
         }
 
         public void GetItemSprites()
@@ -224,7 +250,7 @@ namespace VeryPoorGains
 
                     if (bites == -2)
                     {
-                        bites = sLeaser.sprites.Length > 5 ? 5 : sLeaser.sprites.Length;
+                        bites = sLeaser.sprites.Length > 5 ? 5 : spriteLeasers.sprites.Length;
                         maxPips = bites;
                     }
                     return;
@@ -240,9 +266,26 @@ namespace VeryPoorGains
             bites--;
             self.room.PlaySound((this.bites == 0) ? SoundID.Slugcat_Eat_Dangle_Fruit : SoundID.Slugcat_Bite_Dangle_Fruit, self.firstChunk.pos);
             self.firstChunk.MoveFromOutsideMyUpdate(eu, grasp.grabber.mainBodyChunk.pos);
-            if (this.bites < 1)
-            {
-                (grasp.grabber as Player).AddFood(maxPips);
+            if (this.bites < (self is ExplosiveSpear? 2 : 1))
+            {                              
+                if(grasp.grabbed != null)
+                {
+                    PhysicalObject obj = grasp.grabbed;
+                    float num = GetPips(obj);
+                    int num2 = (int)((GetPips(obj)-(int)GetPips(obj))/0.25);
+                    (grasp.grabber as Player).AddFood((int)num);   
+                    if(num2 > 0)
+                    {
+                        for(int i = 0; i<num2; i++)
+                        {
+                            (grasp.grabber as Player).AddQuarterFood();
+                        }
+                    }
+                    if (grasp.grabbed is DartMaggot)
+                    {
+                        (grasp.grabber as Player).Stun(40);
+                    }
+                }                
                 grasp.Release();
                 self.Destroy();
             }
@@ -285,5 +328,21 @@ namespace VeryPoorGains
                 }
             }
         }
+    
+        public static float GetPips(PhysicalObject result)        
+        {
+            string value = result.abstractPhysicalObject.type.value;
+            if (pipDict.ContainsKey(value))
+            {
+                if (result is ExplosiveSpear || result is ElectricSpear)
+                {
+                    return 2.5f;
+                }
+                else
+                return pipDict[value];
+            }
+            else return 1f;
+        }
+
     }
 }

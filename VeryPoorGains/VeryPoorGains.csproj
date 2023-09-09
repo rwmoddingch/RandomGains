@@ -3,7 +3,13 @@
 		<TargetFramework>net48</TargetFramework>
 		<OutputType>Library</OutputType>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-		<BaseOutputPath>bin\</BaseOutputPath>
+		<BaseOutputPath>D:\雨世界mods\SlugTemplate-master\RandomGains\VeryPoorGains\bin</BaseOutputPath>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <Optimize>True</Optimize>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <Optimize>False</Optimize>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Compile Remove="Negative\**" />

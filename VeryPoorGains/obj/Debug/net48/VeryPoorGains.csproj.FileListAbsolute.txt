@@ -52,3 +52,5 @@ D:\雨世界mods\SlugTemplate-master\RandomGains\VeryPoorGains\obj\Debug\net48\V
 D:\雨世界mods\SlugTemplate-master\RandomGains\VeryPoorGains\obj\Debug\net48\VeryPoorGains.csproj.CopyComplete
 D:\雨世界mods\SlugTemplate-master\RandomGains\VeryPoorGains\obj\Debug\net48\VeryPoorGains.dll
 D:\雨世界mods\SlugTemplate-master\RandomGains\VeryPoorGains\obj\Debug\net48\VeryPoorGains.pdb
+D:\雨世界mods\SlugTemplate-master\RandomGains\BuiltinGains\bin\Debug\net48\VeryPoorGains.dll
+D:\雨世界mods\SlugTemplate-master\RandomGains\BuiltinGains\bin\Debug\net48\VeryPoorGains.pdb
