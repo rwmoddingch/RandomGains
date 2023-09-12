@@ -79,8 +79,8 @@ namespace RandomGains
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 EmgTxCustom.Log("Plugins : Space pressed");
-                GainPool.Singleton.EnableGain(new GainID("EjectionRock"));
-                GainPool.Singleton.EnableGain(new GainID("NoodleHand"));
+                GainPool.Singleton.EnableGain(new GainID("FoodLover"));
+                GainPool.Singleton.EnableGain(new GainID("RockCob"));
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
@@ -97,8 +97,8 @@ namespace RandomGains
         public static void LoadResources(RainWorld rainWorld)
         {
             MoonBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/moonback").elements[0].name;
-            //FPBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/fpback").elements[0].name;
-            //SlugBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/slugback").elements[0].name;
+            FPBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/fpback").elements[0].name;
+            SlugBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/slugback").elements[0].name;
 
             AssetBundle bundle = AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("gainassets/assetBundle/gainasset"));
             TitleFont = bundle.LoadAsset<Font>("峰广明锐体");
@@ -108,6 +108,16 @@ namespace RandomGains
 
             GainStaticDataLoader.Load(rainWorld);
             Futile.atlasManager.LogAllElementNames();
+        }
+
+        public static string BackElementOfType(GainType gainType)
+        {
+            if (gainType == GainType.Positive)
+                return MoonBack;
+            else if (gainType == GainType.Negative)
+                return FPBack;
+            else
+                return SlugBack;
         }
 
         public static Font TitleFont { get; set; }

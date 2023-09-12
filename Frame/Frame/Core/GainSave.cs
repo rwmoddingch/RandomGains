@@ -16,7 +16,7 @@ using OpCodes = System.Reflection.Emit.OpCodes;
 
 namespace RandomGains.Frame.Core
 {
-    internal class GainSave : DeathPersistentSaveDataTx
+    public class GainSave : DeathPersistentSaveDataTx
     {
         public static GainSave Singleton { get; private set; }
         public override string header => "GAINSAVE";

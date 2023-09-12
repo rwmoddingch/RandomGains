@@ -1,12 +1,6 @@
 ﻿using RandomGains.Frame.Core;
 using RandomGains.Gains;
 using RandomGains;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MoreSlugcats;
 using UnityEngine;
 using RWCustom;
 using Random = UnityEngine.Random;
@@ -74,7 +68,7 @@ namespace BuiltinGains.Positive
 
         private static void Weapon_WeaponDeflect(On.Weapon.orig_WeaponDeflect orig, Weapon self, Vector2 inbetweenPos, Vector2 deflectDir, float bounceSpeed)
         {
-            if (self is Rock rock)
+            if (self is Rock rock && self.firstChunk.vel.magnitude > 40f)
             {
                 RandomBounce(rock, false, -rock.firstChunk.vel.normalized);
                 return;
@@ -232,7 +226,8 @@ namespace BuiltinGains.Positive
         public void StopBounce(Rock rock)
         {
             rock.color = origColor;
-            if(rock.room != null)
+            rock.exitThrownModeSpeed = 30f;
+            if (rock.room != null)
             {
                 rock.room.AddObject(new Explosion.ExplosionLight(rock.firstChunk.pos, 280f, 1f, 7, finalColor));
                 rock.room.AddObject(new Explosion.ExplosionLight(rock.firstChunk.pos, 230f, 1f, 3, new Color(1f, 1f, 1f)));

@@ -21,7 +21,6 @@ namespace RandomGains.Frame.Core
         static Dictionary<GainID, List<OnHookAddRemove>> registedOnHooks = new Dictionary<GainID, List<OnHookAddRemove>>();
         static Dictionary<GainID, List<Hook>> registedRuntimeHooks = new Dictionary<GainID, List<Hook>>();
 
-
         static Dictionary<GainID, Action> registedAddHooks = new Dictionary<GainID, Action>();
         static Dictionary<GainID, Action> registedRemoveHooks = new Dictionary<GainID, Action>();
 
@@ -58,6 +57,7 @@ namespace RandomGains.Frame.Core
                         hook.InvokeAdd();
                     }
                     catch(Exception ex){
+                        ExceptionTracker.TrackException(ex, $"Exception when enable hook of id : {gainID}");
                         EmgTxCustom.Log($"GainHookWarpper : Exception when enable hook ");
                         Debug.LogException(ex);
                     }
@@ -72,6 +72,7 @@ namespace RandomGains.Frame.Core
                 }
                 catch (Exception ex)
                 {
+                    ExceptionTracker.TrackException(ex, $"Exception when enable hook of id : {gainID}");
                     EmgTxCustom.Log($"GainHookWarpper : Exception when enable hook ");
                     Debug.LogException(ex);
                 }

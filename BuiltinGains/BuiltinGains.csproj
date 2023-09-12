@@ -62,9 +62,6 @@
       <HintPath>..\includings\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Negative\" />
-  </ItemGroup>
 
   <Target Name="GenerateMod" AfterTargets="PostBuildEvent">
     <ItemGroup>

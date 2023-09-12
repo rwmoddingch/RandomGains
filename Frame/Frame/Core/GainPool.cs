@@ -20,7 +20,7 @@ namespace RandomGains.Frame.Core
     /// <summary>
     /// 运行和管理增益实例的类
     /// </summary>
-    internal class GainPool
+    public class GainPool
     {
         public static GainPool Singleton { get; private set; }
 
@@ -65,6 +65,10 @@ namespace RandomGains.Frame.Core
                 }
                 catch (Exception e)
                 {
+                    if(updateGains[i].GainID == null)
+                        ExceptionTracker.TrackException(e, $"gain of {updateGains[i].GetType()} id is null!");
+                    else
+                        ExceptionTracker.TrackException(e, $"Exception happend when invoke gain update of {updateGains[i].GainID}");
                     Debug.LogException(e);
                 }
             }

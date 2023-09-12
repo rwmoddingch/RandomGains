@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RWCustom;
 using UnityEngine;
@@ -89,10 +86,10 @@ namespace RandomGains.Frame.Core
             catch(Exception ex)
             {
                 ExceptionTracker.TrackException(ex, $"Json file is not in correct format! path at : {directoryInfo.FullName}");
+                Debug.LogException(ex);
             }
 
             EmgTxCustom.Log($"CainStaticDataLoader : load static data:\nname : {gainName}\ntype : {GainType}\nproperty : {GainProperty}\ndescription : {gainDescription}\nfaceName : {faceElementName}");
         }
     }
-
 }
