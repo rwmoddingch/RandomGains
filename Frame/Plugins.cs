@@ -70,7 +70,7 @@ namespace RandomGains
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 EmgTxCustom.Log("Plugins : Space pressed");
-                GainPool.Singleton.EnableGain(new GainID("HandAcheID"));
+                GainPool.Singleton.EnableGain(new GainID("MirrorID"));
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
