@@ -115,10 +115,13 @@ namespace BuiltinGains.Positive
             sLeaser.sprites[0].width = ringRad * 2f;
             sLeaser.sprites[0].height = ringRad * 2f;
 
-            sLeaser.sprites[0]._renderLayer._material.SetColor("colorA", colorA);
-            sLeaser.sprites[0]._renderLayer._material.SetColor("colorB", colorB);
+            if (sLeaser.sprites[0]._renderLayer != null)
+            {
+                sLeaser.sprites[0]._renderLayer._material.SetColor("colorA", colorA);
+                sLeaser.sprites[0]._renderLayer._material.SetColor("colorB", colorB);
 
-            sLeaser.sprites[0]._renderLayer._material.SetVectorArray("params", Params);
+                sLeaser.sprites[0]._renderLayer._material.SetVectorArray("params", Params);
+            }
         }
 
         public override void Update(bool eu)

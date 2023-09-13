@@ -81,13 +81,13 @@ namespace RandomGains
                 EmgTxCustom.Log("Plugins : Space pressed");
                 GainPool.Singleton.EnableGain(new GainID("GiveALight"));
                 GainPool.Singleton.EnableGain(new GainID("Alzheimers"));
-                GainPool.Singleton.EnableGain(new GainID("RockCob"));
+                GainPool.Singleton.EnableGain(new GainID("SpearRain"));
                 GainPool.Singleton.EnableGain(new GainID("InvisibleKiller"));
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
                 EmgTxCustom.Log("Plugins : LeftControl pressed");
-                GainHookWarpper.DisableGain(new GainID("DeathFreeMedallion"));
+        
             }
 
             if (Input.GetKeyDown(KeyCode.RightControl))
