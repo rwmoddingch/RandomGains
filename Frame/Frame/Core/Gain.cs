@@ -43,6 +43,7 @@ namespace RandomGains.Frame.Core
 
     class GainData
     {
+
         public object dataImpl;
 
         public GainID GainID => getGainID();
@@ -86,13 +87,6 @@ namespace RandomGains.Frame.Core
 
 
         public Action<string> onParseData;
-
-        public Func<string> onToString;
-
-        public override string ToString()
-        {
-            return onToString.Invoke();
-        }
     }
     public enum GainType
     {
@@ -118,5 +112,6 @@ namespace RandomGains.Frame.Core
         public GainID(string value, bool register = false) : base(value, register)
         {
         }
+
     }
 }

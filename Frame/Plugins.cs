@@ -18,7 +18,6 @@ using RandomGains.Gains;
 using RWCustom;
 using UnityEngine;
 using RandomGains.Frame.Display.GainHUD;
-using System.Collections;
 
 #pragma warning disable CS0618
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
@@ -39,13 +38,7 @@ namespace RandomGains
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
         }
 
-        void Update()
-        {
-            if(ExceptionTracker.Singleton != null)
-            {
-                ExceptionTracker.Singleton.Update();
-            }
-        }
+        
 
         private static bool load = false;
         private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
@@ -62,8 +55,6 @@ namespace RandomGains
                     LoadResources(self);
                     GainRegister.InitAllGainPlugin();
                     load = true;
-
-                    StartCoroutine(LateCreateExceptionTracker());
                 }
             }
 
@@ -79,8 +70,7 @@ namespace RandomGains
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 EmgTxCustom.Log("Plugins : Space pressed");
-                GainPool.Singleton.EnableGain(new GainID("EjectionRock"));
-                GainPool.Singleton.EnableGain(new GainID("NoodleHand"));
+                GainPool.Singleton.EnableGain(new GainID("MirrorID"));
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
@@ -93,6 +83,8 @@ namespace RandomGains
                 self.room.game.Win(false);
             }
         }
+
+  
 
         public static void LoadResources(RainWorld rainWorld)
         {
@@ -113,14 +105,5 @@ namespace RandomGains
         public static Font TitleFont { get; set; }
         public static Font DescFont { get; set; }
 
-        IEnumerator LateCreateExceptionTracker()
-        {
-            while (Custom.rainWorld.processManager.currentMainLoop == null || Custom.rainWorld.processManager.currentMainLoop.ID != ProcessManager.ProcessID.MainMenu)
-                yield return new WaitForSeconds(1);
-
-            new ExceptionTracker();
-            yield break;
-        }
     }
-
 }

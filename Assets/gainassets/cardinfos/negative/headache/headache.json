@@ -1,0 +1,10 @@
+{
+    "faceName": "HeadAche",
+    "gainID" : "HeadAcheID",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "我脑袋疼",
+    "gainDescription" : "间歇性眩晕2秒",
+    "color" : "#ff1df0"
+}

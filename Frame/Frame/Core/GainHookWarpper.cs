@@ -68,7 +68,6 @@ namespace RandomGains.Frame.Core
                 try
                 {
                     registedAddHooks[gainID].Invoke();
-                    EmgTxCustom.Log($"Invoke add of {gainID}");
                 }
                 catch (Exception ex)
                 {
@@ -96,7 +95,6 @@ namespace RandomGains.Frame.Core
                 try
                 {
                     registedRemoveHooks[gainID].Invoke();
-                    EmgTxCustom.Log($"Invoke remove of {gainID}");
                 }
                 catch (Exception ex)
                 {
@@ -135,7 +133,7 @@ namespace RandomGains.Frame.Core
                     {
                         ilProcessor.Emit(OpCodes.Call,
                             hookAssembly.GetType(m.DeclaringType.FullName).GetMethod(m.Name.Replace("add", "remove")));
-                        EmgTxCustom.Log($"Add remove {m.Name.Replace("add", "remove")}");
+                        //EmgTxCustom.Log($"Add remove {m.Name.Replace("add", "remove")}");
                         continue;
                     }
                 }
@@ -144,7 +142,7 @@ namespace RandomGains.Frame.Core
                     for(int i =0;i < ctor.Parameters.Count;i++)
                         ilProcessor.Emit(OpCodes.Pop);
                     ilProcessor.Emit(OpCodes.Ldnull);
-                    EmgTxCustom.Log($"Remove RuntimeDetour in remove function");
+                    //EmgTxCustom.Log($"Remove RuntimeDetour in remove function");
                     continue;
                 }
                 else if (str.OpCode == OpCodes.Ret)

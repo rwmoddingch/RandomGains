@@ -1,0 +1,10 @@
+{
+    "faceName": "byebyeweapon",
+    "gainID" : "ByeByeWeaponID",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "再见武器",
+    "gainDescription" : "去你*的!我没法扔武器了",
+    "color" : "#7f1e1e"
+}

@@ -14,8 +14,6 @@ namespace BuiltinGains.Positive
 {
     internal class DeathFreeMedallionGain : GainImpl<DeathFreeMedallionGain, DeathFreeMedallionGainData>
     {
-        public override GainID GainID => DeathFreeMedallionGainEntry.deathFreeMedallionGainID;
-
         public bool triggerdThisCycle;
 
         public AbstractCreature spawnlater;
@@ -36,7 +34,7 @@ namespace BuiltinGains.Positive
 
     internal class DeathFreeMedallionGainData : GainDataImpl
     {
-        public override GainID GainID => DeathFreeMedallionGainEntry.deathFreeMedallionGainID;
+
     }
 
     internal class DeathFreeMedallionGainEntry : GainEntry

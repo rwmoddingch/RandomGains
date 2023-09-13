@@ -1,0 +1,10 @@
+{
+    "faceName": "explosivejaw",
+    "gainID" : "ExplosiveJaw",
+    "gainType" : "Negative",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "爆炸头",
+    "gainDescription" : "蜥蜴的头部在被矛命中时会产生一次爆炸",
+    "color" : "#B90014"
+}

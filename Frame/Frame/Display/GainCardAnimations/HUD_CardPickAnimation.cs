@@ -26,16 +26,12 @@ namespace RandomGains.Frame.Display
             card.rotation = new Vector3(0f, animationArg.endRotation * tExpose, 0f);
         }
 
-        public override void Destroy(bool hardSetTransform)
+        public override void Destroy()
         {
-            base.Destroy(hardSetTransform);
-            if (hardSetTransform)
-            {
-                card.rotation = Vector3.zero;
-                card.rotationLast = Vector3.zero;
-                card.rotationLerp = Vector3.zero;
-            }
-
+            base.Destroy();
+            card.rotation = Vector3.zero;
+            card.rotationLast = Vector3.zero;
+            card.rotationLerp = Vector3.zero;
             if (animationArg.switchToLowQuality)
                 card.SwitchToLowPerformanceMode();
             card.internalInteractive = animationArg.interactiveAfterAnim;

@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using MonoMod.Utils;
 using UnityEngine;
-using System.Runtime.Serialization;
 
 namespace RandomGains
 {
@@ -33,11 +32,6 @@ namespace RandomGains
 
             Vector2 c = Vector2.Lerp(a2, b2, t);
             return c.y;
-        }
-
-        public static T GetUninit<T>()
-        {
-            return (T)FormatterServices.GetUninitializedObject(typeof(T));
         }
     }
 }

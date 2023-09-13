@@ -31,15 +31,15 @@ namespace RandomGains.Frame.Display.GainCardAnimations
             if (tInLife > 0.9f && animationArg.isDestroy)
             {
                 card.ClearSprites();
-                Destroy(true);
+                Destroy();
                 GainHUD.GainHud.Singleton.RemoveGainCardRepresent(card.ID);
             }
             if (tInLife == 1f && !animationArg.isDestroy)
             {
 
                 card.rotation = new Vector3(0, 0, 0);
-                //GainHUD.GainHud.Singleton.slot.idToRepresentMapping[card.ID].CardReset();
-                Destroy(true);
+                GainHUD.GainHud.Singleton.idToRepresentMapping[card.ID].CardReset();
+                Destroy();
 
             }
         }

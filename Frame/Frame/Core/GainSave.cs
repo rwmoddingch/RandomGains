@@ -196,7 +196,6 @@ namespace RandomGains.Frame.Core
                 EmitFunction(ilGenerator, type.GetProperty("GainID").GetGetMethod(), "getGainID");
                 EmitFunction(ilGenerator, type.GetProperty("stackLayer").GetSetMethod(), "setStackLayer");
                 EmitFunction(ilGenerator, type.GetProperty("stackLayer").GetGetMethod(), "getStackLayer");
-                EmitFunction(ilGenerator, type.GetMethod("ToString"), "onToString");
                 ilGenerator.Emit(OpCodes.Ldloc_0);
                 ilGenerator.Emit(OpCodes.Ret);
                 var ctorDeg = method.Generate().GetFastDelegate().CastDelegate<Func<GainData>>();

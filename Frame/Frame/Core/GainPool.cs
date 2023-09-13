@@ -13,7 +13,6 @@ using Object = System.Object;
 using Mono.Cecil;
 using OpCodes = System.Reflection.Emit.OpCodes;
 using System.Reflection;
-using RandomGains.Frame.Display.GainHUD;
 
 namespace RandomGains.Frame.Core
 {
@@ -28,7 +27,7 @@ namespace RandomGains.Frame.Core
 
         static Dictionary<GainID, Func<Gain>> gainCtors = new Dictionary<GainID, Func<Gain>>();
         public Dictionary<GainID, Gain> gainMapping = new Dictionary<GainID, Gain>();
-        public List<Gain> updateGains = new List<Gain>();
+        public List<Gain> updateObjects = new List<Gain>();
 
    
         public GainPool(RainWorldGame game)
@@ -57,11 +56,11 @@ namespace RandomGains.Frame.Core
 
         public void Update(RainWorldGame game)
         {
-            for (int i = updateGains.Count - 1; i >= 0; i--)
+            for (int i = updateObjects.Count - 1; i >= 0; i--)
             {
                 try
                 {
-                    updateGains[i].onUpdate(game);
+                    updateObjects[i].onUpdate(game);
                 }
                 catch (Exception e)
                 {
@@ -72,12 +71,11 @@ namespace RandomGains.Frame.Core
 
         public void Destroy()
         {
-            for (int i = updateGains.Count - 1; i >= 0; i--)
+            for (int i = updateObjects.Count - 1; i >= 0; i--)
             {
                 try
                 {
-                    GainHookWarpper.DisableGain(updateGains[i].getGainID());
-                    updateGains[i].onDestroy();
+                    updateObjects[i].onDestroy();
                 }
                 catch (Exception e)
                 {
@@ -109,11 +107,11 @@ namespace RandomGains.Frame.Core
             GainHookWarpper.EnableGain(id);
             Gain gain = gainCtors[id].Invoke();
 
-            updateGains.Add(gain);
+            updateObjects.Add(gain);
             gainMapping.Add(id, gain);
 
             GainSave.Singleton.GetData(id);
-            GainHud.Singleton?.AddGainCardRepresent(id);
+
         }
 
         /// <summary>
@@ -122,6 +120,8 @@ namespace RandomGains.Frame.Core
         /// <param name="id"></param>
         public void DisableGain(GainID id)
         {
+         
+
             if (!gainMapping.ContainsKey(id))
             {
                 EmgTxCustom.Log($"GainPool : gain {id} still not enabled!");
@@ -143,11 +143,10 @@ namespace RandomGains.Frame.Core
             GainHookWarpper.DisableGain(id);
 
             gainMapping[id].onDestroy();
-            updateGains.Remove(gainMapping[id]);
+            updateObjects.Remove(gainMapping[id]);
             gainMapping.Remove(id);
 
             GainSave.Singleton.RemoveData(id);
-            GainHud.Singleton?.RemoveGainCardRepresent(id);
         }
         
         /// <summary>

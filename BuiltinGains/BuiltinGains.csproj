@@ -65,7 +65,7 @@
   <ItemGroup>
     <Folder Include="Negative\" />
   </ItemGroup>
-
+  
   <Target Name="GenerateMod" AfterTargets="PostBuildEvent">
     <ItemGroup>
       <RemovePlugins Include="../mod/gainplugins/*.dll" />

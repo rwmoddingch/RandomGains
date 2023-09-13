@@ -16,10 +16,6 @@ namespace BuiltinGains.Negative
     internal class ExplosiveJawGainData : GainDataImpl
     {
         public override GainID GainID => ExplosiveJawGainEntry.explosiveJawGainID;
-        public override string ToString()
-        {
-            return "";
-        }
     }
 
     internal class ExplosiveJawGain : GainImpl<ExplosiveJawGain, ExplosiveJawGainData>
