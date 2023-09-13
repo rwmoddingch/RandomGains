@@ -186,19 +186,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\qianlong\\.nuget\\packages\\": {}
+    "C:\\Users\\Administrator\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
+      "projectUniqueName": "C:\\Users\\Administrator\\source\\repos\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
       "projectName": "VeryPoorGains",
-      "projectPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
-      "packagesPath": "C:\\Users\\qianlong\\.nuget\\packages\\",
-      "outputPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\obj\\",
+      "projectPath": "C:\\Users\\Administrator\\source\\repos\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
+      "packagesPath": "C:\\Users\\Administrator\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Administrator\\source\\repos\\RandomGains\\VeryPoorGains\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\qianlong\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Administrator\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -212,8 +212,8 @@
         "net48": {
           "targetAlias": "net48",
           "projectReferences": {
-            "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj": {
-              "projectPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj"
+            "C:\\Users\\Administrator\\source\\repos\\RandomGains\\Frame\\RandomGains.csproj": {
+              "projectPath": "C:\\Users\\Administrator\\source\\repos\\RandomGains\\Frame\\RandomGains.csproj"
             }
           }
         }
@@ -237,7 +237,7 @@
             "version": "[4.5.0, )"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
       }
     }
   }

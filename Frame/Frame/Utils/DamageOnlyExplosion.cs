@@ -72,7 +72,7 @@ namespace RandomGains.Frame.Utils
                 }
             }
             this.room.MakeBackgroundNoise(this.backgroundNoise);
-            float num = this.rad * (0.25f + 0.75f * Mathf.Sin(Mathf.InverseLerp(0f, (float)this.lifeTime, (float)this.frame) * 3.1415927f));
+            float radFrac = this.rad * (0.25f + 0.75f * Mathf.Sin(Mathf.InverseLerp(0f, (float)this.lifeTime, (float)this.frame) * 3.1415927f));
             for (int j = 0; j < this.room.physicalObjects.Length; j++)
             {
                 for (int k = 0; k < this.room.physicalObjects[j].Count; k++)
@@ -80,15 +80,15 @@ namespace RandomGains.Frame.Utils
                     if (this.sourceObject != this.room.physicalObjects[j][k] && !this.room.physicalObjects[j][k].slatedForDeletetion)
                     {
                         float num2 = 0f;
-                        float num3 = float.MaxValue;
+                        float dist = float.MaxValue;
                         int num4 = -1;
                         for (int l = 0; l < this.room.physicalObjects[j][k].bodyChunks.Length; l++)
                         {
                             float num5 = Vector2.Distance(this.pos, this.room.physicalObjects[j][k].bodyChunks[l].pos);
-                            num3 = Mathf.Min(num3, num5);
-                            if (num5 < num)
+                            dist = Mathf.Min(dist, num5);
+                            if (num5 < radFrac)
                             {
-                                float num6 = Mathf.InverseLerp(num, num * 0.25f, num5);
+                                float num6 = Mathf.InverseLerp(radFrac, radFrac * 0.25f, num5);
                                 if (!this.room.VisualContact(this.pos, this.room.physicalObjects[j][k].bodyChunks[l].pos))
                                 {
                                     num6 -= 0.5f;
@@ -116,7 +116,7 @@ namespace RandomGains.Frame.Utils
                         }
                         if (this.deafen > 0f && this.room.physicalObjects[j][k] is Creature)
                         {
-                            (this.room.physicalObjects[j][k] as Creature).Deafen((int)Custom.LerpMap(num3, num * 1.5f * this.deafen, num * Mathf.Lerp(1f, 4f, this.deafen), 650f * this.deafen, 0f));
+                            (this.room.physicalObjects[j][k] as Creature).Deafen((int)Custom.LerpMap(dist, radFrac * 1.5f * this.deafen, radFrac * Mathf.Lerp(1f, 4f, this.deafen), 150f * this.deafen, 0f));
                         }
                         if (num4 > -1)
                         {

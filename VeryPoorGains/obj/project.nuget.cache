@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "w1CY/1ZJrqlZh0ti9uFw5RxOBxCBrg8KK6tTUJTx9fmdokNrf/g8QNcu30zlSsfZZ/+YXquWsUNTuho2z4li+w==",
+  "dgSpecHash": "B5QXeFgx1bc8srcIIGrELkdyUaHDfEzjLXStksc0fPmQz0EqZG4MbUhpeAsIpkD2nI5do5z6knna6klgKxViug==",
   "success": true,
-  "projectFilePath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
+  "projectFilePath": "C:\\Users\\Administrator\\source\\repos\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\qianlong\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
-    "C:\\Users\\qianlong\\.nuget\\packages\\newtonsoft.json\\9.0.1\\newtonsoft.json.9.0.1.nupkg.sha512",
-    "C:\\Users\\qianlong\\.nuget\\packages\\system.data.datasetextensions\\4.5.0\\system.data.datasetextensions.4.5.0.nupkg.sha512"
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\newtonsoft.json\\9.0.1\\newtonsoft.json.9.0.1.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\system.data.datasetextensions\\4.5.0\\system.data.datasetextensions.4.5.0.nupkg.sha512"
   ],
   "logs": []
 }
