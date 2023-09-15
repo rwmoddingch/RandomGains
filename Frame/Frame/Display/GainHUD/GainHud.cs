@@ -21,12 +21,17 @@ namespace RandomGains.Frame.Display.GainHUD
         bool keyPress;
         bool lastKeyPress;
 
+        RainWorldGame game;
+        CustomFSprite blackScreen;
+
         public GainHud(HUD.HUD hud) : base(hud)
         {
             container = new FContainer();
             hud.fContainers[0].AddChild(container);
             slot = new GainSlot2(container,true);
             Singleton = this;
+            game = Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+
         }
 
         public override void Update()
@@ -39,6 +44,7 @@ namespace RandomGains.Frame.Display.GainHUD
             if(keyPress && !lastKeyPress)
             {
                 slot.ToggleShow();
+                game.paused = slot.show;
             }
             slot.Update();
         }

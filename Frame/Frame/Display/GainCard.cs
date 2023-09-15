@@ -545,7 +545,6 @@ namespace RandomGains.Frame
                 clickCounter--;
                 if (clickCounter == 0)
                     OnMouseCardClick?.Invoke(this);
-                
             }
 
             leftClick = Input.GetMouseButton(0) && MouseInside && internalInteractive;

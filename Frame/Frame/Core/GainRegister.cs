@@ -68,7 +68,7 @@ namespace RandomGains.Gains
         {
             if (GainStaticDataLoader.GetStaticData(id) == null)
             {
-                Debug.LogError($"[Random Gains] Missing static data for gain: {id}");
+                Debug.LogError($"[Random Gains] Missing static data for gain: {id}");  
                 return;
             }
 

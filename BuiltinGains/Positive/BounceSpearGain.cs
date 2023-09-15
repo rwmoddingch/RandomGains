@@ -80,7 +80,6 @@ namespace BuiltinGains.Positive
                     active = false;
                 }
             }
-            
         }
     }
 

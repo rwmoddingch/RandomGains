@@ -81,7 +81,6 @@ namespace RandomGains.Frame.Display
                 var represent = represents[i];
                 represent.Update();
                 allRepresentDestroy = allRepresentDestroy && represent.slateForDeletion;
-                represent.inputEnable = show;
             }
             if (allRepresentDestroy)
                 Destroy();
