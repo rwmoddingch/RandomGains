@@ -11,8 +11,6 @@ namespace TemplateGains
     internal class MirrorDataImpl : GainDataImpl
     {
         public override GainID GainID => MirrorGainEntry.MirrorID;
-
-
     }
 
     internal class MirrorGainImpl : GainImpl<MirrorGainImpl, MirrorDataImpl>
@@ -26,14 +24,17 @@ namespace TemplateGains
 
         public static void HookOn()
         {
-            On.Player.Update += Player_Update;
+          //读取玩家输入的时候反转x的输入
+            On.RWInput.PlayerInput += RWInput_PlayerInput;
         }
 
-        private static void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
+        private static Player.InputPackage RWInput_PlayerInput(On.RWInput.orig_PlayerInput orig, int playerNumber, RainWorld rainWorld)
         {
-            self.input[0].x *= -1;
-            orig.Equals(self);
+            var self= orig.Invoke(playerNumber, rainWorld);
+            self.x *= -1;
+            return self;
         }
+
 
         public override void OnEnable()
         {
