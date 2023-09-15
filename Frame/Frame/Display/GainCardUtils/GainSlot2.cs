@@ -5,11 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RWCustom;
 using UnityEngine;
 
 namespace RandomGains.Frame.Display
 {
-    internal class GainSlot2
+    internal partial class GainSlot2
     {
         public FContainer Container;
 
@@ -18,24 +19,31 @@ namespace RandomGains.Frame.Display
         public Dictionary<GainID, GainCardRepresent> idToRepresentMapping = new Dictionary<GainID, GainCardRepresent>();
         public List<GainCardRepresent> positiveCardHUDRepresents = new List<GainCardRepresent>();
         public List<GainCardRepresent> notPositiveCardHUDRepresents = new List<GainCardRepresent>();
-        public List<GainCardRepresent> allCardHUDRepresemts = new List<GainCardRepresent>();
+        public List<GainCardRepresent> allCardHUDRepresents = new List<GainCardRepresent>();
 
         public int positiveSlotMidIndex;
         public int notPositveSlotMidIndex;
 
         public bool show;
 
-        public GainSlot2(FContainer ownerContainer)
+        public GainSlot2(FContainer ownerContainer, bool isHud = false)
         {
             Container = new FContainer();
             ownerContainer.AddChild(Container);
 
-            selector = new GainRepresentSelector(this, true);
+            if (!isHud)
+                selector = new GainRepresentSelector(this, true);
+            else
+                selector = new HUDGainRepresentSelector(this, true);
 
             foreach (var id in GainSave.Singleton.dataMapping.Keys)
             {
                 AddGain(id);
             }
+            if(selector is HUDGainRepresentSelector hudSelector)
+                hudSelector.PostInit();
+
+
         }
 
         public bool AddGain(GainID id)
@@ -48,11 +56,12 @@ namespace RandomGains.Frame.Display
 
             var represent = new GainCardRepresent(this, selector);
             var card = new GainCard(id, true);
+            card.IsMenu = !(selector is HUDGainRepresentSelector);
             card.InitiateSprites();
             represent.AddCard(card);
 
             lst.Add(represent);
-            allCardHUDRepresemts.Add(represent);
+            allCardHUDRepresents.Add(represent);
             idToRepresentMapping.Add(id, represent);
 
             return true;
@@ -62,7 +71,7 @@ namespace RandomGains.Frame.Display
         {
             represent.Container.RemoveFromContainer();
             Container.AddChild(represent.Container);
-            allCardHUDRepresemts.Add(represent);
+            allCardHUDRepresents.Add(represent);
             represent.owner = this;
 
             if (idToRepresentMapping.ContainsKey(represent.bindCard.ID))
@@ -86,7 +95,7 @@ namespace RandomGains.Frame.Display
         {
             var id = represent.bindCard.ID;
             idToRepresentMapping.Remove(id);
-            allCardHUDRepresemts.Remove(represent);
+            allCardHUDRepresents.Remove(represent);
             var lst = represent.bindCard.staticData.GainType == GainType.Positive ? positiveCardHUDRepresents : notPositiveCardHUDRepresents;
             lst.Remove(represent);
         }
@@ -94,17 +103,18 @@ namespace RandomGains.Frame.Display
         public void Update()
         {
             selector.Update();
-            for(int i = allCardHUDRepresemts.Count - 1; i >= 0; i--)
+            InputUpdate();
+            for (int i = allCardHUDRepresents.Count - 1; i >= 0; i--)
             {
-                allCardHUDRepresemts[i].Update();
+                allCardHUDRepresents[i].Update();
             }
         }
 
         public void Draw(float timeStacker)
         {
-            for (int i = allCardHUDRepresemts.Count - 1; i >= 0; i--)
+            for (int i = allCardHUDRepresents.Count - 1; i >= 0; i--)
             {
-                allCardHUDRepresemts[i].Draw(timeStacker);
+                allCardHUDRepresents[i].Draw(timeStacker);
             }
         }
 
@@ -116,8 +126,49 @@ namespace RandomGains.Frame.Display
         public void ToggleShow(bool show)
         {
             this.show = show;
-            foreach (var represent in allCardHUDRepresemts)
+            foreach (var represent in allCardHUDRepresents)
                 represent.ToggleShow(show);
+        }
+    }
+
+    partial class GainSlot2
+    {
+        public GainCardRepresent keyboardSelectedRepresent;
+        public void InputUpdate()
+        {
+            //if (allCardHUDRepresents.Count == 0 || (selector is HUDGainRepresentSelector && !show))
+            //{
+            //    keyboardSelectedRepresent = null;
+            //    return; 
+            //}
+
+            //var input = RWInput.PlayerUIInput(0, Custom.rainWorld);
+            //EmgTxCustom.Log(input.IntVec.ToString());
+            //if (input.AnyDirectionalInput)
+            //{
+            //    if (keyboardSelectedRepresent == null)
+            //        keyboardSelectedRepresent = allCardHUDRepresents.First();
+            //    var index = allCardHUDRepresents.IndexOf(keyboardSelectedRepresent);
+            //    if (input.x != 0)
+            //    {
+            //        selector.RemoveKeyboardRepresent(keyboardSelectedRepresent);
+            //        keyboardSelectedRepresent = allCardHUDRepresents[(index + allCardHUDRepresents.Count + input.x) % allCardHUDRepresents.Count];
+            //        selector.AddKeyboardRepresent(keyboardSelectedRepresent);
+            //    }
+            //}
+
+            //if (input.jmp && keyboardSelectedRepresent != null)
+            //{
+            //    keyboardSelectedRepresent.BindCard_OnMouseCardClick(keyboardSelectedRepresent.bindCard);
+            //}
+            //if (input.pckp && keyboardSelectedRepresent != null)
+            //{
+            //    keyboardSelectedRepresent.BindCard_OnMouseCardRightClick(keyboardSelectedRepresent.bindCard);
+            //}
+            //if (input.thrw && keyboardSelectedRepresent != null)
+            //{
+            //    keyboardSelectedRepresent.BindCard_OnMouseCardDoubleClick(keyboardSelectedRepresent.bindCard);
+            //}
         }
     }
 
@@ -128,9 +179,9 @@ namespace RandomGains.Frame.Display
     {
         public readonly GainSlot2 slot;
         public readonly bool mouseMode;
-
         public GainCardRepresent currentSelectedRepresent;
         public List<GainCardRepresent> currentHoverOnRepresents = new List<GainCardRepresent>();
+
 
         public GainRepresentSelector(GainSlot2 slot, bool mouseMode)
         {
@@ -150,6 +201,7 @@ namespace RandomGains.Frame.Display
 
                 first.currentHoverd = (currentSelectedRepresent == null || currentSelectedRepresent == first);//没有选中的卡牌或者选中的卡牌就是自己时，才更改悬浮状态
             }
+
         }
        
         public void AddHoverRepresent(GainCardRepresent represent)
@@ -161,6 +213,39 @@ namespace RandomGains.Frame.Display
         {
             currentHoverOnRepresents.Remove(represent);
             represent.currentHoverd = false;
+        }
+        public void RemoveKeyboardRepresent(GainCardRepresent represent)
+        {
+            represent.currentKeyboardFocused = false;
+        }
+        public void AddKeyboardRepresent(GainCardRepresent represent)
+        {
+            represent.currentKeyboardFocused = true;
+        }
+    }
+
+    /// <summary>
+    /// HUD特化输入控制
+    /// </summary>
+    class HUDGainRepresentSelector : GainRepresentSelector
+    {
+        public HUDGainRepresentSelector(GainSlot2 slot, bool mouseMode) : base(slot, mouseMode)
+        {
+        }
+
+        public void OnDoubleClick(GainCardRepresent card)
+        {
+            if (GainStaticDataLoader.GetStaticData(card.bindCard.ID).triggerable && GainPool.Singleton.TryGetGain(card.bindCard.ID, out var gain) && gain.Triggerable)
+            {
+                card.NewTransformer(new ActiveGainRepresentTransformer(card, 
+                    gain.onTrigger(Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)));
+            }
+        }
+
+        public void PostInit()
+        {
+            slot.positiveCardHUDRepresents.ForEach(i => i.OnDoubleClick += OnDoubleClick);
+
         }
     }
 }

@@ -190,6 +190,7 @@ namespace RandomGains.Frame.Core
                 ilGenerator.Emit(OpCodes.Stfld, typeof(GainData).GetField("dataImpl"));
                 EmitFunction(ilGenerator, type, "ParseData", new[] { typeof(string) });
                 EmitFunction(ilGenerator, type, "SteppingCycle", Type.EmptyTypes);
+                EmitFunction(ilGenerator, type, "Stack", Type.EmptyTypes);
                 EmitFunction(ilGenerator, type, "UnStack", Type.EmptyTypes);
                 EmitFunction(ilGenerator, type, "CanStackMore", Type.EmptyTypes);
                 EmitFunction(ilGenerator, type, "Init", Type.EmptyTypes);

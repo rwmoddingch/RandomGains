@@ -19,12 +19,14 @@ namespace RandomGains.Frame.Display
         GainID[] choices;
         int sendChoiceCounter = 20;
         int currentSendIndex;
-
         bool show = true;
 
         FContainer Container;
 
         List<GainCardRepresent> represents = new List<GainCardRepresent>();
+
+        private GainCardRepresent keyboardSelectedRepresent;
+        private Player.InputPackage lastInput;
 
 
         public GainPicker2(GainMenu menu)
@@ -58,6 +60,7 @@ namespace RandomGains.Frame.Display
                     {
                         size = 0f
                     };
+                    card.IsMenu = !(gainMenu.selector is HUDGainRepresentSelector);
                     card.InitiateSprites();
                     cardRepresent.AddCard(card);
                     represents.Add(cardRepresent);
@@ -71,17 +74,58 @@ namespace RandomGains.Frame.Display
                     currentSendIndex++;
                 }
             }
-
+            KeyBoardUpdate();
             bool allRepresentDestroy = represents.Count > 0;
-            foreach (var represent in represents)
+            for (int i = 0; i < represents.Count; i++)
             {
+                var represent = represents[i];
                 represent.Update();
                 allRepresentDestroy = allRepresentDestroy && represent.slateForDeletion;
                 represent.inputEnable = show;
             }
-
             if (allRepresentDestroy)
                 Destroy();
+        }
+
+        public void KeyBoardUpdate()
+        {
+            if (represents.Count == 0 || (!represents.Contains(keyboardSelectedRepresent) && keyboardSelectedRepresent != null))
+            {
+                keyboardSelectedRepresent = null;
+                return;
+            }
+
+            var input = RWInput.PlayerUIInput(0, Custom.rainWorld);
+            if (input.AnyDirectionalInput)
+            {
+                if (keyboardSelectedRepresent == null)
+                    keyboardSelectedRepresent = represents.First();
+                else
+                {
+                    var index = represents.IndexOf(keyboardSelectedRepresent);
+                    if (input.x != 0 && input.x != lastInput.x)
+                    {
+                        gainMenu.selector.RemoveKeyboardRepresent(keyboardSelectedRepresent);
+                        keyboardSelectedRepresent = represents[(index + represents.Count + input.x) % represents.Count];
+                        gainMenu.selector.AddKeyboardRepresent(keyboardSelectedRepresent);
+                    }
+                }
+            }
+            if (input.thrw && !lastInput.thrw && keyboardSelectedRepresent != null)
+            {
+                keyboardSelectedRepresent.bindCard.KeyBoardClick(); 
+            }
+            if (input.pckp && !lastInput.pckp && keyboardSelectedRepresent != null)
+            {
+                keyboardSelectedRepresent.bindCard.KeyBoardRightClick();
+            }
+            if (input.jmp && !lastInput.jmp && keyboardSelectedRepresent != null)
+            {
+                keyboardSelectedRepresent.bindCard.KeyBoardDoubleClick();
+            }
+
+            lastInput = input;
+   
         }
 
         public void Draw(float timeStacker)
@@ -105,6 +149,15 @@ namespace RandomGains.Frame.Display
             //选中的卡移动到slot内，其他的让他滚出屏幕
             gainMenu.slot.MoveRepresentInside(obj);
             represents.Remove(obj);
+            var save = GainSave.Singleton.GetData(obj.bindCard.ID);
+            EmgTxCustom.Log($"GainPool : gain {obj.bindCard.ID}, CanStackMore : {save.onCanStackMore()}");
+
+            if (GainStaticDataLoader.GetStaticData(obj.bindCard.ID).stackable && save.onCanStackMore())
+            {
+                EmgTxCustom.Log($"GainPool : gain {obj.bindCard.ID} add one more stack");
+                save.onStack();
+            }
+
             EmgTxCustom.Log($"gain {obj.bindCard.ID} selected");
 
             foreach(var cardRepresent in represents)

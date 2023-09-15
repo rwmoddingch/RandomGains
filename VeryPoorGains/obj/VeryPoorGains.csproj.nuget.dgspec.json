@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj": {}
+    "G:\\RW mod project\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj": {}
   },
   "projects": {
-    "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj": {
+    "G:\\RW mod project\\RandomGains\\Frame\\RandomGains.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj",
+        "projectUniqueName": "G:\\RW mod project\\RandomGains\\Frame\\RandomGains.csproj",
         "projectName": "RandomGains",
-        "projectPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj",
-        "packagesPath": "C:\\Users\\qianlong\\.nuget\\packages\\",
-        "outputPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\obj\\",
+        "projectPath": "G:\\RW mod project\\RandomGains\\Frame\\RandomGains.csproj",
+        "packagesPath": "C:\\Users\\dell\\.nuget\\packages\\",
+        "outputPath": "G:\\RW mod project\\RandomGains\\Frame\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\qianlong\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\dell\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -57,17 +61,21 @@
         }
       }
     },
-    "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj": {
+    "G:\\RW mod project\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
+        "projectUniqueName": "G:\\RW mod project\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
         "projectName": "VeryPoorGains",
-        "projectPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
-        "packagesPath": "C:\\Users\\qianlong\\.nuget\\packages\\",
-        "outputPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\VeryPoorGains\\obj\\",
+        "projectPath": "G:\\RW mod project\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
+        "packagesPath": "C:\\Users\\dell\\.nuget\\packages\\",
+        "outputPath": "G:\\RW mod project\\RandomGains\\VeryPoorGains\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\qianlong\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\dell\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -81,8 +89,8 @@
           "net48": {
             "targetAlias": "net48",
             "projectReferences": {
-              "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj": {
-                "projectPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj"
+              "G:\\RW mod project\\RandomGains\\Frame\\RandomGains.csproj": {
+                "projectPath": "G:\\RW mod project\\RandomGains\\Frame\\RandomGains.csproj"
               }
             }
           }

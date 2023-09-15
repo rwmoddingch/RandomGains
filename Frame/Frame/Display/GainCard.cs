@@ -20,6 +20,7 @@ namespace RandomGains.Frame
     /// </summary>
     public partial class GainCard
     {
+
         public class GainCardTexture
         {
             public GainID ID;
@@ -59,7 +60,26 @@ namespace RandomGains.Frame
 
                 titleObject = CreateTextMesh(true, Plugins.TitleFont,1f, StaticData.color);
                 descObject = CreateTextMesh(false, Plugins.DescFont,0.7f,Color.white);
+                stackObject = CreateTextMesh(true, Plugins.TitleFont, 0.7f, StaticData.color);
+                stackObject.GetComponent<TextMesh>().anchor = TextAnchor.UpperRight;
+
+                stackObject.transform.localPosition = new Vector3(0, 0.5f, -0.01f);
                 cameraObject.transform.position = CurrentSetPos;
+
+                if (GainStaticDataLoader.GetStaticData(ID).stackable)
+                {
+                    if (!GainSave.Singleton.dataMapping.ContainsKey(ID))
+                    {
+                        stackObject.GetComponent<TextMesh>().text = "1";
+                    }
+                    else if (GainSave.Singleton.GetData(ID).StackLayer != 0)
+                    {
+                        if (card.IsMenu)
+                            stackObject.GetComponent<TextMesh>().text = GainSave.Singleton.GetData(ID).StackLayer + " + 1";
+                        else
+                            stackObject.GetComponent<TextMesh>().text = GainSave.Singleton.GetData(ID).StackLayer.ToString();
+                    }
+                }
 
                 Title = StaticData.gainName;
                 Description = StaticData.gainDescription;
@@ -178,6 +198,7 @@ namespace RandomGains.Frame
                 {
                     cardObjectA.GetComponent<MeshRenderer>().enabled = value;
                     titleObject.GetComponent<MeshRenderer>().enabled = value;
+                    stackObject.GetComponent<MeshRenderer>().enabled = value;
                     cardObjectB.GetComponent<MeshRenderer>().enabled = !value;
                     descObject.GetComponent<MeshRenderer>().enabled = !value;
                 }
@@ -208,7 +229,7 @@ namespace RandomGains.Frame
             public float DescAlpha
             {
                 get => cardObjectB.GetComponent<MeshRenderer>().sharedMaterial.GetFloat("_Lerp");
-                set => cardObjectB.GetComponent<MeshRenderer>().sharedMaterial.SetFloat("_Lerp", value);
+                set => cardObjectB.GetComponent<MeshRenderer>().sharedMaterial.GetFloat("_Lerp");//cardObjectB.GetComponent<MeshRenderer>().sharedMaterial.SetFloat("_Lerp", value);
             }
             public void UpdateVisible()
             {
@@ -217,7 +238,7 @@ namespace RandomGains.Frame
             private Camera camera;
 
             private GameObject cardObjectA, cardObjectB;
-            private GameObject titleObject, descObject;
+            private GameObject titleObject, descObject, stackObject;
             private GameObject cameraObject;
 
             private static int count = 0;
@@ -329,7 +350,7 @@ namespace RandomGains.Frame
 
         public Vector2 Position(float timeStacker)
         {
-            return Vector2.Lerp(lastPos, pos, timeStacker);
+            return Vector2.Lerp(lastPos, pos, timeStacker) + Vector2.up * 300 * Mathf.Lerp(lastFocusTimer,focusTimer,timeStacker);
         }
         public void DrawSprites(float timeStacker)
         {
@@ -425,6 +446,8 @@ namespace RandomGains.Frame
         public bool Hidden { get; private set; }
 
         private bool lowPerformanceMode;
+
+        public bool IsMenu { get; set; }
     }
 
     /// <summary>
@@ -505,11 +528,17 @@ namespace RandomGains.Frame
     /// </summary>
     public partial class GainCard
     {
+        public float lastFocusTimer;
+        public float focusTimer;
+        public bool currentKeyboardFocused;
         public void InputUpdate()
         {
             lastMouseInside = MouseInside;
             lastLeftClick = leftClick;
             lastRightClick = rightClick;
+
+            lastFocusTimer = focusTimer;
+            focusTimer = Mathf.Lerp(focusTimer, currentKeyboardFocused ? 1 : 0, 0.1f);
 
             if (clickCounter > 0)
             {
@@ -546,9 +575,24 @@ namespace RandomGains.Frame
             MouseOnAnim();
         }
 
+        public void KeyBoardClick()
+        {
+            OnMouseCardClick?.Invoke(this);
+        }
+
+        public void KeyBoardRightClick()
+        {
+            OnMouseCardRightClick?.Invoke(this);
+        }
+
+        public void KeyBoardDoubleClick()
+        {
+            EmgTxCustom.Log("OnClick");
+            OnMouseCardDoubleClick?.Invoke(this);
+        }
         private void MouseOnClick(GainCard card)
         {
-            if (!internalInteractive)
+            if (!(internalInteractive || currentKeyboardFocused))
                 return;
             Rotation = sideA ? new Vector3(rotation.x, rotation.y + 180f, rotation.z) : new Vector3(rotation.x, rotation.y - 180f, rotation.z);
         }
