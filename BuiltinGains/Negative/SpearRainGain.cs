@@ -33,8 +33,6 @@ namespace BuiltinGains.Negative
         public static GainID SpearRainGainID = new GainID("SpearRain", true);
         public static RoomRain.DangerType SpearRain = new RoomRain.DangerType("SpearRain", true);
 
-        public static ConditionalWeakTable<Spear, RainSpearModule> spearModules = new ConditionalWeakTable<Spear, RainSpearModule>();
-
         public override void OnEnable()
         {
             GainRegister.RegisterGain<SpearRainGain, SpearRainGainData, SpearRainGainEntry>(SpearRainGainID);
@@ -42,124 +40,107 @@ namespace BuiltinGains.Negative
 
         public static void HookOn()
         {
-            RainSpearModule.totalCount = 0;
-
-            On.RoomRain.ctor += RoomRain_ctor;
-            On.BulletDrip.ctor += BulletDrip_ctor;
-            IL.RoomRain.Update += RoomRain_Update;
-            On.RoomRain.Update += RoomRain_Update1;
-            On.RoomRain.DrawSprites += RoomRain_DrawSprites;
-            On.RoomRain.ThrowAroundObjects += RoomRain_ThrowAroundObjects;
+            IL.RoomRain.Update += RoomRain_Update_IL;
+            On.RoomRain.Update += RoomRain_Update;
 
             On.Spear.ChangeMode += Spear_ChangeMode;
             On.Spear.Update += Spear_Update;
+
+            IL.RoomRain.InitiateSprites += RoomRain_InitiateSprites;
+            IL.RoomRain.DrawSprites += RoomRain_DrawSprites;
+            IL.RoomRain.ThrowAroundObjects += RoomRain_ThrowAroundObjects;
+        }
+
+        private static void RoomRain_InitiateSprites(ILContext il)
+        {
+            ILCursor c1 = new ILCursor(il);
+            c1.Index = 0;
+            c1.Emit(OpCodes.Ret);
+        }
+
+        private static void RoomRain_ThrowAroundObjects(ILContext il)
+        {
+            ILCursor c1 = new ILCursor(il);
+            ILCursor c2 = new ILCursor(il);
+            ILLabel skipLabel = null;
+
+            if(c1.TryGotoNext(MoveType.After,
+                (i) => i.MatchLdloc(1),
+                (i) => i.MatchLdcI4(1),
+                (i) => i.MatchAdd(),
+                (i) => i.MatchStloc(1)
+            ))
+            {
+                c1.Index -= 4;
+                skipLabel = c1.MarkLabel();
+            }
+            else
+            {
+                ExceptionTracker.TrackException(new NullReferenceException(), "RoomRain_ThrowAroundObjects1 c1 cant match");
+            }
+
+            try
+            {
+                if (skipLabel != null && c2.TryGotoNext(MoveType.After,
+                    (i) => i.MatchLdloc(1),
+                    (i) => i.MatchLdarg(0),
+                    (i) => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    (i) => i.MatchLdfld<Room>("physicalObjects"),
+                    (i) => i.MatchLdloc(0),
+                    (i) => i.MatchLdelemRef()))
+                {
+                    c2.Index -= 5;
+                    EmgTxCustom.Log($"{c2.Next.OpCode}");
+                    c2.Emit(OpCodes.Ldloc_0);
+                    c2.Emit(OpCodes.Ldarg_0);
+                    c2.EmitDelegate<Func<int,int,RoomRain, bool>>((j,i,self) =>
+                    {
+                        //EmgTxCustom.Log($"i:{i}, count:{self.room.physicalObjects.Count()}" + (i < self.room.physicalObjects.Count() ? $"j:{j}, count:{self.room.physicalObjects[i].Count}" : ""));
+                        return (j < self.room.physicalObjects[i].Count - 1) && (self.room.physicalObjects[i][j] is Spear spear && RoomRainModule.rainSpearModules.TryGetValue(spear, out var _));
+                    });
+                    c2.Emit(OpCodes.Brtrue_S, skipLabel);
+                    c2.Emit(OpCodes.Ldloc_1);
+                }
+                else
+                {
+                    ExceptionTracker.TrackException(new NullReferenceException(), "RoomRain_ThrowAroundObjects1 c2 cant match");
+                }
+            }
+            catch(Exception e)
+            {
+                ExceptionTracker.TrackException(e, "RoomRain_ThrowAroundObjects1 c2 format error");
+                Debug.LogException(e);
+            }
+        }
+
+        private static void RoomRain_DrawSprites(ILContext il)
+        {
+            ILCursor c1 = new ILCursor(il);
+            c1.Index = 0;
+            c1.Emit(OpCodes.Ret);
         }
 
         private static void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
         {
             orig.Invoke(self, eu);
-            if(spearModules.TryGetValue(self, out var module))
+            if(RoomRainModule.rainSpearModules.TryGetValue(self, out var module))
             {
                 module.Update(self);
             }
         }
 
-        private static void RoomRain_ThrowAroundObjects(On.RoomRain.orig_ThrowAroundObjects orig, RoomRain self)
-        {
-            if (self.room.roomSettings.DangerType != RoomRain.DangerType.AerieBlizzard)
-            {
-                if (ModManager.MMF && self.room.roomSettings.RainIntensity < 0.02f)
-                {
-                    return;
-                }
-                if (ModManager.MSC && self.room.game.IsStorySession && self.room.world.region != null && self.room.world.region.name == "OE" && self.room.roomSettings.RainIntensity <= 0.2f)
-                {
-                    return;
-                }
-            }
-            if (self.room.roomSettings.RainIntensity == 0f)
-            {
-                return;
-            }
-            for (int i = 0; i < self.room.physicalObjects.Length; i++)
-            {
-                for (int j = 0; j < self.room.physicalObjects[i].Count; j++)
-                {
-                    if (self.room.physicalObjects[i][j] is Spear spear && spearModules.TryGetValue(spear, out var _))
-                    {
-                        continue;
-                    }
-
-                    for (int k = 0; k < self.room.physicalObjects[i][j].bodyChunks.Length; k++)
-                    {
-                        
-
-                        BodyChunk bodyChunk = self.room.physicalObjects[i][j].bodyChunks[k];
-                        IntVector2 tilePosition = self.room.GetTilePosition(bodyChunk.pos + new Vector2(Mathf.Lerp(-bodyChunk.rad, bodyChunk.rad, Random.value), Mathf.Lerp(-bodyChunk.rad, bodyChunk.rad, Random.value)));
-                        float num = self.InsidePushAround;
-                        bool flag = false;
-                        if (self.rainReach[Custom.IntClamp(tilePosition.x, 0, self.room.TileWidth - 1)] < tilePosition.y)
-                        {
-                            flag = true;
-                            num = Mathf.Max(self.OutsidePushAround, self.InsidePushAround);
-                        }
-                        if (self.room.water)
-                        {
-                            num *= Mathf.InverseLerp(self.room.FloatWaterLevel(bodyChunk.pos.x) - 100f, self.room.FloatWaterLevel(bodyChunk.pos.x), bodyChunk.pos.y);
-                        }
-                        if (num > 0f)
-                        {
-                            if (bodyChunk.ContactPoint.y < 0)
-                            {
-                                int num2 = 0;
-                                if (self.rainReach[Custom.IntClamp(tilePosition.x - 1, 0, self.room.TileWidth - 1)] >= tilePosition.y && !self.room.GetTile(tilePosition + new IntVector2(-1, 0)).Solid)
-                                {
-                                    num2--;
-                                }
-                                if (self.rainReach[Custom.IntClamp(tilePosition.x + 1, 0, self.room.TileWidth - 1)] >= tilePosition.y && !self.room.GetTile(tilePosition + new IntVector2(1, 0)).Solid)
-                                {
-                                    num2++;
-                                }
-                                bodyChunk.vel += Custom.DegToVec(Mathf.Lerp(-30f, 30f, Random.value) + (float)(num2 * 16)) * Random.value * (flag ? 9f : 4f) * num / bodyChunk.mass;
-                            }
-                            else
-                            {
-                                BodyChunk bodyChunk2 = bodyChunk;
-                                bodyChunk2.vel.y = bodyChunk2.vel.y - Mathf.Pow(Random.value, 5f) * 16.5f * num / bodyChunk.mass;
-                            }
-                            if (bodyChunk.owner is Creature)
-                            {
-                                if (Mathf.Pow(Random.value, 1.2f) * 2f * (float)bodyChunk.owner.bodyChunks.Length < num)
-                                {
-                                    (bodyChunk.owner as Creature).Stun(Random.Range(1, 1 + (int)(9f * num)));
-                                }
-                                if (bodyChunk == (bodyChunk.owner as Creature).mainBodyChunk)
-                                {
-                                    (bodyChunk.owner as Creature).rainDeath += num / 20f;
-                                }
-                                if (num > 0.5f && (bodyChunk.owner as Creature).rainDeath > 1f && Random.value < 0.025f)
-                                {
-                                    (bodyChunk.owner as Creature).Die();
-                                }
-                            }
-                            bodyChunk.vel += Custom.DegToVec(Mathf.Lerp(90f, 270f, Random.value)) * Random.value * 5f * self.InsidePushAround;
-                        }
-                    }
-                }
-            }
-        }
-
-        private static void RoomRain_Update1(On.RoomRain.orig_Update orig, RoomRain self, bool eu)
+        private static void RoomRain_Update(On.RoomRain.orig_Update orig, RoomRain self, bool eu)
         {
             orig.Invoke(self, eu);
-            if(self.intensity > 0 && Random.value < self.intensity)
+            if(RoomRainModule.roomRainModules.TryGetValue(self, out var module))
             {
-                for(int i = 0; i < Mathf.CeilToInt(self.intensity * 10) && RainSpearModule.totalCount < Mathf.CeilToInt(self.intensity * 40); i++)
+                module.Update(self);
+            }
+            else
+            {
+                if (self.room == self.room.game.cameras[0].room)
                 {
-                    AbstractPhysicalObject abstractPhysical = new AbstractSpear(self.room.world,null, new WorldCoordinate(self.room.abstractRoom.index, 0, 0, -1), self.room.game.GetNewID(), false);
-                    self.room.abstractRoom.entities.Add(abstractPhysical);
-                    abstractPhysical.RealizeInRoom();
-                    spearModules.Add(abstractPhysical.realizedObject as Spear, new RainSpearModule(abstractPhysical.realizedObject as Spear, self.intensity));
+                    RoomRainModule.roomRainModules.Add(self, new RoomRainModule(self));
                 }
             }
         }
@@ -167,29 +148,13 @@ namespace BuiltinGains.Negative
         private static void Spear_ChangeMode(On.Spear.orig_ChangeMode orig, Spear self, Weapon.Mode newMode)
         {
             orig.Invoke(self, newMode);
-            if(spearModules.TryGetValue(self, out var module))
+            if (RoomRainModule.rainSpearModules.TryGetValue(self, out var module))
             {
-                module.OnSpearChangeMode(self, newMode);
+                module.OnSpearChangeMode(self, newMode); 
             }
         }
 
-        private static void RoomRain_DrawSprites(On.RoomRain.orig_DrawSprites orig, RoomRain self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
-        {
-            return;
-        }
-
-        private static void BulletDrip_ctor(On.BulletDrip.orig_ctor orig, BulletDrip self, RoomRain roomRain)
-        {
-            orig.Invoke(self, roomRain);
-            EmgTxCustom.Log("BulletDrip ctor");
-        }
-
-        private static void RoomRain_ctor(On.RoomRain.orig_ctor orig, RoomRain self, GlobalRain globalRain, Room rm)
-        {
-            orig.Invoke(self, globalRain, rm);
-        }
-
-        private static void RoomRain_Update(ILContext il)
+        private static void RoomRain_Update_IL(ILContext il)
         {
             ILCursor c1 = new ILCursor(il);
 
@@ -213,21 +178,37 @@ namespace BuiltinGains.Negative
     public class RainSpearModule
     {
         public WeakReference<Spear> bindSpearRef;
-        float intensity;
+        public WeakReference<RoomRainModule> roomRainModuleRef;
 
-        public static int totalCount;
+        Mode mode = Mode.SearchTile;
 
-        public RainSpearModule(Spear bindSpear, float intensity) 
+        public RainSpearModule(Spear bindSpear, RoomRainModule roomRainModule) 
         { 
-            this.bindSpearRef = new WeakReference<Spear>(bindSpear);
+            bindSpearRef = new WeakReference<Spear>(bindSpear);
+            roomRainModuleRef = new WeakReference<RoomRainModule>(roomRainModule);
+
             ReinitRainThrow(bindSpear);
-            totalCount++;
+            roomRainModule.totalCount++;
         }
 
         public void Update(Spear spear)
         {
             if (spear.room != spear.room.game.cameras[0].room)
-                Destroy(spear);
+                Destroy(true, spear);
+            if(spear.mode == Weapon.Mode.StuckInWall)
+            {
+                spear.ChangeMode(Weapon.Mode.Free);
+            }
+
+            if(mode == Mode.SearchTile)
+            {
+                IntVector2 coord = new IntVector2(Random.Range(0, spear.room.Width), spear.room.Height - 1);
+                if (spear.room.GetTile(coord).Solid)
+                    return;
+
+                spear.firstChunk.HardSetPosition(spear.room.MiddleOfTile(coord) + Custom.RNV() * 20f + Vector2.up * 60f);
+                InitThrow(spear);
+            }
         }
 
         public void OnSpearChangeMode(Spear spear, Weapon.Mode newMode)
@@ -238,36 +219,30 @@ namespace BuiltinGains.Negative
             }
             else if(newMode != Weapon.Mode.Thrown)
             {
-                Destroy(spear);
+                if (roomRainModuleRef.TryGetTarget(out var module))
+                {
+                    Destroy(true, spear);
+                }
+                else
+                    Destroy(true, spear);
             }
         }
 
         public void ReinitRainThrow(Spear spear)
         {
-            IntVector2 coord = new IntVector2(Random.Range(0, spear.room.Width), spear.room.Height);
-            spear.firstChunk.HardSetPosition(spear.room.MiddleOfTile(coord));
-            InitThrow(spear);
+            mode = Mode.SearchTile;
         }
 
         public void InitThrow(Spear spear)
         {
+            mode = Mode.Rain;
             Vector2 dir = Vector2.down;
 
             spear.firstChunk.pos += dir * 10f;
 
             spear.thrownPos = spear.firstChunk.pos;
             spear.thrownBy = null;
-            IntVector2 throwDir = new IntVector2(0, 0);
-
-            if (dir.x > 0)
-                throwDir.x = 1;
-            else if (dir.x < 0)
-                throwDir.x = -1;
-
-            if (dir.y > 0)
-                throwDir.y = 1;
-            else if (dir.y < 0)
-                throwDir.y = -1;
+            IntVector2 throwDir = new IntVector2(0, -1);
             spear.throwDir = throwDir;
 
             spear.firstFrameTraceFromPos = spear.thrownPos;
@@ -277,7 +252,7 @@ namespace BuiltinGains.Negative
 
             spear.ChangeMode(Weapon.Mode.Thrown);
 
-            float vel = Mathf.Lerp(40f, 120f, intensity);
+            float vel = Mathf.Lerp(40f, 240f, spear.room.roomRain.intensity);
             spear.overrideExitThrownSpeed = 0f;
 
             spear.firstChunk.vel = vel * dir;
@@ -287,11 +262,91 @@ namespace BuiltinGains.Negative
             spear.meleeHitChunk = null;
         }
 
-        public void Destroy(Spear spear)
+        public void Destroy(bool destroySpear, Spear spear = null)
         {
-            totalCount--;
-            spear.Destroy();
-            SpearRainGainEntry.spearModules.Remove(spear);
+            if(roomRainModuleRef.TryGetTarget(out var module))
+                module.totalCount--;
+
+            
+            if (spear == null && bindSpearRef.TryGetTarget(out var target))
+                spear = target;
+
+            if (spear != null && RoomRainModule.rainSpearModules.TryGetValue(spear, out var _))
+            {
+                RoomRainModule.rainSpearModules.Remove(spear);
+            }
+
+            if (destroySpear && spear != null)
+                spear.Destroy();
+        }
+
+        public enum Mode
+        {
+            Rain,
+            SearchTile
+        }
+    }
+
+    public class RoomRainModule
+    {
+        public static ConditionalWeakTable<RoomRain, RoomRainModule> roomRainModules = new ConditionalWeakTable<RoomRain, RoomRainModule>();
+        public static ConditionalWeakTable<Spear, RainSpearModule> rainSpearModules = new ConditionalWeakTable<Spear, RainSpearModule>();
+
+        public WeakReference<RoomRain> roomRainRef;
+        public List<RainSpearModule> mySpearModules = new List<RainSpearModule>();
+
+        public int totalCount;
+        public int totalUntrackSpearCount;
+
+        public virtual float Intensity
+        {
+            get
+            {
+                if(roomRainRef.TryGetTarget(out var roomRain))
+                {
+                    return roomRain.intensity;
+                }
+                return 0f;
+            }
+        }
+
+        public RoomRainModule(RoomRain bindRoomRain)
+        {
+            roomRainRef = new WeakReference<RoomRain>(bindRoomRain);
+        }
+
+        public void Update(RoomRain self)
+        {
+            if (self.room != self.room.game.cameras[0].room)
+                Destroy();
+
+            if (self.intensity > 0 && Random.value < self.intensity)
+            {
+                for (int i = 0; i < Mathf.CeilToInt(self.intensity * 10) && totalCount < Mathf.CeilToInt(self.intensity * 40); i++)
+                {
+                    AbstractPhysicalObject abstractPhysical = new AbstractSpear(self.room.world, null, new WorldCoordinate(self.room.abstractRoom.index, 0, 0, -1), self.room.game.GetNewID(), false);
+                    self.room.abstractRoom.entities.Add(abstractPhysical);
+                    abstractPhysical.RealizeInRoom();
+
+                    var module = new RainSpearModule(abstractPhysical.realizedObject as Spear, this);
+                    rainSpearModules.Add(abstractPhysical.realizedObject as Spear, module);
+                    mySpearModules.Add(module);
+                }
+            }
+        }
+
+        public void Destroy()
+        {
+            foreach(var module in mySpearModules)
+            {
+                module.Destroy(true);
+            }
+            mySpearModules.Clear();
+
+            if(roomRainRef.TryGetTarget(out var roomRain))
+            {
+                roomRainModules.Remove(roomRain);
+            }
         }
     }
 }
