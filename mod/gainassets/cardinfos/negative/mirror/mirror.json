@@ -1,0 +1,10 @@
+{
+    "faceName": "Mirror",
+    "gainID" : "MirrorID",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "true",
+    "gainName" : "镜像",
+    "gainDescription" : "交换左右",
+    "color" : "#5444b7"
+}
