@@ -33,6 +33,16 @@ namespace BuiltinGains.Duality
 
         public static void HookOn()
         {
+            On.Player.ObjectEaten += Player_ObjectEaten;
+        }
+
+        private static void Player_ObjectEaten(On.Player.orig_ObjectEaten orig, Player self, IPlayerEdible edible)
+        {
+            orig.Invoke(self, edible);
+            if(edible is OracleSwarmer)
+            {
+                self.room.AddObject(new CreaturePopping(self, 40));
+            }
         }
     }
 
@@ -50,31 +60,31 @@ namespace BuiltinGains.Duality
         public override void Update(bool eu)
         {
             base.Update(eu);
-            this.counter--;
-            if (this.counter < 1)
+            counter--;
+            if (counter < 1)
             {
-                this.Destroy();
+                Destroy();
                 return;
             }
             Vector2 vector = Custom.RNV();
-            for (int i = 0; i < this.crit.bodyChunks.Length; i++)
+            for (int i = 0; i < crit.bodyChunks.Length; i++)
             {
                 vector = Vector3.Slerp(-vector.normalized, Custom.RNV(), Random.value);
-                vector *= Mathf.Min(3f, Random.value * 3f / Mathf.Lerp(this.crit.bodyChunks[i].mass, 1f, 0.5f)) * Mathf.InverseLerp(0f, 160f, (float)this.counter);
-                this.crit.bodyChunks[i].pos += vector;
-                this.crit.bodyChunks[i].vel += vector * 0.5f;
+                vector *= Mathf.Min(3f, Random.value * 3f / Mathf.Lerp(crit.bodyChunks[i].mass, 1f, 0.5f)) * Mathf.InverseLerp(0f, 160f, (float)counter);
+                crit.bodyChunks[i].pos += vector;
+                crit.bodyChunks[i].vel += vector * 0.5f;
             }
-            if (this.crit.graphicsModule != null && this.crit.graphicsModule.bodyParts != null)
+            if (crit.graphicsModule != null && crit.graphicsModule.bodyParts != null)
             {
-                for (int j = 0; j < this.crit.graphicsModule.bodyParts.Length; j++)
+                for (int j = 0; j < crit.graphicsModule.bodyParts.Length; j++)
                 {
                     vector = Vector3.Slerp(-vector.normalized, Custom.RNV(), Random.value);
-                    vector *= Random.value * 2f * Mathf.InverseLerp(0f, 120f, (float)this.counter);
-                    this.crit.graphicsModule.bodyParts[j].pos += vector;
-                    this.crit.graphicsModule.bodyParts[j].vel += vector;
-                    if (this.crit.graphicsModule.bodyParts[j] is Limb)
+                    vector *= Random.value * 2f * Mathf.InverseLerp(0f, 120f, (float)counter);
+                    crit.graphicsModule.bodyParts[j].pos += vector;
+                    crit.graphicsModule.bodyParts[j].vel += vector;
+                    if (crit.graphicsModule.bodyParts[j] is Limb)
                     {
-                        (this.crit.graphicsModule.bodyParts[j] as Limb).mode = Limb.Mode.Dangle;
+                        (crit.graphicsModule.bodyParts[j] as Limb).mode = Limb.Mode.Dangle;
                     }
                 }
             }

@@ -103,7 +103,7 @@ namespace RandomGains.Frame.Display
         public void Update()
         {
             selector.Update();
-            InputUpdate();
+            //InputUpdate();
             for (int i = allCardHUDRepresents.Count - 1; i >= 0; i--)
             {
                 allCardHUDRepresents[i].Update();
@@ -126,11 +126,12 @@ namespace RandomGains.Frame.Display
         public void ToggleShow(bool show)
         {
             this.show = show;
-            if (!show && keyboardSelectedRepresent != null)
-            {
-                selector.RemoveKeyboardRepresent(keyboardSelectedRepresent);
-                keyboardSelectedRepresent = null;
-            }
+            selector.ToggleShow(show);
+            //if (!show && keyboardSelectedRepresent != null)
+            //{
+            //    selector.RemoveKeyboardRepresent(keyboardSelectedRepresent);
+            //    keyboardSelectedRepresent = null;
+            //}
             foreach (var represent in allCardHUDRepresents)
                 represent.ToggleShow(show);
         }
@@ -197,7 +198,6 @@ namespace RandomGains.Frame.Display
                         clickCount = 0;
                     }
                 }
-
             }
 
             lastInput = input;
@@ -211,9 +211,33 @@ namespace RandomGains.Frame.Display
     {
         public readonly GainSlot2 slot;
         public readonly bool mouseMode;
+
+        public bool show;
+
         public GainCardRepresent currentSelectedRepresent;
         public List<GainCardRepresent> currentHoverOnRepresents = new List<GainCardRepresent>();
 
+        public List<GainCardRepresent> representsLayer_show = new List<GainCardRepresent>();
+        public List<GainCardRepresent> representsLayer_unshow = new List<GainCardRepresent>();
+
+        int keyboardCoolDown;
+        int clickCount;
+        int clickCounter;
+        int waitClickCounter;
+        Player.InputPackage lastInput;
+        GainCardRepresent _currentKeyboardOnRepresent;
+        public GainCardRepresent CurrentKeyboardOnRepresent
+        {
+            get => _currentKeyboardOnRepresent;
+            set
+            {
+                if (_currentKeyboardOnRepresent == value)
+                    return;
+                if(_currentKeyboardOnRepresent != null) _currentKeyboardOnRepresent.currentHoverd = false;
+                _currentKeyboardOnRepresent = value;
+                if(value != null) _currentKeyboardOnRepresent.currentHoverd = true;
+            }
+        }
 
         public GainRepresentSelector(GainSlot2 slot, bool mouseMode)
         {
@@ -223,6 +247,41 @@ namespace RandomGains.Frame.Display
 
         public void Update()
         {
+            //MouseModeUpdate();
+            KeyboardModeUpdate();
+        }
+
+        public void ToggleShow(bool show)
+        {
+            this.show = show;
+            if (show)
+                CurrentKeyboardOnRepresent = representsLayer_show.First();
+            else
+                CurrentKeyboardOnRepresent = representsLayer_unshow.Count > 0 ? representsLayer_unshow.First() : null;
+        }
+
+        void MouseModeUpdate()
+        {
+            if (show)//更新鼠标悬浮目标
+            {
+                for (int i = currentHoverOnRepresents.Count - 1; i >= 0; i--)
+                {
+                    if (!currentHoverOnRepresents[i].bindCard.MouseInside)
+                    {
+                        currentHoverOnRepresents[i].currentHoverd = false;
+                        currentHoverOnRepresents.RemoveAt(i);
+                    }
+                }
+                foreach (var represent in representsLayer_show)
+                {
+                    if (represent.bindCard.MouseInside && represent.inputEnable)
+                        currentHoverOnRepresents.Add(represent);
+                }
+            }
+            else if (currentHoverOnRepresents.Count > 0)
+                currentHoverOnRepresents.Clear();
+
+
             if (currentHoverOnRepresents.Count != 0)
             {
                 currentHoverOnRepresents.Sort((x, y) => { return x.sortIndex.CompareTo(y.sortIndex); });
@@ -233,9 +292,88 @@ namespace RandomGains.Frame.Display
 
                 first.currentHoverd = (currentSelectedRepresent == null || currentSelectedRepresent == first);//没有选中的卡牌或者选中的卡牌就是自己时，才更改悬浮状态
             }
-
         }
-       
+
+        void KeyboardModeUpdate()
+        {
+            if (CurrentKeyboardOnRepresent == null)
+                return;
+
+            if(keyboardCoolDown > 0)
+            {
+                keyboardCoolDown--;
+                return;
+            }
+
+            var input = RWInput.PlayerUIInput(0, Custom.rainWorld);
+            var lst = show ? representsLayer_show : representsLayer_unshow;
+
+            if (input.AnyDirectionalInput && currentSelectedRepresent == null && lst.Count > 0)
+            {
+                Vector2 inputVec = new Vector2(input.x, input.y);
+                float min = float.MaxValue;
+                GainCardRepresent nextRepresent = null;
+
+                foreach(var represent in lst)
+                {
+                    if (represent == CurrentKeyboardOnRepresent)
+                        continue;
+                    Vector2 delta = represent.GetBlendPos(1f) - CurrentKeyboardOnRepresent.GetBlendPos(1f);
+                    float distance = delta.magnitude;
+                    float dot = Vector2.Dot(inputVec, delta);
+                    EmgTxCustom.Log($"{represent.bindCard.ID},dis {distance}, dot {dot}");
+                    if(dot > 0 && distance < min)
+                    {
+                        nextRepresent = represent;
+                        min = distance;
+                    }
+                }
+
+                if(nextRepresent != null)
+                {
+                    EmgTxCustom.Log($"{CurrentKeyboardOnRepresent.bindCard.ID} -> {nextRepresent.bindCard.ID}");
+                    CurrentKeyboardOnRepresent = nextRepresent;
+                }
+                keyboardCoolDown = 20;
+            }
+
+            if (CurrentKeyboardOnRepresent != null)
+            {
+                if (input.jmp)
+                {
+                    if (!lastInput.jmp)
+                    {
+                        clickCount++;
+                        waitClickCounter = 8;
+                        if (clickCount == 2)
+                        {
+                            CurrentKeyboardOnRepresent.bindCard.KeyBoardDoubleClick();
+                            clickCount = 0;
+                        }
+                    }
+
+                    clickCounter++;
+
+                    if (clickCounter == 40)
+                    {
+                        CurrentKeyboardOnRepresent.bindCard.KeyBoardRightClick();
+                        clickCount = 0;
+                    }
+                }
+                else if (clickCount != 0)
+                {
+                    waitClickCounter--;
+                    if (waitClickCounter == 0)
+                    {
+                        CurrentKeyboardOnRepresent.bindCard.KeyBoardClick();
+                        clickCount = 0;
+                    }
+                }
+            }
+            lastInput = input;
+        }
+
+        #region old
         public void AddHoverRepresent(GainCardRepresent represent)
         {
             currentHoverOnRepresents.Add(represent);
@@ -246,6 +384,7 @@ namespace RandomGains.Frame.Display
             currentHoverOnRepresents.Remove(represent);
             represent.currentHoverd = false;
         }
+
         public void RemoveKeyboardRepresent(GainCardRepresent represent)
         {
             represent.currentKeyboardFocused = false;
@@ -253,6 +392,29 @@ namespace RandomGains.Frame.Display
         public void AddKeyboardRepresent(GainCardRepresent represent)
         {
             represent.currentKeyboardFocused = true;
+        }
+        #endregion
+        
+        public void RegisterRepresent(GainCardRepresent represent, bool selectedOnShow = true)
+        {
+            if(selectedOnShow)
+                representsLayer_show.Add(represent);
+            else
+                representsLayer_unshow.Add(represent);
+        }
+
+        public void UnregisterRepresent(GainCardRepresent represent)
+        {
+            if (representsLayer_show.Contains(represent))
+                representsLayer_show.Remove(represent);
+
+            if (representsLayer_unshow.Contains(represent))
+                representsLayer_unshow.Remove(represent);
+
+            if (currentHoverOnRepresents.Contains(represent))
+                currentHoverOnRepresents.Remove(represent);
+            if(currentSelectedRepresent == represent)
+                currentSelectedRepresent = null;
         }
     }
 

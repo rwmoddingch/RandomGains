@@ -70,7 +70,11 @@ namespace RandomGains
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 EmgTxCustom.Log("Plugins : Space pressed");
-                GainPool.Singleton.EnableGain(new GainID("NeurodegenerativeID"));
+
+                GainPool.Singleton.EnableGain(new GainID("NeedleSpear"));
+                GainPool.Singleton.EnableGain(new GainID("Herbicide"));
+                GainPool.Singleton.EnableGain(new GainID("HardenedMask"));
+                GainPool.Singleton.EnableGain(new GainID("InvisibleKiller"));
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {

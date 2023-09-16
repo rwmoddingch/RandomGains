@@ -42,6 +42,8 @@ namespace RandomGains.Frame.Display
                 ToggleShow(owner.show);
             else
                 ToggleShow(false);
+
+            selector.RegisterRepresent(this);
         }
 
         /// <summary>
@@ -83,7 +85,7 @@ namespace RandomGains.Frame.Display
             OnDoubleClick = null;
 
             owner?.RemoveRepresent(this);
-
+            selector.UnregisterRepresent(this);
         }
 
         public void ToggleShow(bool show)
@@ -249,8 +251,8 @@ namespace RandomGains.Frame.Display
         void AddCardEvents()
         {
             bindCard.ClearInputEvents();
-            bindCard.OnMouseCardEnter += BindCard_OnMouseCardEnter;
-            bindCard.OnMouseCardExit += BindCard_OnMouseCardExit;
+            //bindCard.OnMouseCardEnter += BindCard_OnMouseCardEnter;
+            //bindCard.OnMouseCardExit += BindCard_OnMouseCardExit;
             bindCard.OnMouseCardClick += BindCard_OnMouseCardClick;
             bindCard.OnMouseCardRightClick += BindCard_OnMouseCardRightClick;
             bindCard.OnMouseCardDoubleClick += BindCard_OnMouseCardDoubleClick;
