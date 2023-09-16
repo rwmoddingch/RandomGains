@@ -80,7 +80,7 @@ namespace RandomGains
             {
                 EmgTxCustom.Log("Plugins : Space pressed");
 
-                GainPool.Singleton.EnableGain(new GainID("NeedleSpear"));
+                GainPool.Singleton.EnableGain(new GainID("PoppingCandy"));
                 GainPool.Singleton.EnableGain(new GainID("Herbicide"));
                 GainPool.Singleton.EnableGain(new GainID("HardenedMask"));
                 GainPool.Singleton.EnableGain(new GainID("InvisibleKiller"));

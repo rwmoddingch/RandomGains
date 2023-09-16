@@ -78,7 +78,7 @@ namespace RandomGains.Frame.Display
                     currentSendIndex++;
                 }
             }
-            KeyBoardUpdate();
+            //KeyBoardUpdate();
             bool allRepresentDestroy = represents.Count > 0;
             for (int i = 0; i < represents.Count; i++)
             {
