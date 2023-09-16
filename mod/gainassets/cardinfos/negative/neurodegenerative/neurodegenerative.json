@@ -1,0 +1,10 @@
+{
+    "faceName": "Neurodegenerative",
+    "gainID" : "NeurodegenerativeID",
+    "gainType" : "Negative",
+    "gainProperty" : "Normal",
+    "triggerable" : "true",
+    "gainName" : "神经退行",
+    "gainDescription" : "进入房间时,不可操作5秒",
+    "color" : "#5444b7"
+}
