@@ -35,7 +35,11 @@ namespace TemplateGains
         private static void Player_UpdateMSC(On.Player.orig_UpdateMSC orig, Player self)
         {
             orig.Invoke(self);
-            if (!module.TryGetValue(self, out var myLastRoom)) return;
+            if (!module.TryGetValue(self, out var myLastRoom))
+            {
+                module.Add(self, new MyLastRoom());
+                return;
+            }
             if (myLastRoom.lastRoom!=self.room)
             {
                 myLastRoom.cd = myLastRoom.cdMax;
