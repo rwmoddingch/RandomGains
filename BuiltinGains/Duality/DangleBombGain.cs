@@ -79,7 +79,9 @@ namespace BuiltinGains.Duality
         public override void ParseData(string data)
         {
             EmgTxCustom.Log($"DangleBombGainDataImpl : Parse data : {data}");
-            cycleLeft = int.Parse(data);
+            var datas = data.Split('|');
+            cycleLeft = int.Parse(datas[0]);
+            stackLayer = int.Parse(datas[1]);
         }
 
         public override bool SteppingCycle()
@@ -92,8 +94,34 @@ namespace BuiltinGains.Duality
 
         public override string ToString()
         {
-            return cycleLeft.ToString();
+            return $"{cycleLeft}|{stackLayer}";
         }
+
+        /// <summary>
+        /// TODO : 测试用
+        /// </summary>
+        public override void Stack()
+        {
+            base.Stack();
+            stackLayer++;
+        }
+
+        /// <summary>
+        /// TODO : 测试用
+        /// </summary>
+        public override void UnStack()
+        {
+            base.UnStack();
+            stackLayer--;
+        }
+        /// <summary>
+        /// TODO : 测试用
+        /// </summary>
+        public override bool CanStackMore()
+        {
+            return true;
+        }
+
     }
 
     internal class DangleBombGainImpl : GainImpl<DangleBombGainImpl, DangleBombGainDataImpl>

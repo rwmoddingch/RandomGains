@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "euMn7uCwvE55x4v88+X5R9XxIJtFygdItolTMv26t8L9WuGk+yjjYzZoKjkUTIs1x2icZCbkiaUf9O9QRPy1EA==",
+  "dgSpecHash": "JfWrD0EkPlnGTYSgS9Ca8RR6Vq2wvYCaQ8JHNkJ8SsVRRxAHvpkCDTiwOJBJtXuw/hxah8xF8cSZhBfKAHACrw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Shan_\\source\\repos\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
+  "projectFilePath": "G:\\RW mod project\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Shan_\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
-    "C:\\Users\\Shan_\\.nuget\\packages\\newtonsoft.json\\9.0.1\\newtonsoft.json.9.0.1.nupkg.sha512",
-    "C:\\Users\\Shan_\\.nuget\\packages\\system.data.datasetextensions\\4.5.0\\system.data.datasetextensions.4.5.0.nupkg.sha512"
+    "C:\\Users\\dell\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
+    "C:\\Users\\dell\\.nuget\\packages\\newtonsoft.json\\9.0.1\\newtonsoft.json.9.0.1.nupkg.sha512",
+    "C:\\Users\\dell\\.nuget\\packages\\system.data.datasetextensions\\4.5.0\\system.data.datasetextensions.4.5.0.nupkg.sha512"
   ],
   "logs": []
 }

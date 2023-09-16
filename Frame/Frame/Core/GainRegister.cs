@@ -31,6 +31,8 @@ namespace RandomGains.Gains
         {
             if (GainSave.Singleton == null)
                 return null;
+
+
             List<GainID> result = new List<GainID>();
             for(int i = 0;i < 3; i++)
             {
@@ -38,8 +40,18 @@ namespace RandomGains.Gains
                     result.Add(GainSave.Singleton.priorityQueue[i]);
                 else
                 {
-                    var lst = typeToIDMapping[gainType];
-                    result.Add(lst[Random.Range(0, lst.Count)]);
+                    if (gainType == GainType.Negative || gainType == GainType.Duality)
+                    {
+                        var maxCount = typeToIDMapping[GainType.Negative].Count + typeToIDMapping[GainType.Duality].Count;
+                        var randIndex = Random.Range(0, maxCount);
+                        result.Add(typeToIDMapping[randIndex < typeToIDMapping[GainType.Negative].Count ? GainType.Negative : GainType.Duality]
+                            [randIndex < typeToIDMapping[GainType.Negative].Count ? randIndex : randIndex - typeToIDMapping[GainType.Negative].Count]);
+                    }
+                    else
+                    {
+                        result.Add(typeToIDMapping[gainType][Random.Range(0, typeToIDMapping[gainType].Count)]);
+
+                    }
                 }
             }
             return result.ToArray();
@@ -56,7 +68,7 @@ namespace RandomGains.Gains
         {
             if (GainStaticDataLoader.GetStaticData(id) == null)
             {
-                Debug.LogError($"[Random Gains] Missing static data for gain: {id}");
+                Debug.LogError($"[Random Gains] Missing static data for gain: {id}");  
                 return;
             }
 
@@ -127,6 +139,9 @@ namespace RandomGains.Gains
             //TODO : Debug
             typeToIDMapping[GainType.Positive].Add(id);
             idToTypeMapping.Add(id, GainType.Positive);
+
+            typeToIDMapping[GainType.Negative].Add(id);
+
             typeToGainPropertyMapping[GainProperty.Normal].Add(id);
             idToGainPropertyMapping.Add(id, GainProperty.Normal);
 
