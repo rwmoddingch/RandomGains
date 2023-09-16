@@ -70,36 +70,49 @@ namespace RandomGains.Frame.Core
             
             string dir = directoryInfo.FullName.Split(new []{"cardinfos"}, StringSplitOptions.None)[1];
 
-         
-
-            GainID = new GainID(data["gainID"].ToString());
-            GainType = Custom.ParseEnum<GainType>(data["gainType"].ToString());
-            GainProperty = Custom.ParseEnum<GainProperty>(data["gainProperty"].ToString());
-            gainName = data["gainName"].ToString();
-            gainDescription = data["gainDescription"].ToString();
-
-            if (data.ContainsKey("triggerable"))
-                triggerable = bool.Parse(data["triggerable"].ToString());
-
-            if(data.ContainsKey("stackable"))
-                stackable = bool.Parse(data["stackable"].ToString());
-
-            if (data.ContainsKey("triggerable"))
-                triggerable = bool.Parse(data["triggerable"].ToString());
-
-            faceElementName = "Futile_White";
-            if (data.ContainsKey("faceName"))
+            try
             {
-                string imagePath = $"gainassets/cardinfos{dir}/{data["faceName"]}";
-                faceElement = Futile.atlasManager.LoadImage(imagePath).elements[0];
-                faceElementName = faceElement.name;
-            }
-            color = Color.white;
-            if(data.TryGetValue("color",out var colorVal)){
-                ColorUtility.TryParseHtmlString(colorVal.ToString(), out color);
-            }
+                GainID = new GainID(data["gainID"].ToString());
+                GainType = Custom.ParseEnum<GainType>(data["gainType"].ToString());
+                GainProperty = Custom.ParseEnum<GainProperty>(data["gainProperty"].ToString());
+                gainName = data["gainName"].ToString();
+                gainDescription = data["gainDescription"].ToString();
 
-            EmgTxCustom.Log($"CainStaticDataLoader : load static data:\nname : {gainName}\ntype : {GainType}\nproperty : {GainProperty}\ndescription : {gainDescription}\nfaceName : {faceElementName}\nstackable : {stackable}");
+                if (data.ContainsKey("triggerable"))
+                    triggerable = bool.Parse(data["triggerable"].ToString());
+
+                if (data.ContainsKey("stackable"))
+                    stackable = bool.Parse(data["stackable"].ToString());
+
+                if (data.ContainsKey("triggerable"))
+                    triggerable = bool.Parse(data["triggerable"].ToString());
+
+                faceElementName = "Futile_White";
+                if (data.ContainsKey("faceName"))
+                {
+                    string imagePath = $"gainassets/cardinfos{dir}/{data["faceName"]}";
+                    try
+                    {
+                        faceElement = Futile.atlasManager.LoadImage(imagePath).elements[0];
+                        faceElementName = faceElement.name;
+                    }
+                    catch
+                    {
+                        Debug.LogWarning($"Can't load image for card:{gainName}");
+                    }
+                }
+                color = Color.white;
+                if (data.TryGetValue("color", out var colorVal))
+                {
+                    ColorUtility.TryParseHtmlString(colorVal.ToString(), out color);
+                }
+
+                EmgTxCustom.Log($"CainStaticDataLoader : load static data:\nname : {gainName}\ntype : {GainType}\nproperty : {GainProperty}\ndescription : {gainDescription}\nfaceName : {faceElementName}\nstackable : {stackable}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
         }
     }
 
