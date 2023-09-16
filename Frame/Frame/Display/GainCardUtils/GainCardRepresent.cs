@@ -57,6 +57,7 @@ namespace RandomGains.Frame.Display
             AddCardEvents();
             if(owner != null)
                 NewTransformer(new StaticHoverPosTransformer(this));
+          
         }
 
         public void Update()
@@ -82,6 +83,7 @@ namespace RandomGains.Frame.Display
             OnDoubleClick = null;
 
             owner?.RemoveRepresent(this);
+
         }
 
         public void ToggleShow(bool show)
@@ -131,6 +133,8 @@ namespace RandomGains.Frame.Display
 
         Func<float, float> tModifier = (t) => { return t; };
 
+ 
+
         void TransformerUpdate()
         {
             if (bindCard == null)
@@ -138,6 +142,8 @@ namespace RandomGains.Frame.Display
 
             currentTransformer?.Update();
             lastTransformer?.Update();
+
+       
 
             lastTransformCounter = transformCounter;
             if (bindCard.animation == null && usingTransformer)
@@ -221,12 +227,13 @@ namespace RandomGains.Frame.Display
     /// </summary>
     internal partial class GainCardRepresent
     {
-        public int sortIndex => owner == null ? 1000 : owner.allCardHUDRepresemts.IndexOf(this);
+        public int sortIndex => owner == null ? 1000 : owner.allCardHUDRepresents.IndexOf(this);
 
         public readonly bool mouseMode;
 
         public bool currentHoverd;//鼠标是否悬浮在上面，由Selector进行控制。
         public bool currentSelected;//是否被鼠标单击选中，鼠标模式下由鼠标进行控制。
+        public bool currentKeyboardFocused;
 
         public bool inputEnable = true;
 
@@ -236,6 +243,7 @@ namespace RandomGains.Frame.Display
                 return;
 
             bindCard.internalInteractive = !InputDisabled();//当鼠标未悬浮的时候，直接禁用鼠标点击的控制。
+            bindCard.currentKeyboardFocused = inputEnable && currentKeyboardFocused;
         }
 
         void AddCardEvents()
@@ -279,7 +287,7 @@ namespace RandomGains.Frame.Display
 
         public bool InputDisabled()
         {
-            return !currentHoverd || (owner != null && !show) || !inputEnable;
+            return !(currentHoverd || currentKeyboardFocused) || (owner != null && !show) || !inputEnable;
         }
 
         private void BindCard_OnMouseCardExit()

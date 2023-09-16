@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Administrator\\source\\repos\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj": {}
+    "G:\\RW mod project\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Administrator\\source\\repos\\RandomGains\\Frame\\RandomGains.csproj": {
+    "G:\\RW mod project\\RandomGains\\Frame\\RandomGains.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Administrator\\source\\repos\\RandomGains\\Frame\\RandomGains.csproj",
+        "projectUniqueName": "G:\\RW mod project\\RandomGains\\Frame\\RandomGains.csproj",
         "projectName": "RandomGains",
-        "projectPath": "C:\\Users\\Administrator\\source\\repos\\RandomGains\\Frame\\RandomGains.csproj",
-        "packagesPath": "C:\\Users\\Administrator\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Administrator\\source\\repos\\RandomGains\\Frame\\obj\\",
+        "projectPath": "G:\\RW mod project\\RandomGains\\Frame\\RandomGains.csproj",
+        "packagesPath": "C:\\Users\\dell\\.nuget\\packages\\",
+        "outputPath": "G:\\RW mod project\\RandomGains\\Frame\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\Administrator\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\dell\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -53,21 +57,25 @@
               "version": "[4.5.0, )"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\Administrator\\source\\repos\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj": {
+    "G:\\RW mod project\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Administrator\\source\\repos\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
+        "projectUniqueName": "G:\\RW mod project\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
         "projectName": "VeryPoorGains",
-        "projectPath": "C:\\Users\\Administrator\\source\\repos\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
-        "packagesPath": "C:\\Users\\Administrator\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Administrator\\source\\repos\\RandomGains\\VeryPoorGains\\obj\\",
+        "projectPath": "G:\\RW mod project\\RandomGains\\VeryPoorGains\\VeryPoorGains.csproj",
+        "packagesPath": "C:\\Users\\dell\\.nuget\\packages\\",
+        "outputPath": "G:\\RW mod project\\RandomGains\\VeryPoorGains\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\Administrator\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\dell\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -81,8 +89,8 @@
           "net48": {
             "targetAlias": "net48",
             "projectReferences": {
-              "C:\\Users\\Administrator\\source\\repos\\RandomGains\\Frame\\RandomGains.csproj": {
-                "projectPath": "C:\\Users\\Administrator\\source\\repos\\RandomGains\\Frame\\RandomGains.csproj"
+              "G:\\RW mod project\\RandomGains\\Frame\\RandomGains.csproj": {
+                "projectPath": "G:\\RW mod project\\RandomGains\\Frame\\RandomGains.csproj"
               }
             }
           }
@@ -106,7 +114,7 @@
               "version": "[4.5.0, )"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
         }
       }
     }

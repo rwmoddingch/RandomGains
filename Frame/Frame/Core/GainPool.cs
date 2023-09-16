@@ -97,17 +97,6 @@ namespace RandomGains.Frame.Core
         /// <param name="id"></param>
         public void EnableGain(GainID id)
         {
-            if (gainMapping.ContainsKey(id))
-            {
-                if (GainSave.Singleton.GetData(id).onCanStackMore())
-                {
-                    EmgTxCustom.Log($"GainPool : gain {id} add one more stack");
-                    GainSave.Singleton.GetData(id).onStack();
-                }
-                else
-                    EmgTxCustom.Log($"GainPool : gain {id} already enabled and cant stack more");
-                return;
-            }
             EmgTxCustom.Log($"GainPool : enable gain {id}");
 
             GainHookWarpper.EnableGain(id);
@@ -132,7 +121,7 @@ namespace RandomGains.Frame.Core
                 return;
             }
 
-            if (GainSave.Singleton.GetData(id).StackLayer > 0)
+            if (GainStaticDataLoader.GetStaticData(id).stackable && GainSave.Singleton.GetData(id).StackLayer > 0)
             {
                 EmgTxCustom.Log($"GainPool : gain {id} remove one stack");
                 GainSave.Singleton.GetData(id).onUnStack();
@@ -152,6 +141,18 @@ namespace RandomGains.Frame.Core
 
             GainSave.Singleton.RemoveData(id);
             GainHud.Singleton?.RemoveGainCardRepresent(id);
+        }
+
+        /// <summary>
+        /// 减少堆叠次数，如果堆叠次数==0或为非堆叠则删除
+        /// </summary>
+        /// <param name="id"></param>
+        public void UnstackGain(GainID id)
+        {
+            if (GainStaticDataLoader.GetStaticData(id).stackable && GainSave.Singleton.GetData(id).StackLayer > 1)
+                GainSave.Singleton.GetData(id).onUnStack();
+            else
+                DisableGain(id);
         }
         
         /// <summary>

@@ -53,6 +53,7 @@ namespace RandomGains.Frame.Core
         public GainType GainType{ get; private set; }
         public GainProperty GainProperty{ get; private set; }
         public readonly bool triggerable;
+        public readonly bool stackable;
 
         public readonly string faceElementName;
         public readonly FAtlasElement faceElement;
@@ -63,33 +64,39 @@ namespace RandomGains.Frame.Core
         public GainStaticData(DirectoryInfo directoryInfo, FileInfo jsonFile, RainWorld rainWorld){
             string text = File.ReadAllText(jsonFile.FullName);
             var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(text);
-            try
+            
+            string dir = directoryInfo.FullName.Split(new []{"cardinfos"}, StringSplitOptions.None)[1];
+
+         
+
+            GainID = new GainID(data["gainID"].ToString());
+            GainType = Custom.ParseEnum<GainType>(data["gainType"].ToString());
+            GainProperty = Custom.ParseEnum<GainProperty>(data["gainProperty"].ToString());
+            gainName = data["gainName"].ToString();
+            gainDescription = data["gainDescription"].ToString();
+
+            if (data.ContainsKey("triggerable"))
+                triggerable = bool.Parse(data["triggerable"].ToString());
+
+            if(data.ContainsKey("stackable"))
+                stackable = bool.Parse(data["stackable"].ToString());
+
+            if (data.ContainsKey("triggerable"))
+                triggerable = bool.Parse(data["triggerable"].ToString());
+
+            faceElementName = "Futile_White";
+            if (data.ContainsKey("faceName"))
             {
-                string dir = directoryInfo.FullName.Split(new[] { "cardinfos" }, StringSplitOptions.None)[1];
                 string imagePath = $"gainassets/cardinfos{dir}/{data["faceName"]}";
                 faceElement = Futile.atlasManager.LoadImage(imagePath).elements[0];
                 faceElementName = faceElement.name;
-
-                GainID = new GainID(data["gainID"].ToString());
-                GainType = Custom.ParseEnum<GainType>(data["gainType"].ToString());
-                GainProperty = Custom.ParseEnum<GainProperty>(data["gainProperty"].ToString());
-                triggerable = bool.Parse(data["triggerable"].ToString());
-                gainName = data["gainName"].ToString();
-                gainDescription = data["gainDescription"].ToString();
-
-                color = Color.white;
-                if (data.TryGetValue("color", out var colorVal))
-                {
-                    ColorUtility.TryParseHtmlString(colorVal.ToString(), out color);
-                }
             }
-            catch(Exception ex)
-            {
-                ExceptionTracker.TrackException(ex, $"Json file is not in correct format! path at : {directoryInfo.FullName}");
-                Debug.LogException(ex);
+            color = Color.white;
+            if(data.TryGetValue("color",out var colorVal)){
+                ColorUtility.TryParseHtmlString(colorVal.ToString(), out color);
             }
 
-            EmgTxCustom.Log($"CainStaticDataLoader : load static data:\nname : {gainName}\ntype : {GainType}\nproperty : {GainProperty}\ndescription : {gainDescription}\nfaceName : {faceElementName}");
+            EmgTxCustom.Log($"CainStaticDataLoader : load static data:\nname : {gainName}\ntype : {GainType}\nproperty : {GainProperty}\ndescription : {gainDescription}\nfaceName : {faceElementName}\nstackable : {stackable}");
         }
     }
 }

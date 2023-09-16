@@ -28,8 +28,7 @@ namespace RandomGains.Frame.Display.GainHUD
         {
             container = new FContainer();
             hud.fContainers[0].AddChild(container);
-
-            slot = new GainSlot2(container);
+            slot = new GainSlot2(container,true);
             Singleton = this;
             game = Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
 
