@@ -82,7 +82,7 @@ namespace RandomGains
 
                 GainPool.Singleton.EnableGain(new GainID("NeedleSpear"));
                 GainPool.Singleton.EnableGain(new GainID("Herbicide"));
-                GainPool.Singleton.EnableGain(new GainID("SpearRain"));
+                GainPool.Singleton.EnableGain(new GainID("HardenedMask"));
                 GainPool.Singleton.EnableGain(new GainID("InvisibleKiller"));
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
