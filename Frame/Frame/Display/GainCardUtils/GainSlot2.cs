@@ -143,10 +143,10 @@ namespace RandomGains.Frame.Display
         private int waitClickCounter;
         private GainCardRepresent keyboardSelectedRepresent;
         private Player.InputPackage lastInput;
-        public void InputUpdate()
+        public void InputUpdate() 
         {
             var input = RWInput.PlayerUIInput(0, Custom.rainWorld);
-            if (input.AnyDirectionalInput && selector.currentSelectedRepresent == null)
+            if (input.AnyDirectionalInput && selector.currentSelectedRepresent == null && allCardHUDRepresents.Count != 0)
             {
                 if (keyboardSelectedRepresent == null)
                 {

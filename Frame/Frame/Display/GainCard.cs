@@ -12,6 +12,8 @@ using RandomGains.Frame.Display.GainCardAnimations;
 using UnityEngine;
 using static RewiredConsts.Layout;
 using Random = UnityEngine.Random;
+using System.Runtime.InteropServices.ComTypes;
+
 namespace RandomGains.Frame
 {
 
@@ -101,7 +103,7 @@ namespace RandomGains.Frame
                 if (!isSideA)
                 {
                     re.GetComponent<MeshRenderer>().material.SetTexture("_MainTex",
-                        Futile.atlasManager.GetAtlasWithName(Plugins.MoonBack).texture);
+                        Futile.atlasManager.GetAtlasWithName(Plugins.BackElementOfType(StaticData.GainType)).texture);
                 }
                 else
                 {
@@ -258,7 +260,7 @@ namespace RandomGains.Frame
             {
                 sprites = new FSprite[2];
                 sprites[0] = new FSprite(Futile.atlasManager.DoesContainElementWithName(card.staticData.faceElementName) ? card.staticData.faceElementName : "Futile_White");
-                sprites[1] = new FSprite(Futile.atlasManager.GetAtlasWithName(Plugins.MoonBack).name);
+                sprites[1] = new FSprite(Futile.atlasManager.GetAtlasWithName(Plugins.BackElementOfType(card.staticData.GainType)).name);
                 AddToCard();
             }
 

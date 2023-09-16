@@ -1,16 +1,8 @@
-﻿using RandomGains.Frame.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-using Mono.Cecil.Cil;
 using MonoMod.Utils;
-using RandomGains.Gains;
 using UnityEngine;
-using Object = System.Object;
-using Mono.Cecil;
 using OpCodes = System.Reflection.Emit.OpCodes;
 using System.Reflection;
 
@@ -19,7 +11,7 @@ namespace RandomGains.Frame.Core
     /// <summary>
     /// 运行和管理增益实例的类
     /// </summary>
-    internal class GainPool
+    public class GainPool
     {
         public static GainPool Singleton { get; private set; }
 
@@ -64,6 +56,10 @@ namespace RandomGains.Frame.Core
                 }
                 catch (Exception e)
                 {
+                    if(updateGains[i].GainID == null)
+                        ExceptionTracker.TrackException(e, $"gain of {updateGains[i].GetType()} id is null!");
+                    else
+                        ExceptionTracker.TrackException(e, $"Exception happend when invoke gain update of {updateGains[i].GainID}");
                     Debug.LogException(e);
                 }
             }
