@@ -21,6 +21,10 @@ namespace RandomGains.Frame.Display
         int currentSendIndex;
         bool show = true;
 
+        private int clickCounter = 0;
+        private int waitClickCounter = 0;
+        private int clickCount = 0;
+
         FContainer Container;
 
         List<GainCardRepresent> represents = new List<GainCardRepresent>();
@@ -98,7 +102,10 @@ namespace RandomGains.Frame.Display
             if (input.AnyDirectionalInput)
             {
                 if (keyboardSelectedRepresent == null)
+                {
                     keyboardSelectedRepresent = represents.First();
+                    gainMenu.selector.AddKeyboardRepresent(keyboardSelectedRepresent);
+                }
                 else
                 {
                     var index = represents.IndexOf(keyboardSelectedRepresent);
@@ -110,17 +117,40 @@ namespace RandomGains.Frame.Display
                     }
                 }
             }
-            if (input.thrw && !lastInput.thrw && keyboardSelectedRepresent != null)
+
+            if (keyboardSelectedRepresent != null)
             {
-                keyboardSelectedRepresent.bindCard.KeyBoardClick(); 
-            }
-            if (input.pckp && !lastInput.pckp && keyboardSelectedRepresent != null)
-            {
-                keyboardSelectedRepresent.bindCard.KeyBoardRightClick();
-            }
-            if (input.jmp && !lastInput.jmp && keyboardSelectedRepresent != null)
-            {
-                keyboardSelectedRepresent.bindCard.KeyBoardDoubleClick();
+                if (input.jmp)
+                {
+                    if (!lastInput.jmp)
+                    {
+                        clickCount++;
+                        waitClickCounter = 8;
+                        if (clickCount == 2)
+                        {
+                            keyboardSelectedRepresent.bindCard.KeyBoardDoubleClick();
+                            clickCount = 0;
+                        }
+                    }
+
+                    clickCounter++;
+                        
+                    if (clickCounter == 40)
+                    {
+                        keyboardSelectedRepresent.bindCard.KeyBoardRightClick();
+                        clickCount = 0;
+                    }
+                }
+                else if(clickCount != 0)
+                {
+                    waitClickCounter--;
+                    if (waitClickCounter == 0)
+                    {
+                        keyboardSelectedRepresent.bindCard.KeyBoardClick();
+                        clickCount = 0;
+                    }
+                }
+
             }
 
             lastInput = input;
@@ -148,6 +178,7 @@ namespace RandomGains.Frame.Display
             //选中的卡移动到slot内，其他的让他滚出屏幕
             gainMenu.slot.MoveRepresentInside(obj);
             represents.Remove(obj);
+            obj.currentKeyboardFocused = false;
             var save = GainSave.Singleton.GetData(obj.bindCard.ID);
             EmgTxCustom.Log($"GainPool : gain {obj.bindCard.ID}, CanStackMore : {save.onCanStackMore()}");
 

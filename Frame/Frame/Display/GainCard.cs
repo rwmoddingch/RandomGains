@@ -350,7 +350,7 @@ namespace RandomGains.Frame
 
         public Vector2 Position(float timeStacker)
         {
-            return Vector2.Lerp(lastPos, pos, timeStacker) + Vector2.up * 300 * Mathf.Lerp(lastFocusTimer,focusTimer,timeStacker);
+            return Vector2.Lerp(lastPos, pos, timeStacker) + Vector2.up * 50f * Mathf.Lerp(lastFocusTimer,focusTimer,timeStacker) * size / 40f;
         }
         public void DrawSprites(float timeStacker)
         {
@@ -539,7 +539,6 @@ namespace RandomGains.Frame
 
             lastFocusTimer = focusTimer;
             focusTimer = Mathf.Lerp(focusTimer, currentKeyboardFocused ? 1 : 0, 0.1f);
-
             if (clickCounter > 0)
             {
                 clickCounter--;
@@ -586,7 +585,6 @@ namespace RandomGains.Frame
 
         public void KeyBoardDoubleClick()
         {
-            EmgTxCustom.Log("OnClick");
             OnMouseCardDoubleClick?.Invoke(this);
         }
         private void MouseOnClick(GainCard card)

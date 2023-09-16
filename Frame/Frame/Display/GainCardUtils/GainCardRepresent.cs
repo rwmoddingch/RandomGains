@@ -243,7 +243,7 @@ namespace RandomGains.Frame.Display
                 return;
 
             bindCard.internalInteractive = !InputDisabled();//当鼠标未悬浮的时候，直接禁用鼠标点击的控制。
-            bindCard.currentKeyboardFocused = show && currentKeyboardFocused;
+            bindCard.currentKeyboardFocused = inputEnable && currentKeyboardFocused;
         }
 
         void AddCardEvents()

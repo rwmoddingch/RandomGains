@@ -126,6 +126,11 @@ namespace RandomGains.Frame.Display
         public void ToggleShow(bool show)
         {
             this.show = show;
+            if (!show && keyboardSelectedRepresent != null)
+            {
+                selector.RemoveKeyboardRepresent(keyboardSelectedRepresent);
+                keyboardSelectedRepresent = null;
+            }
             foreach (var represent in allCardHUDRepresents)
                 represent.ToggleShow(show);
         }
@@ -133,42 +138,69 @@ namespace RandomGains.Frame.Display
 
     partial class GainSlot2
     {
-        public GainCardRepresent keyboardSelectedRepresent;
+        private int clickCount;
+        private int clickCounter;
+        private int waitClickCounter;
+        private GainCardRepresent keyboardSelectedRepresent;
+        private Player.InputPackage lastInput;
         public void InputUpdate()
         {
-            //if (allCardHUDRepresents.Count == 0 || (selector is HUDGainRepresentSelector && !show))
-            //{
-            //    keyboardSelectedRepresent = null;
-            //    return; 
-            //}
+            var input = RWInput.PlayerUIInput(0, Custom.rainWorld);
+            if (input.AnyDirectionalInput && selector.currentSelectedRepresent == null)
+            {
+                if (keyboardSelectedRepresent == null)
+                {
+                    keyboardSelectedRepresent = allCardHUDRepresents.First();
+                    selector.AddKeyboardRepresent(keyboardSelectedRepresent);
+                }
+                else
+                {
+                    var index = allCardHUDRepresents.IndexOf(keyboardSelectedRepresent);
+                    if (input.x != 0 && input.x != lastInput.x)
+                    {
+                        selector.RemoveKeyboardRepresent(keyboardSelectedRepresent);
+                        keyboardSelectedRepresent = allCardHUDRepresents[(index + allCardHUDRepresents.Count + input.x) % allCardHUDRepresents.Count];
+                        selector.AddKeyboardRepresent(keyboardSelectedRepresent);
+                    }
+                }
+            }
 
-            //var input = RWInput.PlayerUIInput(0, Custom.rainWorld);
-            //EmgTxCustom.Log(input.IntVec.ToString());
-            //if (input.AnyDirectionalInput)
-            //{
-            //    if (keyboardSelectedRepresent == null)
-            //        keyboardSelectedRepresent = allCardHUDRepresents.First();
-            //    var index = allCardHUDRepresents.IndexOf(keyboardSelectedRepresent);
-            //    if (input.x != 0)
-            //    {
-            //        selector.RemoveKeyboardRepresent(keyboardSelectedRepresent);
-            //        keyboardSelectedRepresent = allCardHUDRepresents[(index + allCardHUDRepresents.Count + input.x) % allCardHUDRepresents.Count];
-            //        selector.AddKeyboardRepresent(keyboardSelectedRepresent);
-            //    }
-            //}
+            if (keyboardSelectedRepresent != null)
+            {
+                if (input.jmp)
+                {
+                    if (!lastInput.jmp)
+                    {
+                        clickCount++;
+                        waitClickCounter = 8;
+                        if (clickCount == 2)
+                        {
+                            keyboardSelectedRepresent.bindCard.KeyBoardDoubleClick();
+                            clickCount = 0;
+                        }
+                    }
 
-            //if (input.jmp && keyboardSelectedRepresent != null)
-            //{
-            //    keyboardSelectedRepresent.BindCard_OnMouseCardClick(keyboardSelectedRepresent.bindCard);
-            //}
-            //if (input.pckp && keyboardSelectedRepresent != null)
-            //{
-            //    keyboardSelectedRepresent.BindCard_OnMouseCardRightClick(keyboardSelectedRepresent.bindCard);
-            //}
-            //if (input.thrw && keyboardSelectedRepresent != null)
-            //{
-            //    keyboardSelectedRepresent.BindCard_OnMouseCardDoubleClick(keyboardSelectedRepresent.bindCard);
-            //}
+                    clickCounter++;
+
+                    if (clickCounter == 40)
+                    {
+                        keyboardSelectedRepresent.bindCard.KeyBoardRightClick();
+                        clickCount = 0;
+                    }
+                }
+                else if (clickCount != 0)
+                {
+                    waitClickCounter--;
+                    if (waitClickCounter == 0)
+                    {
+                        keyboardSelectedRepresent.bindCard.KeyBoardClick();
+                        clickCount = 0;
+                    }
+                }
+
+            }
+
+            lastInput = input;
         }
     }
 
@@ -245,7 +277,6 @@ namespace RandomGains.Frame.Display
         public void PostInit()
         {
             slot.positiveCardHUDRepresents.ForEach(i => i.OnDoubleClick += OnDoubleClick);
-
         }
     }
 }
