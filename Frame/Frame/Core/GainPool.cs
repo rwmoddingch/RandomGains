@@ -1,16 +1,8 @@
-﻿using RandomGains.Frame.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-using Mono.Cecil.Cil;
 using MonoMod.Utils;
-using RandomGains.Gains;
 using UnityEngine;
-using Object = System.Object;
-using Mono.Cecil;
 using OpCodes = System.Reflection.Emit.OpCodes;
 using System.Reflection;
 using RandomGains.Frame.Display.GainHUD;
