@@ -103,34 +103,40 @@ namespace RandomGains.Gains
 
         public static void InitAllGainPlugin()
         {
-            DirectoryInfo info = new DirectoryInfo(AssetManager.ResolveDirectory("gainplugins"));
-            foreach (var file in info.GetFiles("*.dll"))
+            foreach(var mod in ModManager.ActiveMods)
             {
-                var assembly = Assembly.LoadFile(file.FullName);
-                foreach (var type in assembly.GetTypes())
+                string path = mod.path + Path.DirectorySeparatorChar + "gainplugins";
+                if (!Directory.Exists(path))
+                    continue;
+                EmgTxCustom.Log($"Find correct path in {mod.id} to load plugins");
+                DirectoryInfo info = new DirectoryInfo(path);
+                foreach (var file in info.GetFiles("*.dll"))
                 {
-                    bool isEntry = false;
-                    var baseType = type.BaseType;
-                    while (baseType != null)
+                    var assembly = Assembly.LoadFile(file.FullName);
+                    foreach (var type in assembly.GetTypes())
                     {
-                        if (baseType == typeof(GainEntry))
+                        bool isEntry = false;
+                        var baseType = type.BaseType;
+                        while (baseType != null)
                         {
-                            isEntry = true;
-                            break;
+                            if (baseType == typeof(GainEntry))
+                            {
+                                isEntry = true;
+                                break;
+                            }
+                            baseType = baseType.BaseType;
                         }
-                        baseType = baseType.BaseType;
 
-                    }
-
-                    if (isEntry)
-                    {
-                        var obj = type.GetConstructor(Type.EmptyTypes).Invoke(Array.Empty<object>());
-                        type.GetMethod("OnEnable").Invoke(obj,Array.Empty<object>());
-                        EmgTxCustom.Log($"Invoke {type.Name}.OnEnable");
+                        if (isEntry)
+                        {
+                            var obj = type.GetConstructor(Type.EmptyTypes).Invoke(Array.Empty<object>());
+                            type.GetMethod("OnEnable").Invoke(obj, Array.Empty<object>());
+                            EmgTxCustom.Log($"Invoke {type.Name}.OnEnable");
+                        }
                     }
                 }
-
             }
+            
         }
 
         static void BuildID(GainID id)
