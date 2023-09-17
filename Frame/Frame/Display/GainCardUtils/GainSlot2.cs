@@ -23,6 +23,7 @@ namespace RandomGains.Frame.Display
 
         public int positiveSlotMidIndex;
         public int notPositveSlotMidIndex;
+        public int changeIndexCoolDown;
 
         public bool show;
 
@@ -103,7 +104,10 @@ namespace RandomGains.Frame.Display
         public void Update()
         {
             selector.Update();
-            //InputUpdate();
+            
+            if (changeIndexCoolDown > 0)
+                changeIndexCoolDown--;
+
             for (int i = allCardHUDRepresents.Count - 1; i >= 0; i--)
             {
                 allCardHUDRepresents[i].Update();
@@ -134,6 +138,12 @@ namespace RandomGains.Frame.Display
             //}
             foreach (var represent in allCardHUDRepresents)
                 represent.ToggleShow(show);
+            if(!show)
+            {
+                positiveSlotMidIndex = positiveCardHUDRepresents.Count / 2;
+                notPositveSlotMidIndex = notPositiveCardHUDRepresents.Count / 2;
+                changeIndexCoolDown = 20;
+            }
         }
     }
 
@@ -226,6 +236,7 @@ namespace RandomGains.Frame.Display
         int waitClickCounter;
         Player.InputPackage lastInput;
         GainCardRepresent _currentKeyboardOnRepresent;
+
         public GainCardRepresent CurrentKeyboardOnRepresent
         {
             get => _currentKeyboardOnRepresent;
@@ -247,40 +258,49 @@ namespace RandomGains.Frame.Display
 
         public void Update()
         {
-            //MouseModeUpdate();
-            KeyboardModeUpdate();
+            if(mouseMode)
+                MouseModeUpdate();
+            else
+                KeyboardModeUpdate();
         }
 
         public void ToggleShow(bool show)
         {
             this.show = show;
-            if (show)
-                CurrentKeyboardOnRepresent = representsLayer_show.First();
+            if (!mouseMode)
+            {
+                if (show)
+                    CurrentKeyboardOnRepresent = representsLayer_show.First();
+                else
+                    CurrentKeyboardOnRepresent = representsLayer_unshow.Count > 0 ? representsLayer_unshow.First() : null;
+            }
             else
-                CurrentKeyboardOnRepresent = representsLayer_unshow.Count > 0 ? representsLayer_unshow.First() : null;
+            {
+                foreach(var represent in currentHoverOnRepresents)
+                {
+                    represent.currentHoverd = false;
+                }
+            }
+            currentHoverOnRepresents.Clear();
         }
 
         void MouseModeUpdate()
         {
-            if (show)//更新鼠标悬浮目标
+            var lst = show ? representsLayer_show : representsLayer_unshow;
+
+            for (int i = currentHoverOnRepresents.Count - 1; i >= 0; i--)
             {
-                for (int i = currentHoverOnRepresents.Count - 1; i >= 0; i--)
+                if (!currentHoverOnRepresents[i].bindCard.MouseInside)
                 {
-                    if (!currentHoverOnRepresents[i].bindCard.MouseInside)
-                    {
-                        currentHoverOnRepresents[i].currentHoverd = false;
-                        currentHoverOnRepresents.RemoveAt(i);
-                    }
-                }
-                foreach (var represent in representsLayer_show)
-                {
-                    if (represent.bindCard.MouseInside && represent.inputEnable)
-                        currentHoverOnRepresents.Add(represent);
+                    currentHoverOnRepresents[i].currentHoverd = false;
+                    currentHoverOnRepresents.RemoveAt(i);
                 }
             }
-            else if (currentHoverOnRepresents.Count > 0)
-                currentHoverOnRepresents.Clear();
-
+            foreach (var represent in lst)
+            {
+                if (represent.bindCard.MouseInside && represent.inputEnable)
+                    currentHoverOnRepresents.Add(represent);
+            }
 
             if (currentHoverOnRepresents.Count != 0)
             {

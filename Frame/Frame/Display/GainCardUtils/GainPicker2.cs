@@ -19,7 +19,6 @@ namespace RandomGains.Frame.Display
         GainID[] choices;
         int sendChoiceCounter = 20;
         int currentSendIndex;
-        bool show = true;
 
         private int clickCounter = 0;
         private int waitClickCounter = 0;
@@ -28,11 +27,6 @@ namespace RandomGains.Frame.Display
         FContainer Container;
 
         List<GainCardRepresent> represents = new List<GainCardRepresent>();
-
-        private GainCardRepresent keyboardSelectedRepresent;
-        private Player.InputPackage lastInput;
-
-
         public GainPicker2(GainMenu menu)
         {
             gainMenu = menu;
@@ -74,6 +68,7 @@ namespace RandomGains.Frame.Display
                     cardRepresent.NewTransformer(new PickerBeforeFlyInHoverPosTransformer(cardRepresent));
                     cardRepresent.NewTransformer(new PickerStaticHoverPosTransformer(cardRepresent, mid));
                     cardRepresent.OnDoubleClick += Card_OnDoubleClick;
+                    
                     sendChoiceCounter = 20;
                     currentSendIndex++;
                 }
@@ -88,73 +83,6 @@ namespace RandomGains.Frame.Display
             }
             if (allRepresentDestroy)
                 Destroy();
-        }
-
-        public void KeyBoardUpdate()
-        {
-            if (represents.Count == 0 || (!represents.Contains(keyboardSelectedRepresent) && keyboardSelectedRepresent != null))
-            {
-                keyboardSelectedRepresent = null;
-                return;
-            }
-
-            var input = RWInput.PlayerUIInput(0, Custom.rainWorld);
-            if (input.AnyDirectionalInput)
-            {
-                if (keyboardSelectedRepresent == null)
-                {
-                    keyboardSelectedRepresent = represents.First();
-                    gainMenu.selector.AddKeyboardRepresent(keyboardSelectedRepresent);
-                }
-                else
-                {
-                    var index = represents.IndexOf(keyboardSelectedRepresent);
-                    if (input.x != 0 && input.x != lastInput.x)
-                    {
-                        gainMenu.selector.RemoveKeyboardRepresent(keyboardSelectedRepresent);
-                        keyboardSelectedRepresent = represents[(index + represents.Count + input.x) % represents.Count];
-                        gainMenu.selector.AddKeyboardRepresent(keyboardSelectedRepresent);
-                    }
-                }
-            }
-
-            if (keyboardSelectedRepresent != null)
-            {
-                if (input.jmp)
-                {
-                    if (!lastInput.jmp)
-                    {
-                        clickCount++;
-                        waitClickCounter = 8;
-                        if (clickCount == 2)
-                        {
-                            keyboardSelectedRepresent.bindCard.KeyBoardDoubleClick();
-                            clickCount = 0;
-                        }
-                    }
-
-                    clickCounter++;
-                        
-                    if (clickCounter == 40)
-                    {
-                        keyboardSelectedRepresent.bindCard.KeyBoardRightClick();
-                        clickCount = 0;
-                    }
-                }
-                else if(clickCount != 0)
-                {
-                    waitClickCounter--;
-                    if (waitClickCounter == 0)
-                    {
-                        keyboardSelectedRepresent.bindCard.KeyBoardClick();
-                        clickCount = 0;
-                    }
-                }
-
-            }
-
-            lastInput = input;
-   
         }
 
         public void Draw(float timeStacker)

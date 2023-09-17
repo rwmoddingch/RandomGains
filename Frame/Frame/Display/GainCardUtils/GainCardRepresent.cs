@@ -1,4 +1,6 @@
-﻿using System;
+﻿using RandomGains.Frame.Core;
+using RWCustom;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,6 +35,14 @@ namespace RandomGains.Frame.Display
         {
             Container = new FContainer();
             owner?.Container.AddChild(Container);
+
+            background = new FSprite("pixel", true)
+            {
+                isVisible = true,
+                alpha = 0f,
+            };
+            Container.AddChild(background);
+
             this.owner = owner;
             this.selector = selector;
 
@@ -43,7 +53,7 @@ namespace RandomGains.Frame.Display
             else
                 ToggleShow(false);
 
-            selector.RegisterRepresent(this);
+            selector.RegisterRepresent(this, owner != null);
         }
 
         /// <summary>
@@ -74,6 +84,7 @@ namespace RandomGains.Frame.Display
         {
             bindCard?.DrawSprites(timeStacker);
             TransformerUpdateSmooth(timeStacker);
+            DrawSelectorRect(timeStacker);
         }
 
         public void Destroy()
@@ -127,7 +138,7 @@ namespace RandomGains.Frame.Display
         int lastTransformCounter;
         int transformCounter;
 
-        float transformer_tInSpan => transformCounter / (float)tranformTimeSpan;
+        public float transformer_tInSpan => transformCounter / (float)tranformTimeSpan;
         float last_transformer_tInSpan => lastTransformCounter / (float)tranformTimeSpan;
 
         GainRepresentTransformer currentTransformer;
@@ -135,17 +146,13 @@ namespace RandomGains.Frame.Display
 
         Func<float, float> tModifier = (t) => { return t; };
 
- 
-
         void TransformerUpdate()
         {
             if (bindCard == null)
                 return;
-
-            currentTransformer?.Update();
+            
             lastTransformer?.Update();
-
-       
+            currentTransformer?.Update();
 
             lastTransformCounter = transformCounter;
             if (bindCard.animation == null && usingTransformer)
@@ -156,6 +163,35 @@ namespace RandomGains.Frame.Display
                 {
                     transformerEverFinished = true;
                     currentTransformer?.TransformerFinish();
+                }
+            }
+
+            if(owner != null && currentHoverd && owner.changeIndexCoolDown == 0)
+            {
+                if(bindCard.pos.x > Custom.rainWorld.options.ScreenSize.x)
+                {
+                    if (bindCard.staticData.GainType == GainType.Positive)
+                    {
+                        owner.positiveSlotMidIndex++;
+                    }
+                    else
+                    {
+                        owner.notPositveSlotMidIndex++;                    
+                    }
+                    EmgTxCustom.Log($"positiveSlotMidIndex {owner.positiveSlotMidIndex},notPositveSlotMidIndex {owner.notPositveSlotMidIndex}");
+                    owner.changeIndexCoolDown = 20;
+                }
+                else if(bindCard.pos.x < 0)
+                {
+                    if (bindCard.staticData.GainType == GainType.Positive)
+                    {
+                        owner.positiveSlotMidIndex--;
+                    }
+                    else
+                    {
+                        owner.notPositveSlotMidIndex--;
+                    }
+                    owner.changeIndexCoolDown = 20;
                 }
             }
         }
@@ -221,6 +257,31 @@ namespace RandomGains.Frame.Display
             lastTransformer?.SwitchTo(currentTransformer);
             transformCounter = 0;
             transformerEverFinished = false;
+        }
+    }
+
+    /// <summary>
+    /// 绘制选框
+    /// </summary>
+    internal partial class GainCardRepresent
+    {
+        public FSprite background;
+        public bool enableSelectorRect;
+
+        public void DrawSelectorRect(float timeStacker)
+        {
+            background.alpha = (enableSelectorRect && currentHoverd) ? 1 : 0;
+            if (enableSelectorRect && currentHoverd)
+            {
+                float width = (bindCard.origVertices[2].x - bindCard.origVertices[3].x) * bindCard.size * Mathf.Lerp(0.9f, 1.1f, Mathf.Sin(Time.time * 10f));
+                float height = (bindCard.origVertices[0].y - bindCard.origVertices[3].y) * bindCard.size * Mathf.Lerp(0.9f, 1.1f, Mathf.Sin(Time.time * 10f));
+
+                background.SetPosition(Vector2.Lerp(bindCard.lastPos, bindCard.pos, timeStacker));
+
+                background.width = width;
+                background.height = height;
+            }
+            //EmgTxCustom.Log($"{bindCard.ID},show {show},enable {enableSelectorRect},hoverd {currentHoverd}");
         }
     }
 

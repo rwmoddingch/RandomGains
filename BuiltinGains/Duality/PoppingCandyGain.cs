@@ -41,7 +41,7 @@ namespace BuiltinGains.Duality
             orig.Invoke(self, edible);
             if(edible is OracleSwarmer)
             {
-                self.room.AddObject(new CreaturePopping(self, 40));
+                self.room.AddObject(new CreaturePopping(self, 80));
             }
         }
     }
@@ -70,7 +70,7 @@ namespace BuiltinGains.Duality
             for (int i = 0; i < crit.bodyChunks.Length; i++)
             {
                 vector = Vector3.Slerp(-vector.normalized, Custom.RNV(), Random.value);
-                vector *= Mathf.Min(3f, Random.value * 3f / Mathf.Lerp(crit.bodyChunks[i].mass, 1f, 0.5f)) * Mathf.InverseLerp(0f, 160f, (float)counter);
+                vector *= Mathf.Min(3f, Random.value * 3f / Mathf.Lerp(crit.bodyChunks[i].mass, 1f, 0.5f)) * Mathf.InverseLerp(0f, 80f, (float)counter) * 2f;
                 crit.bodyChunks[i].pos += vector;
                 crit.bodyChunks[i].vel += vector * 0.5f;
             }
@@ -79,7 +79,7 @@ namespace BuiltinGains.Duality
                 for (int j = 0; j < crit.graphicsModule.bodyParts.Length; j++)
                 {
                     vector = Vector3.Slerp(-vector.normalized, Custom.RNV(), Random.value);
-                    vector *= Random.value * 2f * Mathf.InverseLerp(0f, 120f, (float)counter);
+                    vector *= Random.value * 2f * Mathf.InverseLerp(0f, 120f, (float)counter) * 2f;
                     crit.graphicsModule.bodyParts[j].pos += vector;
                     crit.graphicsModule.bodyParts[j].vel += vector;
                     if (crit.graphicsModule.bodyParts[j] is Limb)

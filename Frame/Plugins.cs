@@ -81,9 +81,17 @@ namespace RandomGains
                 EmgTxCustom.Log("Plugins : Space pressed");
 
                 GainPool.Singleton.EnableGain(new GainID("PoppingCandy"));
-                GainPool.Singleton.EnableGain(new GainID("Herbicide"));
+                GainPool.Singleton.EnableGain(new GainID("WalkingMushroom"));
                 GainPool.Singleton.EnableGain(new GainID("HardenedMask"));
-                GainPool.Singleton.EnableGain(new GainID("InvisibleKiller"));
+                GainPool.Singleton.EnableGain(new GainID("NMR"));
+
+                //foreach(var id in GainID.values.entries)
+                //{
+                //    var newID = new GainID(id);
+                //    if (newID == GainID.None)
+                //        continue;
+                //    GainPool.Singleton.EnableGain(newID);
+                //}
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {

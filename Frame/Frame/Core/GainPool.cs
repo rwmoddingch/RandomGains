@@ -89,6 +89,16 @@ namespace RandomGains.Frame.Core
         /// <param name="id"></param>
         public void EnableGain(GainID id)
         {
+            if (gainMapping.ContainsKey(id))
+            {
+                EmgTxCustom.Log($"GainPool : gain {id} already enabled!");
+                return;
+            }
+            if (!gainCtors.ContainsKey(id))
+            {
+                EmgTxCustom.Log($"GainPool : gain {id} ctor not found!");
+                return;
+            }
             EmgTxCustom.Log($"GainPool : enable gain {id}");
 
             GainHookWarpper.EnableGain(id);
