@@ -1,0 +1,10 @@
+{
+    "faceName": "poppingcandy",
+    "gainID" : "PoppingCandy",
+    "gainType" : "Duality",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "跳跳糖",
+    "gainDescription" : "食用神经元以后玩家会小范围震颤跳动1秒",
+    "color" : "#FFE7B0"
+}

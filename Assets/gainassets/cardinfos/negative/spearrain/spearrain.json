@@ -1,0 +1,10 @@
+{
+    "faceName": "spearrain",
+    "gainID" : "SpearRain",
+    "gainType" : "Negative",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "矛矛雨",
+    "gainDescription" : "下雨更改为天上落下触地消失的矛",
+    "color" : "#B9835D"
+}

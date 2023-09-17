@@ -1,0 +1,10 @@
+{
+    "faceName": "walkingmushroom",
+    "gainID" : "WalkingMushroom",
+    "gainType" : "Duality",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "走路菇",
+    "gainDescription" : "子弹菇获得移动能力",
+    "color" : "#A475FF"
+}

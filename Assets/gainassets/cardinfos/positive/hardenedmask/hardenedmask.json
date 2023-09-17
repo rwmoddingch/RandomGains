@@ -1,0 +1,10 @@
+{
+    "faceName": "hardenedmask",
+    "gainID" : "HardenedMask",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "硬质面具",
+    "gainDescription" : "持有面具时，可以弹开面朝方向飞来的矛",
+    "color" : "#FFE0DC"
+}

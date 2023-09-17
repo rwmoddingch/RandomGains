@@ -1,0 +1,10 @@
+{
+    "faceName": "foodlover",
+    "gainID" : "FoodLover",
+    "gainType" : "Negative",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "食物爱好者",
+    "gainDescription" : "只能拾取食物",
+    "color" : "#7B646D"
+}

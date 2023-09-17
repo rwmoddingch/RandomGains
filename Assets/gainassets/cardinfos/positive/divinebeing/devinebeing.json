@@ -1,0 +1,10 @@
+{
+    "faceName": "devinebeing",
+    "gainID" : "DivineBeing",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "神圣存在",
+    "gainDescription" : "玩家周边圆形范围内生物都保持匍匐静止，玩家离开后恢复",
+    "color" : "#FFC88D"
+}

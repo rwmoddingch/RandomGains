@@ -1,0 +1,10 @@
+{
+    "faceName": "needlespear",
+    "gainID" : "NeedleSpear",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "面条矛",
+    "gainDescription" : "大面条虫死亡后，可以通过投掷尸体的方式将其当作矛来使用",
+    "color" : "#FFE0DC"
+}
