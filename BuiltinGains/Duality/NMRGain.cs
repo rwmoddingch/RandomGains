@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using RandomGains.Frame.Utils;
 
 namespace BuiltinGains.Duality
 {
@@ -23,6 +24,7 @@ namespace BuiltinGains.Duality
     internal class NMRGainEntry : GainEntry
     {
         public static GainID NMRGainID = new GainID("NMR", true);
+        static int count = 40;
 
         public override void OnEnable()
         {
@@ -60,6 +62,25 @@ namespace BuiltinGains.Duality
                     chunk.vel += Vector2.up * self.room.gravity * 0.15f;
                 }
             }
+
+
+            //if (Input.GetMouseButtonDown(0))
+            //{
+            //    Vector2 pos = new Vector2(Futile.mousePosition.x, Futile.mousePosition.y) + self.room.game.cameras[0].pos;
+
+            //    Vector2 delta = (pos - self.firstChunk.pos).normalized * 5f;
+
+            //    foreach (var chunk in self.bodyChunks)
+            //        chunk.vel = delta;
+
+            //    self.room.AddObject(new GhostDisplacementEmitter(self.graphicsModule, self.room, self.firstChunk.pos, pos, 80f, ghostVelMulti:0.1f));
+
+            //    foreach(var chunk in self.bodyChunks)
+            //    {
+            //        chunk.HardSetPosition(pos);
+            //        chunk.vel = Vector2.zero;
+            //    }
+            //}
         }
 
         public static bool CheckObjMetallic(AbstractPhysicalObject abstractPhysicalObject)

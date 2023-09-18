@@ -21,7 +21,8 @@ namespace RandomGains.Gains
         };
         public static Dictionary<GainID, GainType> idToTypeMapping = new Dictionary<GainID, GainType>();
 
-        public static Dictionary<GainProperty, List<GainID>> typeToGainPropertyMapping = new Dictionary<GainProperty, List<GainID>>(){
+        public static Dictionary<GainProperty, List<GainID>> typeToGainPropertyMapping = new Dictionary<GainProperty, List<GainID>>()
+        {
             {GainProperty.Normal, new List<GainID>()},
             {GainProperty.Special, new List<GainID>()},
         };
@@ -135,8 +136,7 @@ namespace RandomGains.Gains
                         }
                     }
                 }
-            }
-            
+            }        
         }
 
         static void BuildID(GainID id)

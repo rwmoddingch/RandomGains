@@ -13,9 +13,15 @@ namespace RandomGains.Frame.Core
         static Dictionary<GainID, GainStaticData> idDataMapping = new Dictionary<GainID, GainStaticData>();
         
         public static void Load(RainWorld rainWorld){
-            string rootPath = AssetManager.ResolveDirectory("gainassets/cardinfos");
-            LoadInDirectory(new DirectoryInfo(rootPath), rainWorld);
+            foreach(var mod in ModManager.ActiveMods)
+            {
+                string path = mod.path + Path.DirectorySeparatorChar + "gainassets" + Path.DirectorySeparatorChar + "cardinfos";
+                if (!Directory.Exists(path))
+                    continue;
+                LoadInDirectory(new DirectoryInfo(path), rainWorld);
+            }
         }
+
         static void LoadInDirectory(DirectoryInfo directoryInfo, RainWorld rainWorld){
             foreach(var directory in directoryInfo.GetDirectories()){
                 LoadInDirectory(directory, rainWorld);
