@@ -23,58 +23,66 @@ namespace BuiltinGains.Negative
         public int CurrentCount { get => _timer / 40; }
         public bool HideBelowZero => true;
 
-        //EnemyCreator enemyCreator;
+        public List<int> ignoreID = new List<int>();
 
         public UpgradationGain() : base()
         {
+            _timer = 30 * 40;
             //enemyCreator = new EnemyCreator();
         }
 
         public override void Update(RainWorldGame game)
         {
             base.Update(game);
-            _timer++;
-            //enemyCreator.Update(game);
-        }
-    }
+            if (_timer > 0 && !game.paused)
+                _timer--;
 
-    internal class UpgradationGainData : GainDataImpl
-    {
-        public override GainID GainID => UpgradationGainEntry.UpgradationGainID;
-    }
-
-    internal class UpgradationGainEntry : GainEntry
-    {
-        public static GainID UpgradationGainID = new GainID("Upgradation", true);
-
-        public override void OnEnable()
-        {
-            GainRegister.RegisterGain<UpgradationGain, UpgradationGainData, UpgradationGainEntry>(UpgradationGainID);
-            DeathPersistentSaveDataRx.AppplyTreatment(new EnemyCreatorSaveUnit(null));
+            if (_timer == 0)
+                CheckRoom(game);
         }
 
-        public static void HookOn()
+        public void CheckRoom(RainWorldGame game)
         {
+            if (game.Players[0].realizedCreature == null)
+                return;
+            if (game.Players[0].realizedCreature.room == null)
+                return;
+
+            var lst = new List<Creature>();
+            foreach(var obj in game.Players[0].realizedCreature.room.updateList)
+            {
+                if (obj is Player)
+                    continue;
+                if (obj is Creature creature)
+                {
+                    if (IgnoreThisType(creature.abstractCreature.creatureTemplate.type))
+                        continue;
+                    if (GetUperAndBetterType(creature.abstractCreature.creatureTemplate.type, false) == creature.abstractCreature.creatureTemplate.type)
+                        continue;
+                    if (ignoreID.Contains(creature.abstractCreature.ID.number))
+                        continue;
+
+                    lst.Add(creature);
+                }
+            }
+
+            if(lst.Count > 0)
+            {
+                var target = lst[Random.Range(0, lst.Count)];
+                ignoreID.Add(target.abstractCreature.ID.number);
+                target.room.AddObject(new UpgradationSign(target.DangerPos, target.room));
+                if (SpawnUperCreature(target.abstractCreature))
+                {
+                    target.Destroy();
+                    target.abstractCreature.Destroy();
+                }
+                _timer = 30 * 40;
+            }
         }
-    }
 
-    public class EnemyCreator
-    {
-        public static readonly int creatureLimit = 200;
-
-        public bool created = true;
-
-        public int genWaitCounter = 1000;
-
-        public Region lastRegion;
-        public EnemyCreator()
+        public static CreatureTemplate.Type GetUperAndBetterType(CreatureTemplate.Type origType, bool upgradation)
         {
-
-        }
-
-        public static CreatureTemplate.Type GetUperAndBetterType(CreatureTemplate.Type origType)
-        {
-            CreatureTemplate.Type result = null;
+            CreatureTemplate.Type result = origType;
 
             if (origType == CreatureTemplate.Type.SmallCentipede)
             {
@@ -90,7 +98,13 @@ namespace BuiltinGains.Negative
             else if (origType == CreatureTemplate.Type.RedLizard) result = origType;
             else if (origType == CreatureTemplate.Type.GreenLizard) result = MoreSlugcatsEnums.CreatureTemplateType.SpitLizard;
             else if (origType == CreatureTemplate.Type.PinkLizard || origType == CreatureTemplate.Type.BlueLizard) result = CreatureTemplate.Type.CyanLizard;
-            else if (origType == CreatureTemplate.Type.CyanLizard) result = CreatureTemplate.Type.CyanLizard;
+            else if (origType == CreatureTemplate.Type.CyanLizard)
+            {
+                if (upgradation)
+                    result = CreatureTemplate.Type.CyanLizard;
+                else
+                    result = CreatureTemplate.Type.RedLizard;//随便给一个以通过测试
+            }
             else if (origType == CreatureTemplate.Type.WhiteLizard) result = CreatureTemplate.Type.WhiteLizard;
             else if (origType == CreatureTemplate.Type.Salamander)
             {
@@ -121,186 +135,137 @@ namespace BuiltinGains.Negative
                 else result = origType;
             }
             else if (origType == CreatureTemplate.Type.EggBug) result = MoreSlugcatsEnums.CreatureTemplateType.FireBug;
+            else if (origType == CreatureTemplate.Type.Spider)
+            {
+                if (upgradation)
+                {
+                    if (Random.value < 0.8f)
+                        result = CreatureTemplate.Type.BigSpider;
+                    else
+                        result = CreatureTemplate.Type.SpitterSpider;
+                }
+                else
+                {
+                    if (Random.value < 0.7f)
+                        result = origType;
+                    else if (Random.value < 0.2f)
+                        result = CreatureTemplate.Type.BigSpider;
+                    else
+                        result = CreatureTemplate.Type.SpitterSpider;
+                }
+            }
 
             return result;
         }
 
         public static bool IgnoreThisType(CreatureTemplate.Type type)
         {
-            return (type == CreatureTemplate.Type.Spider) ||
-                (type == CreatureTemplate.Type.Leech) ||
-                (type == CreatureTemplate.Type.SeaLeech) ||
+            return (StaticWorld.GetCreatureTemplate(type).TopAncestor().type == CreatureTemplate.Type.Leech) ||
                 (type == CreatureTemplate.Type.Overseer) ||
                 (type == CreatureTemplate.Type.Fly);
         }
 
-        public void Update(RainWorldGame game)
-        {
-            Player player = game.FirstRealizedPlayer;
-
-            if (player == null) return;
-            if (player.room == null) return;
-            if (player.room.world.region == null)
-            {
-                lastRegion = null;
-                return;
-            }
-
-            if (genWaitCounter > 0 && player.room.world.abstractRooms.Length > 0 && player.room.world.abstractRooms[0].world == player.room.world) genWaitCounter--;
-            if (!created && genWaitCounter == 0)
-            {
-                EmgTxCustom.Log("Spawn more enemies");
-                World world = player.abstractCreature.world;
-
-                int totalCreatureInRegin = 0;
-                List<AbstractCreature> abstractCreaturesToAdd = new List<AbstractCreature>();
-                Dictionary<AbstractCreature, AbstractRoom> cretToRoom = new Dictionary<AbstractCreature, AbstractRoom>();
-                foreach (var abRoom in world.abstractRooms)
-                {
-                    if (!abRoom.shelter && !abRoom.gate)
-                    {
-                        if (abRoom.entities.Count > 0)
-                        {
-                            AbstractWorldEntity[] entityCopy = new AbstractWorldEntity[abRoom.entities.Count];
-                            abRoom.entities.CopyTo(entityCopy);
-                            foreach (var entity in entityCopy)
-                            {
-                                if (totalCreatureInRegin > creatureLimit) break;
-                                if (entity is AbstractCreature)
-                                {
-                                    if (IgnoreThisType((entity as AbstractCreature).creatureTemplate.type)) continue;
-                                    totalCreatureInRegin++;
-                                    //Plugin.Log("GetAbstractCreature in " + abRoom.name + " : " + entity.ToString());
-                                    var newCreature = SpawnUperCreature(entity as AbstractCreature);
-
-                                    if (newCreature != null)
-                                    {
-                                        abstractCreaturesToAdd.Add(newCreature);
-                                        cretToRoom.Add(newCreature, abRoom);
-                                        totalCreatureInRegin++;
-                                    }
-                                }
-                            }
-                        }
-                        if (abRoom.entitiesInDens.Count > 0)
-                        {
-                            AbstractWorldEntity[] entityCopy = new AbstractWorldEntity[abRoom.entitiesInDens.Count];
-                            abRoom.entitiesInDens.CopyTo(entityCopy);
-                            foreach (var entity in entityCopy)
-                            {
-                                if (totalCreatureInRegin > creatureLimit) break;
-                                if (entity is AbstractCreature)
-                                {
-                                    if (IgnoreThisType((entity as AbstractCreature).creatureTemplate.type)) continue;
-                                    totalCreatureInRegin++;
-                                    var newCreature = SpawnUperCreature(entity as AbstractCreature);
-
-                                    if (newCreature != null)
-                                    {
-                                        abstractCreaturesToAdd.Add(newCreature);
-                                        cretToRoom.Add(newCreature, abRoom);
-                                        totalCreatureInRegin++;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (abstractCreaturesToAdd.Count > 0)
-                {
-                    foreach (var creature in abstractCreaturesToAdd)
-                    {
-                        EmgTxCustom.Log("Spawn new enemy of type:" + creature.creatureTemplate.type.ToString() + " in room:" + cretToRoom[creature].name);
-
-                        AbstractRoom abRoom = cretToRoom[creature];
-                        abRoom.AddEntity(creature);
-                        if (abRoom.realizedRoom != null)
-                        {
-                            creature.RealizeInRoom();
-                        }
-                    }
-                }
-                created = true;
-            }
-
-            if (player.room.world.region != lastRegion && !DeathPersistentSaveDataRx.GetTreatmentOfType<EnemyCreatorSaveUnit>().isThisRegionSpawnOrNot(player.room.world.region))
-            {
-                lastRegion = player.room.world.region;
-                DeathPersistentSaveDataRx.GetTreatmentOfType<EnemyCreatorSaveUnit>().SpawnEnemyInNewRegion(lastRegion);
-                EmgTxCustom.Log("Spawn Enemies in new Region of name:" + lastRegion.name);
-                created = false;
-                genWaitCounter = 200;
-            }
-        }
-
-        public AbstractCreature SpawnUperCreature(AbstractCreature origCreature)
+        public static bool SpawnUperCreature(AbstractCreature origCreature)
         {
             AbstractRoom abRoom = origCreature.Room;
             World world = abRoom.world;
-            CreatureTemplate.Type type = EnemyCreator.GetUperAndBetterType(origCreature.creatureTemplate.type);
-            if (type == null) return null;
+            CreatureTemplate.Type type = GetUperAndBetterType(origCreature.creatureTemplate.type, true);
 
             WorldCoordinate pos = origCreature.pos;
             AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, pos, world.game.GetNewID());
-            return abstractCreature;
-        } 
+            origCreature.Room.AddEntity(abstractCreature);
+            abstractCreature.RealizeInRoom();
+            return type != origCreature.creatureTemplate.type;
+        }
     }
-    public class EnemyCreatorSaveUnit : DeathPersistentSaveDataTx
+
+    public class UpgradationSign : CosmeticSprite
     {
-        public override string header => "UPGRADATIONGAIN_ENEMYCREATOR";
+        public static Color color;
+        public float life = 80;
 
-        public List<string> CreateEnemyOrNot = new List<string>();
-
-        public EnemyCreatorSaveUnit(SlugcatStats.Name name) : base(name)
+        static UpgradationSign()
         {
+            ColorUtility.TryParseHtmlString("#FF019A", out color);
         }
 
-        public override void ClearDataForNewSaveState(SlugcatStats.Name newSlugName)
+        public UpgradationSign(Vector2 pos, Room room)
         {
-            base.ClearDataForNewSaveState(newSlugName);
-            CreateEnemyOrNot.Clear();
+            this.room = room;
+            this.pos = pos;
         }
 
-        public override void LoadDatas(string data)
+        public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
-            base.LoadDatas(data);
-            CreateEnemyOrNot.Clear();
-            string[] regions = Regex.Split(data, "_");
-            for (int i = 0; i < regions.Length; i++)
+            sLeaser.sprites = new FSprite[3];
+            sLeaser.sprites[0] = new CustomFSprite("pixel");
+            sLeaser.sprites[1] = new FSprite("pixel", true) { anchorX = 0.5f, anchorY = 1f, color = color * 0.5f + Color.white * 0.5f };
+            sLeaser.sprites[2] = new FSprite("Futile_White", true) { shader = rCam.game.rainWorld.Shaders["FlatLight"], color = color };
+            for (int i = 0; i < 4; i++)
             {
-                //EmgTxCustom.Log(regions[i]);
-                if (regions[i] == string.Empty || CreateEnemyOrNot.Contains(regions[i])) continue;
-                CreateEnemyOrNot.Add(regions[i]);
+                (sLeaser.sprites[0] as CustomFSprite).verticeColors[i] = color * 0.5f + Color.white * 0.5f;
             }
+            AddToContainer(sLeaser, rCam, null);
         }
 
-        public override string SaveToString(bool saveAsIfPlayerDied, bool saveAsIfPlayerQuit)
+        public override void AddToContainer(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContatiner)
         {
-            if (saveAsIfPlayerDied || saveAsIfPlayerQuit) return origSaveData;
-            if (CreateEnemyOrNot.Count == 0) return "";
-            string result = "";
-            for (int i = 0; i < CreateEnemyOrNot.Count; i++)
+            if (newContatiner == null)
+                newContatiner = rCam.ReturnFContainer("HUD");
+            foreach(var sprite in sLeaser.sprites)
+                newContatiner.AddChild(sprite);
+        }
+
+        public override void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+        {
+            base.DrawSprites(sLeaser, rCam, timeStacker, camPos);
+
+            (sLeaser.sprites[0] as CustomFSprite).MoveVertice(0, pos + Vector2.left * 15f - camPos);
+            (sLeaser.sprites[0] as CustomFSprite).MoveVertice(1, pos + Vector2.up * 20f - camPos);
+            (sLeaser.sprites[0] as CustomFSprite).MoveVertice(2, pos + Vector2.right * 15f - camPos);
+            (sLeaser.sprites[0] as CustomFSprite).MoveVertice(3, pos - camPos);
+
+            for (int i = 0; i < 4; i++)
             {
-                result += CreateEnemyOrNot[i];
-                result += "_";
+                (sLeaser.sprites[0] as CustomFSprite).verticeColors[i].a = life / 80f;
             }
-            //EmgTxCustom.Log(result);
-            return result;
+
+            sLeaser.sprites[1].SetPosition(pos - camPos);
+            sLeaser.sprites[1].width = 10f;
+            sLeaser.sprites[1].height = 15f;
+            sLeaser.sprites[1].alpha = life / 80f;
+
+            sLeaser.sprites[2].SetPosition(pos - camPos);
+            sLeaser.sprites[2].scale = 10f * life / 80f;
+            sLeaser.sprites[2].alpha = life / 80f;
         }
 
-        public override string ToString()
+        public override void Update(bool eu)
         {
-            return base.ToString() + " " + SaveToString(false, false);
+            base.Update(eu);
+            if (life > 0)
+                life--;
+            else
+                Destroy();
+        }
+    }
+
+    internal class UpgradationGainData : GainDataImpl
+    {
+        public override GainID GainID => UpgradationGainEntry.UpgradationGainID;
+    }
+
+    internal class UpgradationGainEntry : GainEntry
+    {
+        public static GainID UpgradationGainID = new GainID("Upgradation", true);
+
+        public override void OnEnable()
+        {
+            GainRegister.RegisterGain<UpgradationGain, UpgradationGainData, UpgradationGainEntry>(UpgradationGainID);
         }
 
-        public bool isThisRegionSpawnOrNot(Region region)
+        public static void HookOn()
         {
-            return CreateEnemyOrNot.Contains(region.name);
-        }
-
-        public void SpawnEnemyInNewRegion(Region region)
-        {
-            CreateEnemyOrNot.Add(region.name);
         }
     }
 }

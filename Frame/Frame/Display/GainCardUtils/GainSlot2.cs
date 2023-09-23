@@ -452,7 +452,7 @@ namespace RandomGains.Frame.Display
             if (GainStaticDataLoader.GetStaticData(card.bindCard.ID).triggerable && GainPool.Singleton.TryGetGain(card.bindCard.ID, out var gain) && gain.Triggerable)
             {
                 card.NewTransformer(new ActiveGainRepresentTransformer(card, 
-                    gain.onTrigger(Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)));
+                    gain.Trigger(Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)));
             }
         }
 

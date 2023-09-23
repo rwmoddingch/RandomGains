@@ -71,10 +71,10 @@ namespace RandomGains.Frame.Display
             if(owner != null)
                 NewTransformer(new StaticHoverPosTransformer(this));
 
-            EmgTxCustom.Log($"{GainPool.Singleton},{GainPool.Singleton.TryGetGain(card.ID, out var _)}");
             if(GainPool.Singleton != null && GainPool.Singleton.TryGetGain(card.ID, out var gain) && gain is IOwnCardTimer timerOwner)
             {
                 timer = new CardTimer(Container, timerOwner);
+                timer.setAlpha = show ? 0f : 1f;
                 EmgTxCustom.Log("Add card timer");
             }
         }
@@ -87,7 +87,7 @@ namespace RandomGains.Frame.Display
             bindCard?.Update();
             if(timer != null && bindCard != null)
             {
-                timer.pos = bindCard.pos;
+                timer.pos = bindCard.pos + Vector2.down * bindCard.size * (bindCard.origVertices[0].y - bindCard.origVertices[3].y) / 2f;
                 timer.Update();
             }
         }
@@ -121,6 +121,7 @@ namespace RandomGains.Frame.Display
                 selector.currentSelectedRepresent = null;
                 NewTransformer(new StaticHoverPosTransformer(this));
             }
+            if(timer != null) timer.setAlpha = show ? 0f : 1f;
         }
 
         public void BringTop()

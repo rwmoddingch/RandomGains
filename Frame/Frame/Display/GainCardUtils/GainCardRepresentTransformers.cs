@@ -91,8 +91,8 @@ namespace RandomGains.Frame.Display
 
             GainType gainType = represent.bindCard.staticData.GainType;
 
-            size = represent.show ? 10f : 2f;
-            Vector2 UpMid = new Vector2(Custom.rainWorld.options.ScreenSize.x / 2f, Custom.rainWorld.options.ScreenSize.y - (gainType == GainType.Positive ? 40f : 80f));
+            size = represent.show ? 10f : 4f;
+            Vector2 UpMid = new Vector2(Custom.rainWorld.options.ScreenSize.x / 2f, Custom.rainWorld.options.ScreenSize.y - (gainType == GainType.Positive ? 40f : 100f));
             float delta = Index - (gainType == GainType.Positive ? represent.owner.positiveSlotMidIndex : represent.owner.notPositveSlotMidIndex);
             Vector2 verticalDelta = new Vector2(delta * size * 10f, 0f);
             Vector2 horizontalDelta = new Vector2(0f, represent.show ? -1f : 0f);
@@ -110,8 +110,8 @@ namespace RandomGains.Frame.Display
 
             GainType gainType = represent.bindCard.staticData.GainType;
 
-            size = Mathf.Lerp(size, represent.show ? 10f : 2f, 0.15f);
-            Vector2 UpMid = new Vector2(Custom.rainWorld.options.ScreenSize.x / 2f, Custom.rainWorld.options.ScreenSize.y - (gainType == GainType.Positive ? 40f : 80f));
+            size = Mathf.Lerp(size, represent.show ? 10f : 4f, 0.15f);
+            Vector2 UpMid = new Vector2(Custom.rainWorld.options.ScreenSize.x / 2f, Custom.rainWorld.options.ScreenSize.y - (gainType == GainType.Positive ? 40f : 100f));
             float delta = represent.InTypeIndex - (gainType == GainType.Positive ? represent.owner.positiveSlotMidIndex : represent.owner.notPositveSlotMidIndex);
             Vector2 verticalDelta = new Vector2(delta * size * 10f, 0f);
             Vector2 horizontalDelta = new Vector2(0f, represent.show ? -1f : 0f);

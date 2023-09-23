@@ -10,17 +10,18 @@ namespace RandomGains.Frame.Display
 {
     internal class CardTimer
     {
-        public readonly float width = 25f;
+        public readonly float width = 8f;
 
         public FContainer container;
         public IOwnCardTimer owner;
 
-        public int Number => owner.CurrentCount;
-        public int NextNumber => owner.CurrentCount - 1;
+        int lastNumber;
+        int adder;
+        public int Number => Mathf.FloorToInt(floatCounter);
+        public int NextNumber => Mathf.FloorToInt(floatCounter) + 1;
 
         public float lastFloatCounter;
         public float floatCounter;
-
 
         public int effectiveCurrentCount;
         public int effectiveNextCount;
@@ -28,7 +29,11 @@ namespace RandomGains.Frame.Display
         public Vector2 lastPos;
         public Vector2 pos;
 
-        public float scale;
+        public float scale = 0.6f;
+
+        public float setAlpha;
+        public float lastAlpha;
+        public float alpha;
 
         public List<SingleNumber> numbers = new List<SingleNumber>();
 
@@ -37,25 +42,35 @@ namespace RandomGains.Frame.Display
             this.container = container;
             this.owner = ownCardTimer;
             floatCounter = Number;
+            lastNumber = Number;
         }
 
         public void Update()
         {
             lastPos = pos;
             lastFloatCounter = floatCounter;
-            floatCounter = Mathf.Lerp(floatCounter, Number, 0.15f);
+            floatCounter = Mathf.Lerp(floatCounter, owner.CurrentCount, 0.15f);
 
-            UpdateNumberText();
+            lastAlpha = alpha;
+            alpha = Mathf.Lerp(lastAlpha, setAlpha * (owner.HideBelowZero && owner.CurrentCount <= 0 ? 0f : 1f), 0.15f);
+
+            if (lastNumber < Number)
+                adder = -1;
+            else if (lastNumber > Number)
+                adder = 1;
+            lastNumber = Number;
 
             foreach(var number in numbers)
             {
                 number.Update();
             }
+            EmgTxCustom.Log($"{floatCounter - NextNumber}");
         }
 
         public void DrawSprites(float timeStacker)
         {
-            foreach(var number in numbers)
+            UpdateNumberText();
+            foreach (var number in numbers)
             {
                 number.DrawSprites(timeStacker);
             }
@@ -139,8 +154,8 @@ namespace RandomGains.Frame.Display
 
             public void InitiateSprite()
             {
-                num_1 = new FLabel(Custom.GetDisplayFont(), "");
-                num_2 = new FLabel(Custom.GetDisplayFont(), "");
+                num_1 = new FLabel(Custom.GetDisplayFont(), "") { isVisible = true ,anchorX = 0.5f, anchorY = 0.5f};
+                num_2 = new FLabel(Custom.GetDisplayFont(), "") { isVisible = true ,anchorX = 0.5f, anchorY = 0.5f};
 
                 timer.container.AddChild(num_1);
                 timer.container.AddChild(num_2);
@@ -148,26 +163,34 @@ namespace RandomGains.Frame.Display
 
             public void Update()
             {
-                //wawa update
             }
 
             public void DrawSprites(float timeStacker)
             {
                 Vector2 center = Vector2.Lerp(timer.lastPos, timer.pos, timeStacker);
-                Vector2 anchorPosCurrent = new Vector2((timer.effectiveCurrentCount / 2f - digit) * timer.width + center.x, center.y);
-                Vector2 anchirPosNext = new Vector2((timer.effectiveNextCount / 2f - digit) * timer.width + center.x, center.y);
+                Vector2 anchorPosCurrent = new Vector2(((timer.effectiveCurrentCount - 1) / 2f - digit) * timer.width + center.x, center.y);
+                Vector2 anchirPosNext = new Vector2(((timer.effectiveNextCount - 1) / 2f - digit) * timer.width + center.x, center.y);
 
                 float decimalPart = Mathf.Lerp(timer.lastFloatCounter, timer.floatCounter, timeStacker) - timer.NextNumber;
+
+                while (decimalPart > 1)
+                    decimalPart--;
+                while (decimalPart < 0)
+                    decimalPart++;
+
+                float alpha = Mathf.Lerp(timer.lastAlpha, timer.alpha, timeStacker);
                 if (num_1.text == num_2.text)
                     decimalPart = 0f;//两数相同的时候该位没有变化。
 
                 num_1.SetPosition(anchorPosCurrent + new Vector2(0f, -Mathf.Sin(decimalPart * Mathf.PI / 2f) * timer.width));
                 num_1.scaleY = Mathf.Cos(decimalPart * Mathf.PI / 2f) * timer.scale;
-                num_1.alpha = Mathf.Cos(decimalPart * Mathf.PI / 2f);
+                num_1.alpha = Mathf.Cos(decimalPart * Mathf.PI / 2f) * alpha;
+                num_1.scaleX = timer.scale;
 
-                num_2.SetPosition(anchirPosNext + new Vector2(0f, Mathf.Sin((decimalPart + 1f) * Mathf.PI / 2f) * timer.width));
-                num_2.scaleY = Mathf.Cos((decimalPart + 1f) * Mathf.PI / 2f) * timer.scale;
-                num_2.alpha = Mathf.Cos((decimalPart + 1f) * Mathf.PI / 2f);
+                num_2.SetPosition(anchirPosNext + new Vector2(0f, Mathf.Sin((decimalPart + 1) * Mathf.PI / 2f) * timer.width));
+                num_2.scaleY = Mathf.Cos((decimalPart - 1) * Mathf.PI / 2f) * timer.scale;
+                num_2.scaleX = timer.scale;
+                num_2.alpha = Mathf.Cos((decimalPart - 1) * Mathf.PI / 2f) * alpha;
             }
 
             public void ClearSprites()

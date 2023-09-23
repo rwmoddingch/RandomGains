@@ -271,7 +271,7 @@ namespace RandomGains.Frame.Display.GainHUD
             if (card.staticData.triggerable && GainPool.Singleton.TryGetGain(card.ID, out var gain) && gain.Triggerable)
             {
                 card.TryAddAnimation(GainCard.CardAnimationID.HUD_CardRightAnimation,
-                    new HUD_CardRightAnimationArg(gain.onTrigger(Game), pos));
+                    new HUD_CardRightAnimationArg(gain.Trigger(Game), pos));
             }
         }
         public void CardReset()
