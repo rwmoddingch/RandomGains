@@ -80,10 +80,10 @@ namespace RandomGains
             {
                 EmgTxCustom.Log("Plugins : Space pressed");
 
-                GainPool.Singleton.EnableGain(new GainID("PoppingCandy"));
-                GainPool.Singleton.EnableGain(new GainID("WalkingMushroom"));
-                GainPool.Singleton.EnableGain(new GainID("HardenedMask"));
-                GainPool.Singleton.EnableGain(new GainID("NMR"));
+                GainPool.Singleton.EnableGain(new GainID("DeathFreeMedallion"));
+                GainPool.Singleton.EnableGain(new GainID("Upgradation"));
+                GainPool.Singleton.EnableGain(new GainID("LightSpeedSpear"));
+                GainPool.Singleton.EnableGain(new GainID("UnlimitedFirepower"));
 
                 //foreach(var id in GainID.values.entries)
                 //{

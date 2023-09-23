@@ -24,7 +24,6 @@ namespace BuiltinGains.Duality
     internal class NMRGainEntry : GainEntry
     {
         public static GainID NMRGainID = new GainID("NMR", true);
-        static int count = 40;
 
         public override void OnEnable()
         {
@@ -39,6 +38,8 @@ namespace BuiltinGains.Duality
         private static void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
             orig.Invoke(self, eu);
+            if (self.room == null)
+                return; 
             if (self.room.gravity == 0)
                 return;
 
@@ -62,8 +63,6 @@ namespace BuiltinGains.Duality
                     chunk.vel += Vector2.up * self.room.gravity * 0.15f;
                 }
             }
-
-
             //if (Input.GetMouseButtonDown(0))
             //{
             //    Vector2 pos = new Vector2(Futile.mousePosition.x, Futile.mousePosition.y) + self.room.game.cameras[0].pos;

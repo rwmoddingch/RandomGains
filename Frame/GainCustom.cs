@@ -35,6 +35,17 @@ namespace RandomGains
             return c.y;
         }
 
+        public static float CubicBezier(float ax, float ay, float bx, float by, float t)
+        {
+            Vector2 a = Vector2.zero;
+            Vector2 a2 = new Vector2(ax, ay);
+            Vector2 b = new Vector2(bx, by);
+            Vector2 b2 = Vector2.one;
+            Vector2 c = Vector2.Lerp(a, a2, t);
+            Vector2 c2 = Vector2.Lerp(b, b2, t);
+            return Vector2.Lerp(c, c2, t).y;
+        }
+
         public static T GetUninit<T>()
         {
             return (T)FormatterServices.GetUninitializedObject(typeof(T));

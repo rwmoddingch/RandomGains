@@ -18,6 +18,7 @@ namespace RandomGains.Frame.Display
         public GainSlot2 owner;
         public GainRepresentSelector selector;
         public GainCard bindCard;
+        public CardTimer timer;
 
         public bool show;
         public bool slateForDeletion;
@@ -69,7 +70,13 @@ namespace RandomGains.Frame.Display
             AddCardEvents();
             if(owner != null)
                 NewTransformer(new StaticHoverPosTransformer(this));
-          
+
+            EmgTxCustom.Log($"{GainPool.Singleton},{GainPool.Singleton.TryGetGain(card.ID, out var _)}");
+            if(GainPool.Singleton != null && GainPool.Singleton.TryGetGain(card.ID, out var gain) && gain is IOwnCardTimer timerOwner)
+            {
+                timer = new CardTimer(Container, timerOwner);
+                EmgTxCustom.Log("Add card timer");
+            }
         }
 
         public void Update()
@@ -78,6 +85,11 @@ namespace RandomGains.Frame.Display
             TransformerUpdate();
 
             bindCard?.Update();
+            if(timer != null && bindCard != null)
+            {
+                timer.pos = bindCard.pos;
+                timer.Update();
+            }
         }
 
         public void Draw(float timeStacker)
@@ -85,6 +97,7 @@ namespace RandomGains.Frame.Display
             bindCard?.DrawSprites(timeStacker);
             TransformerUpdateSmooth(timeStacker);
             DrawSelectorRect(timeStacker);
+            timer?.DrawSprites(timeStacker);
         }
 
         public void Destroy()
@@ -97,6 +110,7 @@ namespace RandomGains.Frame.Display
 
             owner?.RemoveRepresent(this);
             selector.UnregisterRepresent(this);
+            timer?.ClearSprites();
         }
 
         public void ToggleShow(bool show)
