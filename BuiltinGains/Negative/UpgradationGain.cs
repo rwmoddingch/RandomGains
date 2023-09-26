@@ -28,6 +28,8 @@ namespace BuiltinGains.Negative
         public UpgradationGain() : base()
         {
             _timer = 30 * 40;
+
+           
             //enemyCreator = new EnemyCreator();
         }
 

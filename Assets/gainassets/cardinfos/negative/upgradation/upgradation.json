@@ -1,0 +1,10 @@
+{
+    "faceName": "upgradation",
+    "gainID" : "Upgradation",
+    "gainType" : "Negative",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "提升",
+    "gainDescription" : "每过一段时间提升一个房间内可以提升的生物",
+    "color" : "#FF019F"
+}

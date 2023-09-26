@@ -50,5 +50,24 @@ namespace RandomGains
         {
             return (T)FormatterServices.GetUninitializedObject(typeof(T));
         }
+
+        public static float PointToSegDist(float x, float y, float x1, float y1, float x2, float y2)
+        {
+            float cross = (x2 - x1) * (x - x1) + (y2 - y1) * (y - y1);
+            if (cross <= 0) return Mathf.Sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1));
+
+            float d2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+            if (cross >= d2) return Mathf.Sqrt((x - x2) * (x - x2) + (y - y2) * (y - y2));
+
+            float r = cross / d2;
+            float px = x1 + (x2 - x1) * r;
+            float py = y1 + (y2 - y1) * r;
+            return Mathf.Sqrt((x - px) * (x - px) + (y - py) * (y - py));
+        }
+
+        public static float PointToSegDist(Vector2 p, Vector2 a, Vector2 b)
+        {
+            return PointToSegDist(p.x, p.y, a.x, a.y, b.x, b.y);
+        }
     }
 }

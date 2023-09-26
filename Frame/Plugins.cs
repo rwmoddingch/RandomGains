@@ -19,6 +19,8 @@ using RWCustom;
 using UnityEngine;
 using RandomGains.Frame.Display.GainHUD;
 using System.Collections;
+using MoreSlugcats;
+using Random = UnityEngine.Random;
 
 #pragma warning disable CS0618
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
@@ -73,6 +75,8 @@ namespace RandomGains
             }
         }
 
+        
+
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
             orig.Invoke(self, eu);
@@ -81,9 +85,9 @@ namespace RandomGains
                 EmgTxCustom.Log("Plugins : Space pressed");
 
                 GainPool.Singleton.EnableGain(new GainID("DeathFreeMedallion"));
-                GainPool.Singleton.EnableGain(new GainID("Upgradation"));
                 GainPool.Singleton.EnableGain(new GainID("LightSpeedSpear"));
-                GainPool.Singleton.EnableGain(new GainID("UnlimitedFirepower"));
+                GainPool.Singleton.EnableGain(new GainID("Hypothermia"));
+                GainPool.Singleton.EnableGain(new GainID("ChronoLizard"));
 
                 //foreach(var id in GainID.values.entries)
                 //{

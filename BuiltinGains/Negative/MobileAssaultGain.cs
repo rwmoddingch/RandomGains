@@ -7,6 +7,7 @@ using On.Menu;
 using RandomGains;
 using RandomGains.Frame.Core;
 using RandomGains.Gains;
+using UnityEngine;
 
 namespace BuiltinGains.Negative
 {
@@ -25,12 +26,12 @@ namespace BuiltinGains.Negative
         public override void OnEnable()
         {
             GainRegister.RegisterGain<MobileAssaultGain,MobileAssaultGainData,MobileAssaultGainEntry>(mobileAssaultGainID);
-            GainRegister.PriorityQueue(mobileAssaultGainID);
         }
 
         public static void HookOn()
         {
-            On.Lizard.ctor += Lizard_ctor; ;
+            On.Lizard.ctor += Lizard_ctor;
+            
         }
 
         private static void Lizard_ctor(On.Lizard.orig_ctor orig, Lizard self, AbstractCreature abstractCreature, World world)

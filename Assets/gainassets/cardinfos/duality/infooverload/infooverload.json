@@ -1,0 +1,10 @@
+{
+    "faceName": "infooverload",
+    "gainID" : "InfoOverload",
+    "gainType" : "Duality",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "信息冗余",
+    "gainDescription" : "将所有非彩色珍珠替换为赞美诗",
+    "color" : "#A475FF"
+}
