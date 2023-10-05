@@ -1,0 +1,10 @@
+{
+    "faceName": "TriggleableTest",
+    "gainID" : "TriggleableTest",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "true",
+    "gainName" : "面条手",
+    "gainDescription" : "可以拾取到平常两倍远的物体",
+    "color" : "#FFE0DC"
+}

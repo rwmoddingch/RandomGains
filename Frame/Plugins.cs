@@ -63,6 +63,7 @@ namespace RandomGains
                     On.Player.Update += Player_Update;
                     LoadResources(self);
                     GainRegister.InitAllGainPlugin();
+                    GainShorcutKeyBinderManager.LoadBinders();
                     load = true;
 
                     StartCoroutine(LateCreateExceptionTracker());

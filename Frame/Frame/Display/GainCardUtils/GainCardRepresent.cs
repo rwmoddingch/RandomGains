@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace RandomGains.Frame.Display
 {
@@ -54,6 +55,8 @@ namespace RandomGains.Frame.Display
             else
                 ToggleShow(false);
 
+            
+
             selector.RegisterRepresent(this, owner != null);
         }
 
@@ -77,12 +80,22 @@ namespace RandomGains.Frame.Display
                 timer.setAlpha = show ? 0f : 1f;
                 EmgTxCustom.Log("Add card timer");
             }
+
+            if (GainStaticDataLoader.GetStaticData(card.ID).triggerable)
+            {
+                binder = GainShorcutKeyBinderManager.AssignBinder(card.ID);
+                keyLabel = new FLabel(Custom.GetDisplayFont(), "");
+                keyLabel.alpha = 0f;
+                Container.AddChild(keyLabel);
+                keyLabel.text = binder.displaceKey;
+            }
         }
 
         public void Update()
         {
             InputUpdate();
             TransformerUpdate();
+            BinderUpdate();
 
             bindCard?.Update();
             if(timer != null && bindCard != null)
@@ -96,7 +109,7 @@ namespace RandomGains.Frame.Display
         {
             bindCard?.DrawSprites(timeStacker);
             TransformerUpdateSmooth(timeStacker);
-            DrawSelectorRect(timeStacker);
+            DrawSelectorRectAndLabel(timeStacker);
             timer?.DrawSprites(timeStacker);
         }
 
@@ -276,14 +289,21 @@ namespace RandomGains.Frame.Display
     }
 
     /// <summary>
-    /// 绘制选框
+    /// 绘制额外部件
     /// </summary>
     internal partial class GainCardRepresent
     {
         public FSprite background;
+        FLabel keyLabel;
         public bool enableSelectorRect;
 
-        public void DrawSelectorRect(float timeStacker)
+
+        Vector2 labelPos;
+        Vector2 lastLabelPos;
+
+        float keyLabelAlpha;
+
+        public void DrawSelectorRectAndLabel(float timeStacker)
         {
             background.alpha = (enableSelectorRect && currentHoverd) ? 1 : 0;
             if (enableSelectorRect && currentHoverd)
@@ -297,6 +317,76 @@ namespace RandomGains.Frame.Display
                 background.height = height;
             }
             //EmgTxCustom.Log($"{bindCard.ID},show {show},enable {enableSelectorRect},hoverd {currentHoverd}");
+
+            if(keyLabel != null)
+            {
+                keyLabel.SetPosition(Vector2.Lerp(lastLabelPos, labelPos, timeStacker));
+                keyLabel.alpha = keyLabelAlpha;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 按键绑定更新
+    /// </summary>
+    internal partial class GainCardRepresent
+    {
+        KeyCode lastPressKey = KeyCode.None;
+        GainShorcutKeyBinder binder;
+
+        bool lastBindKeyDown;
+
+        public void BinderUpdate()
+        {
+            if (binder == null)
+                return;
+
+            if (Input.GetKey(GainShorcutKeyBinderManager.enableBinderKey) && currentHoverd)
+            {
+                background.color = Color.cyan;
+                bool anyKeyDown = false;
+                foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode)))
+                {
+                    if (keyCode == GainShorcutKeyBinderManager.enableBinderKey || 
+                        keyCode == KeyCode.None ||
+                        keyCode == KeyCode.LeftCommand)
+                        continue;
+
+                    if (Input.GetKey(keyCode))
+                    {
+                        if(lastPressKey != keyCode)
+                        {
+                            if (keyCode == binder.bindKey)
+                                binder.AssignKey(KeyCode.None);
+                            else
+                                binder.AssignKey(keyCode);
+                            keyLabel.text = binder.displaceKey;
+                        }
+
+                        anyKeyDown = true;
+                        lastPressKey = keyCode;
+                        break;
+                    }
+                }
+                if (!anyKeyDown)
+                    lastPressKey = KeyCode.None;
+            }
+            else
+                background.color = Color.white;
+
+            if(binder.bindKey != KeyCode.None && !show)
+            {
+                bool keydown = Input.GetKey(binder.bindKey);
+                if(keydown && !lastBindKeyDown)
+                {
+                    GainPool.Singleton.TriggerGain(bindCard.ID);
+                }
+                lastBindKeyDown = keydown;
+            }
+
+            lastLabelPos = labelPos;
+            labelPos = bindCard.pos + Vector2.down * bindCard.size * (bindCard.origVertices[0].y - bindCard.origVertices[3].y) / 2f + Vector2.down * 15f;
+            keyLabelAlpha = Mathf.Lerp(keyLabelAlpha, (show && !currentSelected) ? 1f : 0f, 0.15f);
         }
     }
 
