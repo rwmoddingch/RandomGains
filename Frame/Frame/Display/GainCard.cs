@@ -13,16 +13,15 @@ using UnityEngine;
 using static RewiredConsts.Layout;
 using Random = UnityEngine.Random;
 using System.Runtime.InteropServices.ComTypes;
+using RandomGains.Frame.Utils;
 
 namespace RandomGains.Frame
 {
-
     /// <summary>
     /// 渲染部分
     /// </summary>
     public partial class GainCard
     {
-
         public class GainCardTexture
         {
             public GainID ID;
@@ -33,13 +32,27 @@ namespace RandomGains.Frame
 
             public void Destroy()
             {
-                GameObject.Destroy(cardObjectA);
-                GameObject.Destroy(cardObjectB);
-                GameObject.Destroy(cameraObject);
+                destroyed = true;
+                GainCardTexturePool.ReleaseRenderQuad(cardObjectA);
+                GainCardTexturePool.ReleaseRenderQuad(cardObjectB);
+
+                GainCardTexturePool.ReleaseCameraObject(cameraObject);
+
+                GainCardTexturePool.ReleaseTextMesh(titleObject);
+                GainCardTexturePool.ReleaseTextMesh(descObject);
+                GainCardTexturePool.ReleaseTextMesh(stackObject);
+
                 RenderTexture.ReleaseTemporary(Texture);
                 Texture = null;
             }
 
+            ~GainCardTexture()
+            {
+                if (!destroyed)
+                {
+                    Destroy();
+                }
+            }
 
             public GainCardTexture(GainCard card ,GainID gainID)
             {
@@ -48,27 +61,20 @@ namespace RandomGains.Frame
                 count++;
 
                 Texture.filterMode = FilterMode.Point;
-                cameraObject = new GameObject("GainCard_Camera");
+                cameraObject = GainCardTexturePool.GetCameraObject(Texture);
 
-                camera = cameraObject.AddComponent<Camera>();
+                cardObjectA = GainCardTexturePool.GetRenderQuad(true, StaticData, CurrentSetPos);
+                cardObjectB = GainCardTexturePool.GetRenderQuad(false, StaticData, CurrentSetPos);
 
-                cameraObject.AddComponent<Transform>();
-                cameraObject.layer = 9;
-                camera.targetTexture = Texture;
-                camera.cullingMask = 1 << 9;
-
-                cardObjectA = CreateRenderQuad(true);
-                cardObjectB = CreateRenderQuad(false);
-
-                titleObject = CreateTextMesh(true, Plugins.TitleFont,1f, StaticData.color);
-                descObject = CreateTextMesh(false, Plugins.DescFont,0.7f,Color.white);
-                stackObject = CreateTextMesh(true, Plugins.TitleFont, 0.7f, StaticData.color);
+                titleObject = GainCardTexturePool.GetTextMesh(cardObjectA, true, Plugins.TitleFont,1f, StaticData.color);
+                descObject = GainCardTexturePool.GetTextMesh(cardObjectA, false, Plugins.DescFont,0.7f,Color.white);
+                stackObject = GainCardTexturePool.GetTextMesh(cardObjectA, true, Plugins.TitleFont, 0.7f, StaticData.color);
                 stackObject.GetComponent<TextMesh>().anchor = TextAnchor.UpperRight;
 
                 stackObject.transform.localPosition = new Vector3(0, 0.5f, -0.01f);
                 cameraObject.transform.position = CurrentSetPos;
 
-                if (GainStaticDataLoader.GetStaticData(ID).stackable)
+                if (StaticData.stackable)
                 {
                     if (!GainSave.Singleton.dataMapping.ContainsKey(ID))
                     {
@@ -91,55 +97,54 @@ namespace RandomGains.Frame
                 cardObjectB.GetComponent<MeshRenderer>().enabled = !card.sideA;
                 descObject.GetComponent<MeshRenderer>().enabled = !card.sideA;
                 this.card = card;
-
             }
 
-            private GameObject CreateRenderQuad(bool isSideA)
-            {
-                var re = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                re.layer = 9;
-                re.GetComponent<MeshRenderer>().sharedMaterial =
-                    new Material(Custom.rainWorld.Shaders[Plugins.ModID + "CardBack"].shader);
-                if (!isSideA)
-                {
-                    re.GetComponent<MeshRenderer>().material.SetTexture("_MainTex",
-                        Futile.atlasManager.GetAtlasWithName(Plugins.BackElementOfType(StaticData.GainType)).texture);
-                }
-                else
-                {
-                    if(StaticData.faceElement?.atlas?.texture != null)
-                        re.GetComponent<MeshRenderer>().material.SetTexture("_MainTex",
-                            StaticData.faceElement.atlas.texture);
-                }
-                re.transform.position = CurrentSetPos + new Vector3(0,0, 1.171f);
-                re.transform.localScale = new Vector3(0.6f* (isSideA ? 1 : -1f) , 1f,1f);
-                return re;
-            }
+            //private GameObject CreateRenderQuad(bool isSideA)
+            //{
+            //    var re = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            //    re.layer = 9;
+            //    re.GetComponent<MeshRenderer>().sharedMaterial =
+            //        new Material(Custom.rainWorld.Shaders[Plugins.ModID + "CardBack"].shader);
+            //    if (!isSideA)
+            //    {
+            //        re.GetComponent<MeshRenderer>().material.SetTexture("_MainTex",
+            //            Futile.atlasManager.GetAtlasWithName(Plugins.BackElementOfType(StaticData.GainType)).texture);
+            //    }
+            //    else
+            //    {
+            //        if(StaticData.faceElement?.atlas?.texture != null)
+            //            re.GetComponent<MeshRenderer>().material.SetTexture("_MainTex",
+            //                StaticData.faceElement.atlas.texture);
+            //    }
+            //    re.transform.position = CurrentSetPos + new Vector3(0,0, 1.171f);
+            //    re.transform.localScale = new Vector3(0.6f* (isSideA ? 1 : -1f) , 1f,1f);
+            //    return re;
+            //}
 
-            private GameObject CreateTextMesh(bool isSideA, Font font, float size = 1f, Color? color = null, string text = "")
-            {
-                var re = new GameObject("GainCard_Text");
-                re.layer = 9;
+            //private GameObject CreateTextMesh(bool isSideA, Font font, float size = 1f, Color? color = null, string text = "")
+            //{
+            //    var re = new GameObject("GainCard_Text");
+            //    re.layer = 9;
 
-                re.AddComponent<Transform>();
-                re.transform.parent = cardObjectA.transform;
-                re.transform.localPosition = new Vector3(0, (isSideA ? -1 : 1) * 0.5f, -0.01f * (isSideA ? 1 : -1));
-                re.AddComponent<TextMesh>().font = font;
-                re.GetComponent<TextMesh>().text = text;
-                re.GetComponent<TextMesh>().anchor = isSideA ? TextAnchor.LowerCenter : TextAnchor.UpperCenter;
-                re.GetComponent<TextMesh>().alignment = (isSideA ? TextAlignment.Center : TextAlignment.Left);
-                //Plugins.DescFont.dynamic = true;
-                re.GetComponent<TextMesh>().fontSize = 100;
-                if (!color.HasValue) color = Color.black;
-                re.GetComponent<TextMesh>().color = color.Value;
-                re.GetComponent<TextMesh>().characterSize = 0.01f * size;
-                re.AddComponent<MeshRenderer>();
-                re.GetComponent<MeshRenderer>().material = font.material;
-                re.GetComponent<MeshRenderer>().material.renderQueue = 3998 + (isSideA ? 0 : 1);
-                re.transform.localScale = new Vector3((isSideA ? 1 : -1f) / 0.6f, 1f, 1f);
+            //    re.AddComponent<Transform>();
+            //    re.transform.parent = cardObjectA.transform;
+            //    re.transform.localPosition = new Vector3(0, (isSideA ? -1 : 1) * 0.5f, -0.01f * (isSideA ? 1 : -1));
+            //    re.AddComponent<TextMesh>().font = font;
+            //    re.GetComponent<TextMesh>().text = text;
+            //    re.GetComponent<TextMesh>().anchor = isSideA ? TextAnchor.LowerCenter : TextAnchor.UpperCenter;
+            //    re.GetComponent<TextMesh>().alignment = (isSideA ? TextAlignment.Center : TextAlignment.Left);
+            //    //Plugins.DescFont.dynamic = true;
+            //    re.GetComponent<TextMesh>().fontSize = 100;
+            //    if (!color.HasValue) color = Color.black;
+            //    re.GetComponent<TextMesh>().color = color.Value;
+            //    re.GetComponent<TextMesh>().characterSize = 0.01f * size;
+            //    re.AddComponent<MeshRenderer>();
+            //    re.GetComponent<MeshRenderer>().material = font.material;
+            //    re.GetComponent<MeshRenderer>().material.renderQueue = 3998 + (isSideA ? 0 : 1);
+            //    re.transform.localScale = new Vector3((isSideA ? 1 : -1f) / 0.6f, 1f, 1f);
 
-                return re;
-            }
+            //    return re;
+            //}
 
             public void InitiateSprites()
             {
@@ -244,6 +249,7 @@ namespace RandomGains.Frame
             private GameObject cameraObject;
 
             private static int count = 0;
+            bool destroyed;
         }
 
         public class LowPerformanceRenderer
@@ -318,6 +324,7 @@ namespace RandomGains.Frame
             cardTexture?.Hide();
             Hidden = true;
         }
+
         public FContainer InitiateSprites()
         {
             if (lowPerformanceMode)
@@ -822,16 +829,5 @@ namespace RandomGains.Frame
             public static readonly CardAnimationID HUD_CardPickAnimation = new CardAnimationID("HUD_CardPickAnimation", true);
             public static readonly CardAnimationID HUD_CardRightAnimation = new CardAnimationID("HUD_CardRightAnimation", true);
         }
-    }
-
-    public interface IGainCardOwner
-    {
-        FContainer container { get; }
-        GainCard Card { get; set; }
-        void InitiateSprites();
-        void Update();
-        void Draw(float timeStacker);
-        void Destroy();
-        void TransferCard(IGainCardOwner origin);
     }
 }

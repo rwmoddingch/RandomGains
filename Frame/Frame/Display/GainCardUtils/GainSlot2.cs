@@ -26,12 +26,14 @@ namespace RandomGains.Frame.Display
         public int changeIndexCoolDown;
 
         public bool show;
+        bool isHud;
 
         public GainSlot2(FContainer ownerContainer, bool isHud = false)
         {
             Container = new FContainer();
             ownerContainer.AddChild(Container);
 
+            this.isHud = isHud;
             if (!isHud)
                 selector = new GainRepresentSelector(this, true);
             else
@@ -41,10 +43,6 @@ namespace RandomGains.Frame.Display
             {
                 AddGain(id);
             }
-            if(selector is HUDGainRepresentSelector hudSelector)
-                hudSelector.PostInit();
-
-
         }
 
         public bool AddGain(GainID id)
@@ -57,13 +55,21 @@ namespace RandomGains.Frame.Display
 
             var represent = new GainCardRepresent(this, selector);
             var card = new GainCard(id, true);
-            card.IsMenu = !(selector is HUDGainRepresentSelector);
+            card.IsMenu = !isHud;
             card.InitiateSprites();
             represent.AddCard(card);
 
             lst.Add(represent);
             allCardHUDRepresents.Add(represent);
             idToRepresentMapping.Add(id, represent);
+
+            if (isHud)
+            {
+                represent.OnDoubleClick += (GainCardRepresent cardRepresent) =>
+                {
+                    GainPool.Singleton.TriggerGain(cardRepresent.bindCard.ID);
+                };
+            }
 
             return true;
         }
@@ -447,18 +453,9 @@ namespace RandomGains.Frame.Display
         {
         }
 
-        public void OnDoubleClick(GainCardRepresent card)
-        {
-            if (GainStaticDataLoader.GetStaticData(card.bindCard.ID).triggerable && GainPool.Singleton.TryGetGain(card.bindCard.ID, out var gain) && gain.Triggerable)
-            {
-                card.NewTransformer(new ActiveGainRepresentTransformer(card, 
-                    gain.Trigger(Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)));
-            }
-        }
-
-        public void PostInit()
-        {
-            slot.positiveCardHUDRepresents.ForEach(i => i.OnDoubleClick += OnDoubleClick);
-        }
+        //public void PostInit()
+        //{
+        //    slot.positiveCardHUDRepresents.ForEach(i => i.OnDoubleClick += OnDoubleClick);
+        //}
     }
 }

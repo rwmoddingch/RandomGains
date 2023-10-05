@@ -14,7 +14,9 @@ namespace RandomGains
 {
     public static class GainCustom
     {
-        
+        public static readonly BindingFlags StaticBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+        public static readonly BindingFlags InstanceBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
         public static Vector2 Bezier(Vector2 start, Vector2 end, Vector2 a, float t)
         {
             Vector2 a1 = Vector2.Lerp(start, a, t);

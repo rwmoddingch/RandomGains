@@ -156,6 +156,18 @@ namespace RandomGains.Frame.Core
             else
                 DisableGain(id);
         }
+
+        public void TriggerGain(GainID id, bool ignoreCheck = false)
+        {
+            if(GainPool.Singleton.TryGetGain(id, out var gain) && ((GainStaticDataLoader.GetStaticData(id).triggerable && gain.Triggerable) || ignoreCheck))
+            {
+                GainHud.Singleton.triggerBar.TriggerGain(id);
+                if (gain.Trigger(Game) && GainHud.Singleton != null)
+                {
+                    
+                }
+            }
+        }
         
         /// <summary>
         /// 注册增益类型，获取增益id与对应增益实例的构造方法。

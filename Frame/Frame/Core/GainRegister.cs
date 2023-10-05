@@ -161,7 +161,5 @@ namespace RandomGains.Gains
         {
             
         }
-
     }
-
 }

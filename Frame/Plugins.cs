@@ -86,8 +86,8 @@ namespace RandomGains
 
                 GainPool.Singleton.EnableGain(new GainID("DeathFreeMedallion"));
                 GainPool.Singleton.EnableGain(new GainID("LightSpeedSpear"));
-                GainPool.Singleton.EnableGain(new GainID("Hypothermia"));
-                GainPool.Singleton.EnableGain(new GainID("ChronoLizard"));
+                GainPool.Singleton.EnableGain(new GainID("TriggleableTest"));
+                GainPool.Singleton.EnableGain(new GainID("Upgradation"));
 
                 //foreach(var id in GainID.values.entries)
                 //{

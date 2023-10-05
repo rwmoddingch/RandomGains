@@ -177,7 +177,6 @@ namespace RandomGains.Frame.Core
                 DynamicMethodDefinition method =
                     new DynamicMethodDefinition($"GainDataCtor_{gainID}", typeof(Gain), Type.EmptyTypes);
 
-           
                 var ilGenerator = method.GetILGenerator();
                 ilGenerator.DeclareLocal(typeof(GainData));
                 ilGenerator.DeclareLocal(type);

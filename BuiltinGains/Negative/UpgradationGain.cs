@@ -28,9 +28,6 @@ namespace BuiltinGains.Negative
         public UpgradationGain() : base()
         {
             _timer = 30 * 40;
-
-           
-            //enemyCreator = new EnemyCreator();
         }
 
         public override void Update(RainWorldGame game)
@@ -40,7 +37,14 @@ namespace BuiltinGains.Negative
                 _timer--;
 
             if (_timer == 0)
-                CheckRoom(game);
+            {
+                CheckRoom(game); 
+            }
+        }
+
+        public override bool Trigger(RainWorldGame game)
+        {
+            return false;
         }
 
         public void CheckRoom(RainWorldGame game)
@@ -79,6 +83,7 @@ namespace BuiltinGains.Negative
                     target.abstractCreature.Destroy();
                 }
                 _timer = 30 * 40;
+                GainPool.Singleton.TriggerGain(GainID, true);
             }
         }
 

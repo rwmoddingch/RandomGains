@@ -39,8 +39,6 @@ namespace RandomGains.Frame.Core
 
     }
 
-
-
     public class GainData
     {
         public object dataImpl;

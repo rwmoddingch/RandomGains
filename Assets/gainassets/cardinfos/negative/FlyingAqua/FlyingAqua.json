@@ -1,0 +1,10 @@
+{
+    "faceName": "FlyingAqua",
+    "gainID" : "FlyingAqua",
+    "gainType" : "Negative",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "飞蜈出水",
+    "gainDescription" : "水蜈蚣在空气中也能游泳了，并且游的更快",
+    "color" : "#7B646D"
+}
