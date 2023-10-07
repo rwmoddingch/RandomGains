@@ -1,0 +1,11 @@
+CARDPEDIA|增益图鉴
+POSITIVE GAIN|正面增益
+NEGATIVE GAIN|负面增益
+DUALITY GAIN|中性增益
+Activation: |触发方式：
+Description: |效果描述：
+Automatically|自动触发
+Manually|手动触发
+Stackability: |可叠加性：
+Stackable|可以叠加
+Unstackable|不可叠加
