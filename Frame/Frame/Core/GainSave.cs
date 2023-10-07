@@ -16,7 +16,7 @@ using OpCodes = System.Reflection.Emit.OpCodes;
 
 namespace RandomGains.Frame.Core
 {
-    internal class GainSave : DeathPersistentSaveDataTx
+    public class GainSave : DeathPersistentSaveDataTx
     {
         public static GainSave Singleton { get; private set; }
         public override string header => "GAINSAVE";
@@ -177,7 +177,6 @@ namespace RandomGains.Frame.Core
                 DynamicMethodDefinition method =
                     new DynamicMethodDefinition($"GainDataCtor_{gainID}", typeof(Gain), Type.EmptyTypes);
 
-           
                 var ilGenerator = method.GetILGenerator();
                 ilGenerator.DeclareLocal(typeof(GainData));
                 ilGenerator.DeclareLocal(type);
@@ -190,6 +189,7 @@ namespace RandomGains.Frame.Core
                 ilGenerator.Emit(OpCodes.Stfld, typeof(GainData).GetField("dataImpl"));
                 EmitFunction(ilGenerator, type, "ParseData", new[] { typeof(string) });
                 EmitFunction(ilGenerator, type, "SteppingCycle", Type.EmptyTypes);
+                EmitFunction(ilGenerator, type, "Stack", Type.EmptyTypes);
                 EmitFunction(ilGenerator, type, "UnStack", Type.EmptyTypes);
                 EmitFunction(ilGenerator, type, "CanStackMore", Type.EmptyTypes);
                 EmitFunction(ilGenerator, type, "Init", Type.EmptyTypes);

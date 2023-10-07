@@ -35,6 +35,8 @@ namespace RandomGains.Frame.Display
 
         public override bool ForceTransform(float t)
         {
+            if(t == 1f)
+                represent.enableSelectorRect = true;
             return t < 1f;
         }
     }
@@ -89,9 +91,9 @@ namespace RandomGains.Frame.Display
 
             GainType gainType = represent.bindCard.staticData.GainType;
 
-            size = represent.show ? 10f : 2f;
-            Vector2 UpMid = new Vector2(Custom.rainWorld.options.ScreenSize.x / 2f, Custom.rainWorld.options.ScreenSize.y - (gainType == GainType.Positive ? 40f : 80f));
-            float delta = Index - represent.owner.positiveSlotMidIndex;
+            size = represent.show ? 10f : 4f;
+            Vector2 UpMid = new Vector2(Custom.rainWorld.options.ScreenSize.x / 2f, Custom.rainWorld.options.ScreenSize.y - (gainType == GainType.Positive ? 40f : 100f));
+            float delta = Index - (gainType == GainType.Positive ? represent.owner.positiveSlotMidIndex : represent.owner.notPositveSlotMidIndex);
             Vector2 verticalDelta = new Vector2(delta * size * 10f, 0f);
             Vector2 horizontalDelta = new Vector2(0f, represent.show ? -1f : 0f);
             horizontalDelta *= gainType == GainType.Positive ? 200f : 400f;
@@ -108,14 +110,16 @@ namespace RandomGains.Frame.Display
 
             GainType gainType = represent.bindCard.staticData.GainType;
 
-            size = Mathf.Lerp(size, represent.show ? 10f : 2f, 0.15f);
-            Vector2 UpMid = new Vector2(Custom.rainWorld.options.ScreenSize.x / 2f, Custom.rainWorld.options.ScreenSize.y - (gainType == GainType.Positive ? 40f : 80f));
-            float delta = represent.InTypeIndex - represent.owner.positiveSlotMidIndex;
+            size = Mathf.Lerp(size, represent.show ? 10f : 4f, 0.15f);
+            Vector2 UpMid = new Vector2(Custom.rainWorld.options.ScreenSize.x / 2f, Custom.rainWorld.options.ScreenSize.y - (gainType == GainType.Positive ? 40f : 100f));
+            float delta = represent.InTypeIndex - (gainType == GainType.Positive ? represent.owner.positiveSlotMidIndex : represent.owner.notPositveSlotMidIndex);
             Vector2 verticalDelta = new Vector2(delta * size * 10f, 0f);
             Vector2 horizontalDelta = new Vector2(0f, represent.show ? -1f : 0f);
             horizontalDelta *= gainType == GainType.Positive ? 200f : 400f;
 
             pos = Vector2.Lerp(pos, UpMid + verticalDelta + horizontalDelta, 0.15f);
+
+            represent.enableSelectorRect = represent.show && represent.transformer_tInSpan == 1f;
         }
 
 
@@ -150,6 +154,7 @@ namespace RandomGains.Frame.Display
             base.Update();
             size = 40f;
             pos = Custom.rainWorld.options.ScreenSize / 2f;
+            represent.enableSelectorRect = false;
         }
 
         public override void SwitchTo(GainRepresentTransformer newTransformer)
@@ -162,6 +167,64 @@ namespace RandomGains.Frame.Display
         {
             return t < 1f;
         }
+    }
+
+    class ActiveGainRepresentTransformer : GainRepresentTransformer
+    {
+        public ActiveGainRepresentTransformer(GainCardRepresent represent,bool back) : base(represent)
+        {
+            this.back = back;
+            size = 20f;
+            pos = Custom.rainWorld.screenSize - new Vector2(6, 10) * (size + 3);
+            represent.selector.currentSelectedRepresent = null;
+        }
+        public override void Update()
+        {
+            base.Update();
+            counter++;
+            if (counter > 20 && back)
+            {
+                if(counter ==30)
+                    represent.bindCard.Hide();
+                represent.bindCard.fadeTimer =
+                    Mathf.Pow(Mathf.Min(Mathf.InverseLerp(20, 40, counter), Mathf.InverseLerp(50, 40, counter)), 0.3f);
+            }
+
+            if (counter == 40)
+            {
+                if (!back)
+                {
+                    represent.Destroy();
+                    GainPool.Singleton.UnstackGain(represent.bindCard.ID);
+                }
+                else
+                {
+                    represent.BringBack();
+                    represent.bindCard.SwitchToLowPerformanceMode();
+                }
+            }
+            represent.enableSelectorRect = false;
+        }
+
+
+        public override void SwitchTo(GainRepresentTransformer newTransformer)
+        {
+            base.SwitchTo(newTransformer);
+            newTransformer.rotation = new Vector3(rotation.x, rotation.y - 360, rotation.z);
+        }
+
+        public override bool ForceTransform(float t)
+        {
+            return t < 1f;
+        }
+
+        public override void TransformerFinish()
+        {
+            base.TransformerFinish();
+        }
+
+        private bool back;
+        private int counter = 0;
     }
 
     internal abstract class GainRepresentTransformer

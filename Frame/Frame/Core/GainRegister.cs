@@ -21,7 +21,8 @@ namespace RandomGains.Gains
         };
         public static Dictionary<GainID, GainType> idToTypeMapping = new Dictionary<GainID, GainType>();
 
-        public static Dictionary<GainProperty, List<GainID>> typeToGainPropertyMapping = new Dictionary<GainProperty, List<GainID>>(){
+        public static Dictionary<GainProperty, List<GainID>> typeToGainPropertyMapping = new Dictionary<GainProperty, List<GainID>>()
+        {
             {GainProperty.Normal, new List<GainID>()},
             {GainProperty.Special, new List<GainID>()},
         };
@@ -31,6 +32,8 @@ namespace RandomGains.Gains
         {
             if (GainSave.Singleton == null)
                 return null;
+
+
             List<GainID> result = new List<GainID>();
             for(int i = 0;i < 3; i++)
             {
@@ -38,8 +41,18 @@ namespace RandomGains.Gains
                     result.Add(GainSave.Singleton.priorityQueue[i]);
                 else
                 {
-                    var lst = typeToIDMapping[gainType];
-                    result.Add(lst[Random.Range(0, lst.Count)]);
+                    if (gainType == GainType.Negative || gainType == GainType.Duality)
+                    {
+                        var maxCount = typeToIDMapping[GainType.Negative].Count + typeToIDMapping[GainType.Duality].Count;
+                        var randIndex = Random.Range(0, maxCount);
+                        result.Add(typeToIDMapping[randIndex < typeToIDMapping[GainType.Negative].Count ? GainType.Negative : GainType.Duality]
+                            [randIndex < typeToIDMapping[GainType.Negative].Count ? randIndex : randIndex - typeToIDMapping[GainType.Negative].Count]);
+                    }
+                    else
+                    {
+                        result.Add(typeToIDMapping[gainType][Random.Range(0, typeToIDMapping[gainType].Count)]);
+
+                    }
                 }
             }
             return result.ToArray();
@@ -56,7 +69,7 @@ namespace RandomGains.Gains
         {
             if (GainStaticDataLoader.GetStaticData(id) == null)
             {
-                Debug.LogError($"[Random Gains] Missing static data for gain: {id}");
+                Debug.LogError($"[Random Gains] Missing static data for gain: {id}");  
                 return;
             }
 
@@ -91,34 +104,39 @@ namespace RandomGains.Gains
 
         public static void InitAllGainPlugin()
         {
-            DirectoryInfo info = new DirectoryInfo(AssetManager.ResolveDirectory("gainplugins"));
-            foreach (var file in info.GetFiles("*.dll"))
+            foreach(var mod in ModManager.ActiveMods)
             {
-                var assembly = Assembly.LoadFile(file.FullName);
-                foreach (var type in assembly.GetTypes())
+                string path = mod.path + Path.DirectorySeparatorChar + "gainplugins";
+                if (!Directory.Exists(path))
+                    continue;
+                EmgTxCustom.Log($"Find correct path in {mod.id} to load plugins");
+                DirectoryInfo info = new DirectoryInfo(path);
+                foreach (var file in info.GetFiles("*.dll"))
                 {
-                    bool isEntry = false;
-                    var baseType = type.BaseType;
-                    while (baseType != null)
+                    var assembly = Assembly.LoadFile(file.FullName);
+                    foreach (var type in assembly.GetTypes())
                     {
-                        if (baseType == typeof(GainEntry))
+                        bool isEntry = false;
+                        var baseType = type.BaseType;
+                        while (baseType != null)
                         {
-                            isEntry = true;
-                            break;
+                            if (baseType == typeof(GainEntry))
+                            {
+                                isEntry = true;
+                                break;
+                            }
+                            baseType = baseType.BaseType;
                         }
-                        baseType = baseType.BaseType;
 
-                    }
-
-                    if (isEntry)
-                    {
-                        var obj = type.GetConstructor(Type.EmptyTypes).Invoke(Array.Empty<object>());
-                        type.GetMethod("OnEnable").Invoke(obj,Array.Empty<object>());
-                        EmgTxCustom.Log($"Invoke {type.Name}.OnEnable");
+                        if (isEntry)
+                        {
+                            var obj = type.GetConstructor(Type.EmptyTypes).Invoke(Array.Empty<object>());
+                            type.GetMethod("OnEnable").Invoke(obj, Array.Empty<object>());
+                            EmgTxCustom.Log($"Invoke {type.Name}.OnEnable");
+                        }
                     }
                 }
-
-            }
+            }        
         }
 
         static void BuildID(GainID id)
@@ -127,6 +145,9 @@ namespace RandomGains.Gains
             //TODO : Debug
             typeToIDMapping[GainType.Positive].Add(id);
             idToTypeMapping.Add(id, GainType.Positive);
+
+            typeToIDMapping[GainType.Negative].Add(id);
+
             typeToGainPropertyMapping[GainProperty.Normal].Add(id);
             idToGainPropertyMapping.Add(id, GainProperty.Normal);
 
@@ -140,7 +161,5 @@ namespace RandomGains.Gains
         {
             
         }
-
     }
-
 }

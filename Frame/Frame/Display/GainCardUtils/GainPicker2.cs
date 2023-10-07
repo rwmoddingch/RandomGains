@@ -20,13 +20,13 @@ namespace RandomGains.Frame.Display
         int sendChoiceCounter = 20;
         int currentSendIndex;
 
-        bool show = true;
+        private int clickCounter = 0;
+        private int waitClickCounter = 0;
+        private int clickCount = 0;
 
         FContainer Container;
 
         List<GainCardRepresent> represents = new List<GainCardRepresent>();
-
-
         public GainPicker2(GainMenu menu)
         {
             gainMenu = menu;
@@ -58,6 +58,7 @@ namespace RandomGains.Frame.Display
                     {
                         size = 0f
                     };
+                    card.IsMenu = !(gainMenu.selector is HUDGainRepresentSelector);
                     card.InitiateSprites();
                     cardRepresent.AddCard(card);
                     represents.Add(cardRepresent);
@@ -67,19 +68,19 @@ namespace RandomGains.Frame.Display
                     cardRepresent.NewTransformer(new PickerBeforeFlyInHoverPosTransformer(cardRepresent));
                     cardRepresent.NewTransformer(new PickerStaticHoverPosTransformer(cardRepresent, mid));
                     cardRepresent.OnDoubleClick += Card_OnDoubleClick;
+                    
                     sendChoiceCounter = 20;
                     currentSendIndex++;
                 }
             }
-
+            //KeyBoardUpdate();
             bool allRepresentDestroy = represents.Count > 0;
-            foreach (var represent in represents)
+            for (int i = 0; i < represents.Count; i++)
             {
+                var represent = represents[i];
                 represent.Update();
                 allRepresentDestroy = allRepresentDestroy && represent.slateForDeletion;
-                represent.inputEnable = show;
             }
-
             if (allRepresentDestroy)
                 Destroy();
         }
@@ -105,6 +106,16 @@ namespace RandomGains.Frame.Display
             //选中的卡移动到slot内，其他的让他滚出屏幕
             gainMenu.slot.MoveRepresentInside(obj);
             represents.Remove(obj);
+            obj.currentKeyboardFocused = false;
+            var save = GainSave.Singleton.GetData(obj.bindCard.ID);
+            EmgTxCustom.Log($"GainPool : gain {obj.bindCard.ID}, CanStackMore : {save.onCanStackMore()}");
+
+            if (GainStaticDataLoader.GetStaticData(obj.bindCard.ID).stackable && save.onCanStackMore())
+            {
+                EmgTxCustom.Log($"GainPool : gain {obj.bindCard.ID} add one more stack");
+                save.onStack();
+            }
+
             EmgTxCustom.Log($"gain {obj.bindCard.ID} selected");
 
             foreach(var cardRepresent in represents)

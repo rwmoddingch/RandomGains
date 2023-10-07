@@ -23,7 +23,6 @@ namespace RandomGains.Frame.Core
             Singleton = (GainT)this;
             StaticData = GainStaticDataLoader.GetStaticData(GainID);
         }
-
     }
 
     /// <summary>
@@ -42,6 +41,10 @@ namespace RandomGains.Frame.Core
         /// 当前是否是激活状态
         /// </summary>
         public virtual bool Active => false;
+
+        public GainBase()
+        {
+        }
 
         /// <summary>
         /// 点击触发方法，仅对可触发的增益有效。当返回true时，代表该增益已经完全触发，增益将会被移除

@@ -1,9 +1,12 @@
-﻿using System;
+﻿using RandomGains.Frame.Core;
+using RWCustom;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace RandomGains.Frame.Display
 {
@@ -16,6 +19,7 @@ namespace RandomGains.Frame.Display
         public GainSlot2 owner;
         public GainRepresentSelector selector;
         public GainCard bindCard;
+        public CardTimer timer;
 
         public bool show;
         public bool slateForDeletion;
@@ -33,6 +37,14 @@ namespace RandomGains.Frame.Display
         {
             Container = new FContainer();
             owner?.Container.AddChild(Container);
+
+            background = new FSprite("pixel", true)
+            {
+                isVisible = true,
+                alpha = 0f,
+            };
+            Container.AddChild(background);
+
             this.owner = owner;
             this.selector = selector;
 
@@ -42,6 +54,10 @@ namespace RandomGains.Frame.Display
                 ToggleShow(owner.show);
             else
                 ToggleShow(false);
+
+            
+
+            selector.RegisterRepresent(this, owner != null);
         }
 
         /// <summary>
@@ -57,20 +73,44 @@ namespace RandomGains.Frame.Display
             AddCardEvents();
             if(owner != null)
                 NewTransformer(new StaticHoverPosTransformer(this));
+
+            if(GainPool.Singleton != null && GainPool.Singleton.TryGetGain(card.ID, out var gain) && gain is IOwnCardTimer timerOwner)
+            {
+                timer = new CardTimer(Container, timerOwner);
+                timer.setAlpha = show ? 0f : 1f;
+                EmgTxCustom.Log("Add card timer");
+            }
+
+            if (GainStaticDataLoader.GetStaticData(card.ID).triggerable)
+            {
+                binder = GainShorcutKeyBinderManager.AssignBinder(card.ID);
+                keyLabel = new FLabel(Custom.GetDisplayFont(), "");
+                keyLabel.alpha = 0f;
+                Container.AddChild(keyLabel);
+                keyLabel.text = binder.displaceKey;
+            }
         }
 
         public void Update()
         {
             InputUpdate();
             TransformerUpdate();
+            BinderUpdate();
 
             bindCard?.Update();
+            if(timer != null && bindCard != null)
+            {
+                timer.pos = bindCard.pos + Vector2.down * bindCard.size * (bindCard.origVertices[0].y - bindCard.origVertices[3].y) / 2f;
+                timer.Update();
+            }
         }
 
         public void Draw(float timeStacker)
         {
             bindCard?.DrawSprites(timeStacker);
             TransformerUpdateSmooth(timeStacker);
+            DrawSelectorRectAndLabel(timeStacker);
+            timer?.DrawSprites(timeStacker);
         }
 
         public void Destroy()
@@ -82,6 +122,8 @@ namespace RandomGains.Frame.Display
             OnDoubleClick = null;
 
             owner?.RemoveRepresent(this);
+            selector.UnregisterRepresent(this);
+            timer?.ClearSprites();
         }
 
         public void ToggleShow(bool show)
@@ -92,6 +134,7 @@ namespace RandomGains.Frame.Display
                 selector.currentSelectedRepresent = null;
                 NewTransformer(new StaticHoverPosTransformer(this));
             }
+            if(timer != null) timer.setAlpha = show ? 0f : 1f;
         }
 
         public void BringTop()
@@ -123,7 +166,7 @@ namespace RandomGains.Frame.Display
         int lastTransformCounter;
         int transformCounter;
 
-        float transformer_tInSpan => transformCounter / (float)tranformTimeSpan;
+        public float transformer_tInSpan => transformCounter / (float)tranformTimeSpan;
         float last_transformer_tInSpan => lastTransformCounter / (float)tranformTimeSpan;
 
         GainRepresentTransformer currentTransformer;
@@ -135,9 +178,9 @@ namespace RandomGains.Frame.Display
         {
             if (bindCard == null)
                 return;
-
-            currentTransformer?.Update();
+            
             lastTransformer?.Update();
+            currentTransformer?.Update();
 
             lastTransformCounter = transformCounter;
             if (bindCard.animation == null && usingTransformer)
@@ -148,6 +191,35 @@ namespace RandomGains.Frame.Display
                 {
                     transformerEverFinished = true;
                     currentTransformer?.TransformerFinish();
+                }
+            }
+
+            if(owner != null && currentHoverd && owner.changeIndexCoolDown == 0)
+            {
+                if(bindCard.pos.x > Custom.rainWorld.options.ScreenSize.x)
+                {
+                    if (bindCard.staticData.GainType == GainType.Positive)
+                    {
+                        owner.positiveSlotMidIndex++;
+                    }
+                    else
+                    {
+                        owner.notPositveSlotMidIndex++;                    
+                    }
+                    EmgTxCustom.Log($"positiveSlotMidIndex {owner.positiveSlotMidIndex},notPositveSlotMidIndex {owner.notPositveSlotMidIndex}");
+                    owner.changeIndexCoolDown = 20;
+                }
+                else if(bindCard.pos.x < 0)
+                {
+                    if (bindCard.staticData.GainType == GainType.Positive)
+                    {
+                        owner.positiveSlotMidIndex--;
+                    }
+                    else
+                    {
+                        owner.notPositveSlotMidIndex--;
+                    }
+                    owner.changeIndexCoolDown = 20;
                 }
             }
         }
@@ -217,16 +289,119 @@ namespace RandomGains.Frame.Display
     }
 
     /// <summary>
+    /// 绘制额外部件
+    /// </summary>
+    internal partial class GainCardRepresent
+    {
+        public FSprite background;
+        FLabel keyLabel;
+        public bool enableSelectorRect;
+
+
+        Vector2 labelPos;
+        Vector2 lastLabelPos;
+
+        float keyLabelAlpha;
+
+        public void DrawSelectorRectAndLabel(float timeStacker)
+        {
+            background.alpha = (enableSelectorRect && currentHoverd) ? 1 : 0;
+            if (enableSelectorRect && currentHoverd)
+            {
+                float width = (bindCard.origVertices[2].x - bindCard.origVertices[3].x) * bindCard.size * Mathf.Lerp(0.9f, 1.1f, Mathf.Sin(Time.time * 10f));
+                float height = (bindCard.origVertices[0].y - bindCard.origVertices[3].y) * bindCard.size * Mathf.Lerp(0.9f, 1.1f, Mathf.Sin(Time.time * 10f));
+
+                background.SetPosition(Vector2.Lerp(bindCard.lastPos, bindCard.pos, timeStacker));
+
+                background.width = width;
+                background.height = height;
+            }
+            //EmgTxCustom.Log($"{bindCard.ID},show {show},enable {enableSelectorRect},hoverd {currentHoverd}");
+
+            if(keyLabel != null)
+            {
+                keyLabel.SetPosition(Vector2.Lerp(lastLabelPos, labelPos, timeStacker));
+                keyLabel.alpha = keyLabelAlpha;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 按键绑定更新
+    /// </summary>
+    internal partial class GainCardRepresent
+    {
+        KeyCode lastPressKey = KeyCode.None;
+        GainShorcutKeyBinder binder;
+
+        bool lastBindKeyDown;
+
+        public void BinderUpdate()
+        {
+            if (binder == null)
+                return;
+
+            if (Input.GetKey(GainShorcutKeyBinderManager.enableBinderKey) && currentHoverd)
+            {
+                background.color = Color.cyan;
+                bool anyKeyDown = false;
+                foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode)))
+                {
+                    if (keyCode == GainShorcutKeyBinderManager.enableBinderKey || 
+                        keyCode == KeyCode.None ||
+                        keyCode == KeyCode.LeftCommand)
+                        continue;
+
+                    if (Input.GetKey(keyCode))
+                    {
+                        if(lastPressKey != keyCode)
+                        {
+                            if (keyCode == binder.bindKey)
+                                binder.AssignKey(KeyCode.None);
+                            else
+                                binder.AssignKey(keyCode);
+                            keyLabel.text = binder.displaceKey;
+                        }
+
+                        anyKeyDown = true;
+                        lastPressKey = keyCode;
+                        break;
+                    }
+                }
+                if (!anyKeyDown)
+                    lastPressKey = KeyCode.None;
+            }
+            else
+                background.color = Color.white;
+
+            if(binder.bindKey != KeyCode.None && !show)
+            {
+                bool keydown = Input.GetKey(binder.bindKey);
+                if(keydown && !lastBindKeyDown)
+                {
+                    GainPool.Singleton.TriggerGain(bindCard.ID);
+                }
+                lastBindKeyDown = keydown;
+            }
+
+            lastLabelPos = labelPos;
+            labelPos = bindCard.pos + Vector2.down * bindCard.size * (bindCard.origVertices[0].y - bindCard.origVertices[3].y) / 2f + Vector2.down * 15f;
+            keyLabelAlpha = Mathf.Lerp(keyLabelAlpha, (show && !currentSelected) ? 1f : 0f, 0.15f);
+        }
+    }
+
+    /// <summary>
     /// 输入控制部分
     /// </summary>
     internal partial class GainCardRepresent
     {
-        public int sortIndex => owner == null ? 1000 : owner.allCardHUDRepresemts.IndexOf(this);
+        public int sortIndex => owner == null ? 1000 : owner.allCardHUDRepresents.IndexOf(this);
 
         public readonly bool mouseMode;
 
         public bool currentHoverd;//鼠标是否悬浮在上面，由Selector进行控制。
         public bool currentSelected;//是否被鼠标单击选中，鼠标模式下由鼠标进行控制。
+        public bool currentKeyboardFocused;
 
         public bool inputEnable = true;
 
@@ -236,13 +411,14 @@ namespace RandomGains.Frame.Display
                 return;
 
             bindCard.internalInteractive = !InputDisabled();//当鼠标未悬浮的时候，直接禁用鼠标点击的控制。
+            bindCard.currentKeyboardFocused = inputEnable && currentKeyboardFocused;
         }
 
         void AddCardEvents()
         {
             bindCard.ClearInputEvents();
-            bindCard.OnMouseCardEnter += BindCard_OnMouseCardEnter;
-            bindCard.OnMouseCardExit += BindCard_OnMouseCardExit;
+            //bindCard.OnMouseCardEnter += BindCard_OnMouseCardEnter;
+            //bindCard.OnMouseCardExit += BindCard_OnMouseCardExit;
             bindCard.OnMouseCardClick += BindCard_OnMouseCardClick;
             bindCard.OnMouseCardRightClick += BindCard_OnMouseCardRightClick;
             bindCard.OnMouseCardDoubleClick += BindCard_OnMouseCardDoubleClick;
@@ -279,7 +455,7 @@ namespace RandomGains.Frame.Display
 
         public bool InputDisabled()
         {
-            return !currentHoverd || (owner != null && !show) || !inputEnable;
+            return !(currentHoverd || currentKeyboardFocused) || (owner != null && !show) || !inputEnable;
         }
 
         private void BindCard_OnMouseCardExit()

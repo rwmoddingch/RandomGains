@@ -18,6 +18,10 @@ using RandomGains.Gains;
 using RWCustom;
 using UnityEngine;
 using RandomGains.Frame.Display.GainHUD;
+using System.Collections;
+using MoreSlugcats;
+using Random = UnityEngine.Random;
+using RandomGains.Frame.Cardpedia;
 
 #pragma warning disable CS0618
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
@@ -33,12 +37,21 @@ namespace RandomGains
 
         public const string ModID = "randomgains";
 
+        public Cardpedia.CardpediaMenuHook cardpediaMenuHook = new Cardpedia.CardpediaMenuHook();
+
         void OnEnable()
         {
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
+            cardpediaMenuHook.Hook();
         }
 
-        
+        void Update()
+        {
+            if(ExceptionTracker.Singleton != null)
+            {
+                ExceptionTracker.Singleton.Update();
+            }
+        }
 
         private static bool load = false;
         private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
@@ -54,7 +67,10 @@ namespace RandomGains
                     On.Player.Update += Player_Update;
                     LoadResources(self);
                     GainRegister.InitAllGainPlugin();
+                    GainShorcutKeyBinderManager.LoadBinders();
                     load = true;
+
+                    StartCoroutine(LateCreateExceptionTracker());
                 }
             }
 
@@ -64,18 +80,32 @@ namespace RandomGains
             }
         }
 
+        
+
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
             orig.Invoke(self, eu);
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 EmgTxCustom.Log("Plugins : Space pressed");
+
                 GainPool.Singleton.EnableGain(new GainID("DeathFreeMedallion"));
+                GainPool.Singleton.EnableGain(new GainID("LightSpeedSpear"));
+                GainPool.Singleton.EnableGain(new GainID("TriggleableTest"));
+                GainPool.Singleton.EnableGain(new GainID("Upgradation"));
+
+                //foreach(var id in GainID.values.entries)
+                //{
+                //    var newID = new GainID(id);
+                //    if (newID == GainID.None)
+                //        continue;
+                //    GainPool.Singleton.EnableGain(newID);
+                //}
             }
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
                 EmgTxCustom.Log("Plugins : LeftControl pressed");
-                GainHookWarpper.DisableGain(new GainID("DeathFreeMedallion"));
+        
             }
 
             if (Input.GetKeyDown(KeyCode.RightControl))
@@ -84,13 +114,11 @@ namespace RandomGains
             }
         }
 
-  
-
         public static void LoadResources(RainWorld rainWorld)
         {
             MoonBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/moonback").elements[0].name;
-            //FPBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/fpback").elements[0].name;
-            //SlugBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/slugback").elements[0].name;
+            FPBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/fpback").elements[0].name;
+            SlugBack = Futile.atlasManager.LoadImage("gainassets/cardbacks/slugback").elements[0].name;
 
             AssetBundle bundle = AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("gainassets/assetBundle/gainasset"));
             TitleFont = bundle.LoadAsset<Font>("峰广明锐体");
@@ -102,8 +130,26 @@ namespace RandomGains
             Futile.atlasManager.LogAllElementNames();
         }
 
+        public static string BackElementOfType(GainType gainType)
+        {
+            if (gainType == GainType.Positive)
+                return MoonBack;
+            else if (gainType == GainType.Negative)
+                return FPBack;
+            else
+                return SlugBack;
+        }
+
         public static Font TitleFont { get; set; }
         public static Font DescFont { get; set; }
 
+        IEnumerator LateCreateExceptionTracker()
+        {
+            while (Custom.rainWorld.processManager.currentMainLoop == null || Custom.rainWorld.processManager.currentMainLoop.ID != ProcessManager.ProcessID.MainMenu)
+                yield return new WaitForSeconds(1);
+
+            new ExceptionTracker();
+            yield break;
+        }
     }
 }

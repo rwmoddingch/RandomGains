@@ -1,16 +1,8 @@
-﻿using RandomGains.Frame.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-using Mono.Cecil.Cil;
 using MonoMod.Utils;
-using RandomGains.Gains;
 using UnityEngine;
-using Object = System.Object;
-using Mono.Cecil;
 using OpCodes = System.Reflection.Emit.OpCodes;
 using System.Reflection;
 using RandomGains.Frame.Display.GainHUD;
@@ -20,15 +12,15 @@ namespace RandomGains.Frame.Core
     /// <summary>
     /// 运行和管理增益实例的类
     /// </summary>
-    internal class GainPool
+    public class GainPool
     {
         public static GainPool Singleton { get; private set; }
 
         public RainWorldGame Game { get; private set; }
 
-        static Dictionary<GainID, Func<Gain>> gainCtors = new Dictionary<GainID, Func<Gain>>();
-        public Dictionary<GainID, Gain> gainMapping = new Dictionary<GainID, Gain>();
-        public List<Gain> updateGains = new List<Gain>();
+        static Dictionary<GainID, Func<object>> gainCtors = new Dictionary<GainID, Func<object>>();
+        public Dictionary<GainID, GainBase> gainMapping = new Dictionary<GainID, GainBase>();
+        public List<GainBase> updateGains = new List<GainBase>();
 
    
         public GainPool(RainWorldGame game)
@@ -43,7 +35,7 @@ namespace RandomGains.Frame.Core
             }
         }
 
-        public bool TryGetGain(GainID id,out Gain gain)
+        public bool TryGetGain(GainID id,out GainBase gain)
         {
             if (gainMapping.ContainsKey(id))
             {
@@ -61,10 +53,14 @@ namespace RandomGains.Frame.Core
             {
                 try
                 {
-                    updateGains[i].onUpdate(game);
+                    updateGains[i].Update(game);
                 }
                 catch (Exception e)
                 {
+                    if(updateGains[i].GainID == null)
+                        ExceptionTracker.TrackException(e, $"gain of {updateGains[i].GetType()} id is null!");
+                    else
+                        ExceptionTracker.TrackException(e, $"Exception happend when invoke gain update of {updateGains[i].GainID}");
                     Debug.LogException(e);
                 }
             }
@@ -76,8 +72,8 @@ namespace RandomGains.Frame.Core
             {
                 try
                 {
-                    GainHookWarpper.DisableGain(updateGains[i].getGainID());
-                    updateGains[i].onDestroy();
+                    GainHookWarpper.DisableGain(updateGains[i].GainID);
+                    updateGains[i].Destroy();
                 }
                 catch (Exception e)
                 {
@@ -95,19 +91,18 @@ namespace RandomGains.Frame.Core
         {
             if (gainMapping.ContainsKey(id))
             {
-                if (GainSave.Singleton.GetData(id).onCanStackMore())
-                {
-                    EmgTxCustom.Log($"GainPool : gain {id} add one more stack");
-                    GainSave.Singleton.GetData(id).onStack();
-                }
-                else
-                    EmgTxCustom.Log($"GainPool : gain {id} already enabled and cant stack more");
+                EmgTxCustom.Log($"GainPool : gain {id} already enabled!");
+                return;
+            }
+            if (!gainCtors.ContainsKey(id))
+            {
+                EmgTxCustom.Log($"GainPool : gain {id} ctor not found!");
                 return;
             }
             EmgTxCustom.Log($"GainPool : enable gain {id}");
 
             GainHookWarpper.EnableGain(id);
-            Gain gain = gainCtors[id].Invoke();
+            GainBase gain = gainCtors[id].Invoke() as GainBase;
 
             updateGains.Add(gain);
             gainMapping.Add(id, gain);
@@ -128,7 +123,7 @@ namespace RandomGains.Frame.Core
                 return;
             }
 
-            if (GainSave.Singleton.GetData(id).StackLayer > 0)
+            if (GainStaticDataLoader.GetStaticData(id).stackable && GainSave.Singleton.GetData(id).StackLayer > 0)
             {
                 EmgTxCustom.Log($"GainPool : gain {id} remove one stack");
                 GainSave.Singleton.GetData(id).onUnStack();
@@ -142,12 +137,36 @@ namespace RandomGains.Frame.Core
            
             GainHookWarpper.DisableGain(id);
 
-            gainMapping[id].onDestroy();
+            gainMapping[id].Destroy();
             updateGains.Remove(gainMapping[id]);
             gainMapping.Remove(id);
 
             GainSave.Singleton.RemoveData(id);
             GainHud.Singleton?.RemoveGainCardRepresent(id);
+        }
+
+        /// <summary>
+        /// 减少堆叠次数，如果堆叠次数==0或为非堆叠则删除
+        /// </summary>
+        /// <param name="id"></param>
+        public void UnstackGain(GainID id)
+        {
+            if (GainStaticDataLoader.GetStaticData(id).stackable && GainSave.Singleton.GetData(id).StackLayer > 1)
+                GainSave.Singleton.GetData(id).onUnStack();
+            else
+                DisableGain(id);
+        }
+
+        public void TriggerGain(GainID id, bool ignoreCheck = false)
+        {
+            if(GainPool.Singleton.TryGetGain(id, out var gain) && ((GainStaticDataLoader.GetStaticData(id).triggerable && gain.Triggerable) || ignoreCheck))
+            {
+                GainHud.Singleton.triggerBar.TriggerGain(id);
+                if (gain.Trigger(Game) && GainHud.Singleton != null)
+                {
+                    
+                }
+            }
         }
         
         /// <summary>
@@ -164,42 +183,39 @@ namespace RandomGains.Frame.Core
                 Debug.LogException(new ArgumentException($"{type.Name} must has a non-arg constructor"));
                 return;
             }
-            DynamicMethodDefinition method =
-                new DynamicMethodDefinition($"GainCtor_{id}", typeof(Gain), Type.EmptyTypes);
+            //DynamicMethodDefinition method =
+            //    new DynamicMethodDefinition($"GainCtor_{id}", typeof(GainBase), Type.EmptyTypes);
 
-            var ilGenerator = method.GetILGenerator();
+            //var ilGenerator = method.GetILGenerator();
 
-            //ILLog(ilGenerator, "In Func");
-            ilGenerator.DeclareLocal(typeof(Gain));
-            ilGenerator.DeclareLocal(type);
+            ////ILLog(ilGenerator, "In Func");
+            //ilGenerator.DeclareLocal(typeof(Gain));
+            //ilGenerator.DeclareLocal(type);
 
-            ilGenerator.Emit(OpCodes.Newobj,typeof(Gain).GetConstructor(Type.EmptyTypes));
-            ilGenerator.Emit(OpCodes.Stloc_0);
-            ilGenerator.Emit(OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));
-            ilGenerator.Emit(OpCodes.Stloc_1);
+            //ilGenerator.Emit(OpCodes.Newobj,typeof(Gain).GetConstructor(Type.EmptyTypes));
+            //ilGenerator.Emit(OpCodes.Stloc_0);
+            //ilGenerator.Emit(OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));
+            //ilGenerator.Emit(OpCodes.Stloc_1);
 
-            //ILLog(ilGenerator, "Create New Obj");
+            ////ILLog(ilGenerator, "Create New Obj");
 
-            ilGenerator.Emit(OpCodes.Ldloc_0);
-            ilGenerator.Emit(OpCodes.Ldloc_1);
-            ilGenerator.Emit(OpCodes.Stfld,typeof(Gain).GetField("gainImpl"));
+            //ilGenerator.Emit(OpCodes.Ldloc_0);
+            //ilGenerator.Emit(OpCodes.Ldloc_1);
+            //ilGenerator.Emit(OpCodes.Stfld,typeof(Gain).GetField("gainImpl"));
 
-            //ILLog(ilGenerator, "set gainImpl");
+            ////ILLog(ilGenerator, "set gainImpl");
 
-            EmitFunction(ilGenerator, type, "Trigger", new[] { typeof(RainWorldGame) });
-            EmitFunction(ilGenerator, type, "Update", new[] { typeof(RainWorldGame) });
-            EmitFunction(ilGenerator, type, "Destroy", Type.EmptyTypes);
-            EmitFunction(ilGenerator, type.GetProperty("GainID").GetGetMethod(), "getGainID");
-            EmitFunction(ilGenerator, type.GetProperty("Triggerable").GetGetMethod(), "getTriggerable");
-            EmitFunction(ilGenerator, type.GetProperty("Active").GetGetMethod(), "getActive");
+            //EmitFunction(ilGenerator, type, "Trigger", new[] { typeof(RainWorldGame) });
+            //EmitFunction(ilGenerator, type, "Update", new[] { typeof(RainWorldGame) });
+            //EmitFunction(ilGenerator, type, "Destroy", Type.EmptyTypes);
+            //EmitFunction(ilGenerator, type.GetProperty("GainID").GetGetMethod(), "getGainID");
+            //EmitFunction(ilGenerator, type.GetProperty("Triggerable").GetGetMethod(), "getTriggerable");
+            //EmitFunction(ilGenerator, type.GetProperty("Active").GetGetMethod(), "getActive");
 
-            ilGenerator.Emit(OpCodes.Ldloc_0);
-            ilGenerator.Emit(OpCodes.Ret);
-            var ctorDeg = method.Generate().GetFastDelegate().CastDelegate<Func<Gain>>();
-            gainCtors.Add(id, ctorDeg);
-            //foreach (var a in method.Definition.Body.Instructions)
-            //    Debug.Log($"{a}");
-
+            //ilGenerator.Emit(OpCodes.Ldloc_0);
+            //ilGenerator.Emit(OpCodes.Ret);
+            //var ctorDeg = method.Generate().GetFastDelegate().CastDelegate<Func<GainBase>>();
+            gainCtors.Add(id, () => { return Activator.CreateInstance(type); });
         }
 
 

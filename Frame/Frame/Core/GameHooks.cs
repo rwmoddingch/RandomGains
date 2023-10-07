@@ -18,9 +18,22 @@ namespace RandomGains.Frame.Core
             On.RainWorldGame.CommunicateWithUpcomingProcess += RainWorldGame_CommunicateWithUpcomingProcess;
 
             On.RainWorldGame.Win += RainWorldGame_Win;//雨眠的时候让卡牌过一个减少剩余时间的判断
+            On.MainLoopProcess.RawUpdate += MainLoopProcess_RawUpdate;
         }
 
-        
+        private static void MainLoopProcess_RawUpdate(On.MainLoopProcess.orig_RawUpdate orig, MainLoopProcess self, float dt)
+        {
+            lastPre = self.framesPerSecond;
+            if(framesPerSecond != -1)
+                self.framesPerSecond = framesPerSecond;
+            orig(self, dt);
+            self.framesPerSecond = lastPre;
+        }
+
+        public static int framesPerSecond = -1;
+
+        private static int lastPre;
+
         private static void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished)
         {
             GainSave.Singleton.SteppingCycle();

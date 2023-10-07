@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RandomGains.Frame.Core
 {
-    class Gain
+    public class Gain
     {
         public object gainImpl;
 
@@ -39,9 +39,7 @@ namespace RandomGains.Frame.Core
 
     }
 
-
-
-    class GainData
+    public class GainData
     {
         public object dataImpl;
 

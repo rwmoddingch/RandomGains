@@ -59,5 +59,4 @@ namespace RandomGains.Frame.Display
             this.endRotation = endRotation;
         }
     }
-
 }
