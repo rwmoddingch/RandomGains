@@ -1,0 +1,10 @@
+{
+    "faceName": "alzheimers",
+    "gainID" : "Alzheimers",
+    "gainType" : "Negative",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "老年痴呆",
+    "gainDescription" : "区域五块卵石内只会生成极少量的神经元",
+    "color" : "#FF7EBC"
+}

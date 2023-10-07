@@ -1,7 +1,7 @@
 {
     "faceName": "danglebomb",
     "gainID" : "DangleBombGainID",
-    "gainType" : "Positive",
+    "gainType" : "Duality",
     "gainProperty" : "Normal",
     "triggerable" : "false",
     "gainName" : "蓝果炸弹",

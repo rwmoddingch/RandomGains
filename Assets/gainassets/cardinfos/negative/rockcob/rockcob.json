@@ -1,0 +1,10 @@
+{
+    "faceName": "rockcob",
+    "gainID" : "RockCob",
+    "gainType" : "Negative",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "石米花",
+    "gainDescription" : "激活爆米花只会生成一堆石头",
+    "color" : "#7B646D"
+}

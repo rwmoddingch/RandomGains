@@ -1,0 +1,10 @@
+{
+    "faceName": "herbicide",
+    "gainID" : "Herbicide",
+    "gainType" : "Positive",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "除草剂",
+    "gainDescription" : "清除所有舌草",
+    "color" : "#3C8F9E"
+}

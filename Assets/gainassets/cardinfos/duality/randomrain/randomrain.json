@@ -1,0 +1,10 @@
+{
+    "faceName": "randomrain",
+    "gainID" : "RandomRain",
+    "gainType" : "Duality",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "随机性雨",
+    "gainDescription" : "雨循环波动更大了，最低雨计时为原来的二分之一，最高的雨计时为原来的两倍",
+    "color" : "#A475FF"
+}

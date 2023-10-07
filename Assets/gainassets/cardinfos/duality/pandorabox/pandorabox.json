@@ -1,0 +1,10 @@
+{
+    "faceName": "pandorabox",
+    "gainID" : "PandoraBox",
+    "gainType" : "Duality",
+    "gainProperty" : "Normal",
+    "triggerable" : "false",
+    "gainName" : "潘多拉魔盒",
+    "gainDescription" : "无论玩家吞下去什么，吐出来的时候都会变成一个新的随机物品",
+    "color" : "#FFF0B9"
+}
