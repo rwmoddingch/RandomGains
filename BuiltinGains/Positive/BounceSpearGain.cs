@@ -80,7 +80,6 @@ namespace BuiltinGains.Positive
                     active = false;
                 }
             }
-            
         }
     }
 
@@ -154,7 +153,6 @@ namespace BuiltinGains.Positive
         public override void OnEnable()
         {
             GainRegister.RegisterGain<BounceSpearGain, BounceSpearGainData, BounceSpearGainHooks>(bounceSpearID);
-            GainRegister.PriorityQueue(bounceSpearID);
         }
     }
 

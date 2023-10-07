@@ -59,12 +59,12 @@ namespace BuiltinGains.Positive
 
         private static void Player_Die(On.Player.orig_Die orig, Player self)
         {
-
             if (DeathPreventer.Singleton != null && DeathPreventer.Singleton.bindAbPlayer == self.abstractCreature)
                 return;
             else if(!DeathFreeMedallionGain.Singleton.triggerdThisCycle)
             {
                 self.room.AddObject(new DeathPreventer(self, self.DangerPos + Vector2.up * 80f));
+                GainPool.Singleton.TriggerGain(deathFreeMedallionGainID, true);
                 return;
             }
 
@@ -74,7 +74,6 @@ namespace BuiltinGains.Positive
         public override void OnEnable()
         {
             GainRegister.RegisterGain<DeathFreeMedallionGain, DeathFreeMedallionGainData, DeathFreeMedallionGainEntry>(deathFreeMedallionGainID);
-            GainRegister.PriorityQueue(deathFreeMedallionGainID);
         }
     }
 

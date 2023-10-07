@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "N8J7JAI4/oj0jOnxR+OZABzq4yDSCIwcZ9Ii713s+2SGmIzhzu9zWCx/Ei96EwBPWtgZuLbQEacja4Y5qGdEiA==",
+  "success": true,
+  "projectFilePath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\BuiltinGains\\BuiltinGains.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\qianlong\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
+    "C:\\Users\\qianlong\\.nuget\\packages\\newtonsoft.json\\9.0.1\\newtonsoft.json.9.0.1.nupkg.sha512",
+    "C:\\Users\\qianlong\\.nuget\\packages\\system.data.datasetextensions\\4.5.0\\system.data.datasetextensions.4.5.0.nupkg.sha512"
+  ],
+  "logs": []
+}

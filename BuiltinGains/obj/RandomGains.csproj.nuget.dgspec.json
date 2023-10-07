@@ -1,0 +1,65 @@
+{
+  "format": 1,
+  "restore": {
+    "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj": {}
+  },
+  "projects": {
+    "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj",
+        "projectName": "BuiltinGains",
+        "projectPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj",
+        "packagesPath": "C:\\Users\\qianlong\\.nuget\\packages\\",
+        "outputPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\BuiltinGains\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\qianlong\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net48"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net48": {
+            "targetAlias": "net48",
+            "projectReferences": {
+              "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj": {
+                "projectPath": "D:\\雨世界mods\\SlugTemplate-master\\RandomGains\\Frame\\RandomGains.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net48": {
+          "targetAlias": "net48",
+          "dependencies": {
+            "Microsoft.CSharp": {
+              "target": "Package",
+              "version": "[4.7.0, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[9.0.1, )"
+            },
+            "System.Data.DataSetExtensions": {
+              "target": "Package",
+              "version": "[4.5.0, )"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
