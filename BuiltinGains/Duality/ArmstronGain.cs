@@ -45,8 +45,9 @@ namespace BuiltinGains.Duality
         private static void Room_ctor(On.Room.orig_ctor orig, Room self, RainWorldGame game, World world, AbstractRoom abstractRoom)
         {
             orig.Invoke(self, game, world, abstractRoom);
-            if (game.session is StoryGameSession storyGameSession)
+            if (game != null && game.session is StoryGameSession)
             {
+                StoryGameSession storyGameSession = game.session as StoryGameSession;
                 if (storyGameSession.saveState.miscWorldSaveData.EverMetMoon)
                 {
                     self.gravity /= 6f;
