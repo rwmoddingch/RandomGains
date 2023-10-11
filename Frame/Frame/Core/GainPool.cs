@@ -6,6 +6,7 @@ using UnityEngine;
 using OpCodes = System.Reflection.Emit.OpCodes;
 using System.Reflection;
 using RandomGains.Frame.Display.GainHUD;
+using RandomGains.Frame.Cardpedia;
 
 namespace RandomGains.Frame.Core
 {
@@ -109,6 +110,11 @@ namespace RandomGains.Frame.Core
 
             GainSave.Singleton.GetData(id);
             GainHud.Singleton?.AddGainCardRepresent(id);
+
+            if(PediaSessionHook.unlockedCards != null && !PediaSessionHook.unlockedCards.Contains(id.value))
+            {
+                PediaSessionHook.unlockedCards.Add(id.value);
+            }
         }
 
         /// <summary>
