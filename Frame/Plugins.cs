@@ -42,7 +42,7 @@ namespace RandomGains
         void OnEnable()
         {
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
-            cardpediaMenuHook.Hook();
+            cardpediaMenuHook.Hook();           
         }
 
         void Update()
@@ -68,6 +68,7 @@ namespace RandomGains
                     LoadResources(self);
                     GainRegister.InitAllGainPlugin();
                     GainShorcutKeyBinderManager.LoadBinders();
+                    PediaSessionHook.Hook();
                     load = true;
 
                     StartCoroutine(LateCreateExceptionTracker());
