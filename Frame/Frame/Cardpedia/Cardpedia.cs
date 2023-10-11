@@ -359,15 +359,29 @@ namespace RandomGains.Frame.Cardpedia
                     else
                     {
                         StaticCardPool.PediaCard pediaCard = this.pages[0].subObjects[j] as StaticCardPool.PediaCard;
+
+                        if (PediaSessionHook.unlockedCards != null && PediaSessionHook.unlockedCards.Contains(pediaCard.ID.value))
+                        {
+                            pediaCard.unlocked = true;
+                        }
+                        else pediaCard.unlocked = false;
+
                         if (pediaCard.popUp)
                         {
-                            nameInfo = pediaCard.staticData.gainName;
-                            triggerInfo = pediaCard.staticData.triggerable? this.Translate("Automatically") : this.Translate("Manually");
-                            stackInfo = pediaCard.staticData.stackable? this.Translate("Stackable") : this.Translate("Unstackable");
-                            descripInfo = pediaCard.staticData.gainDescription;
-                            displayCard.element = pediaCard.cardSprite.element;
+                            if (pediaCard.unlocked)
+                            {
+                                nameInfo = pediaCard.staticData.gainName;
+                                triggerInfo = pediaCard.staticData.triggerable ? this.Translate("Manually") : this.Translate("Automatically");
+                                stackInfo = pediaCard.staticData.stackable ? this.Translate("Stackable") : this.Translate("Unstackable");
+                                descripInfo = pediaCard.staticData.gainDescription;
+                                displayCard.element = pediaCard.cardSprite.element;
+                            }
+                            else
+                            {
+                                this.ResetDisplayInfo();
+                            }
                         }
-                        else continue;
+
                     }
 
                 }

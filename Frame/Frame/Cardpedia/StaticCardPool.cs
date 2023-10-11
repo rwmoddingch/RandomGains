@@ -153,6 +153,7 @@ namespace RandomGains.Frame.Cardpedia
             public bool aboveOtherCards;
             //图像相关
             public string cardImageName;
+
             public string cardBack;
             public FSprite cardSprite;
             public FSprite backSprite;
@@ -177,6 +178,7 @@ namespace RandomGains.Frame.Cardpedia
                 staticData = GainStaticDataLoader.GetStaticData(this.ID);
                 cardImageName = Futile.atlasManager.DoesContainElementWithName(staticData.faceElementName) ? staticData.faceElementName : "Futile_White";
                 cardSprite = new FSprite(cardImageName);
+                backSprite = new FSprite(Futile.atlasManager.GetAtlasWithName(Plugins.BackElementOfType(staticData.GainType)).name);
                 gainType = staticData.GainType;
 
                 unlocked = true;
@@ -206,8 +208,11 @@ namespace RandomGains.Frame.Cardpedia
                 boarderSprite.scaleX = 125f;
                 boarderSprite.scaleY = 205f;
 
+                backSprite.scale = this.size.x * (Scruffy.standardW / backSprite.element.sourcePixelSize.x);
+
                 Container.AddChild(boarderSprite);
                 Container.AddChild(cardSprite);
+                Container.AddChild(backSprite);
 
                 RecordOrigData(pos,size);
                 Inited = true;
@@ -251,6 +256,12 @@ namespace RandomGains.Frame.Cardpedia
                         popHeight -= 0.1f;
                     }
                 }
+
+                if (unlocked)
+                {
+                    backSprite.alpha = 0f;
+                }
+                else backSprite.alpha = 1f;
             }
 
             public override void GrafUpdate(float timeStacker)
@@ -261,6 +272,7 @@ namespace RandomGains.Frame.Cardpedia
                 float num2 = Scruffy.GetPowLerpParam(popHeight + 0.1f * (popUp ? timeStacker : -timeStacker));
                 this.cardSprite.y = origCentralPos.y + 60f * Mathf.Clamp(num2,0,1);
                 this.boarderSprite.y = this.cardSprite.y;
+                this.backSprite.y = this.cardSprite.y;
 
                 if (IsMouseOverMe)
                 {
@@ -280,8 +292,7 @@ namespace RandomGains.Frame.Cardpedia
                 cardAlpha = 0;
                 boarderSprite.alpha = 0;
                 cardSprite.alpha = 0;
-                cardSprite.scaleX = 0;
-                cardSprite.scaleY = 0;
+                backSprite.alpha = 0;              
                 Inited = false;
                 //Debug.Log("Folding for condition:" + this.ID + Cardpedia.CardpediaMenu.currentGainType);
             }
@@ -298,6 +309,8 @@ namespace RandomGains.Frame.Cardpedia
                 cardSprite.alpha = cardAlpha;
                 cardSprite.SetPosition(pos);
                 boarderSprite.SetPosition(pos);
+                backSprite.SetPosition(pos);
+                backSprite.alpha = cardAlpha;
                 Inited = true;                
             }
 
@@ -307,8 +320,8 @@ namespace RandomGains.Frame.Cardpedia
                 this.popUp = false;
                 this.pickedOut = false;
                 this.UnFold();
-                Container.AddChild(boarderSprite);
-                Container.AddChild(cardSprite);
+                //Container.AddChild(boarderSprite);
+                //Container.AddChild(cardSprite);
             }
 
             public void RecordOrigData(Vector2 pos,Vector2 size)
